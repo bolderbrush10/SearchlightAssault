@@ -4,6 +4,9 @@ require "searchlight-defines"
 -- turretEntity; the primary entity which uses a lamp like a turret
 --
 -- Might want to figure out how to use the 'alert_when_attacking' characteristic such that we alert when real foes are present, and not imaginary ones
+-- also look into:
+--  allow_turning_when_starting_attack
+--  attack_from_start_frame
 local turretEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
 turretEntity.name = "searchlight"
 turretEntity.minable.result = "searchlight"

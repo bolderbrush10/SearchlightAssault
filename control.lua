@@ -57,22 +57,24 @@ end)
 -- TODO interpolate from wander position to nearest foe instead of snapping over, etc
 -- TODO destroy hidden entities when sl is destroyed / removed etc
 -- TODO spotlight should probably only wander a 180degree arc around its inital placement
--- TODO disable when no electricity
-function LightUpFoes(sl, surface) -- 'sl' for 'SearchLight' 
-    -- TODO renable after done tweaking
-    -- -- Instantly find foes within the inner range
-    -- local nearestFoe = surface.find_nearest_enemy{position = sl.position, 
-    --                                               max_distance = searchlightInnerRange}
-    -- 
-    -- if nearestFoe ~= nil then
-    --     local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
-    --     lightEntities[sl.unit_number] = {lightID = lightID,
-    --                                      position = nearestFoe.position,
-    --                                      waypoint = nearestFoe.position}
-    --     sl.shooting_target = nearestFoe
-    --     -- TODO move light entity to this foe's location
-    --     return 
-    -- end
+-- TODO disable when no electricity / reduce range according to electric satisfaction
+-- 'sl' for 'SearchLight' 
+function LightUpFoes(sl, surface)
+    -- Instantly find foes within the inner range
+    local nearestFoe = surface.find_nearest_enemy{position = sl.position, 
+                                                  max_distance = searchlightOuterRange}
+    
+    if nearestFoe ~= nil then
+        local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
+        lightEntities[sl.unit_number] = {lightID = lightID,
+                                         position = nearestFoe.position,
+                                         waypoint = nearestFoe.position}
+        sl.shooting_target = nearestFoe
+        -- TODO move light entity to this foe's location
+        return 
+    else
+        return
+    end
     
     -- If we're not directly shining on a foe, make up a random waypoint to track the light towards
     
@@ -95,7 +97,7 @@ function LightUpFoes(sl, surface) -- 'sl' for 'SearchLight'
     if len(lightEntities[sl.unit_number].position,
            lightEntities[sl.unit_number].waypoint) < 3 then
         lightEntities[sl.unit_number].waypoint = makeWanderWaypoint(sl.position)
-
+    
         if lightEntities[sl.unit_number].entity then
             lightEntities[sl.unit_number].entity.set_command(makeMoveCommand(lightEntities[sl.unit_number].waypoint))
         end
@@ -120,13 +122,13 @@ function LightUpFoes(sl, surface) -- 'sl' for 'SearchLight'
         local newEnt = surface.create_entity{name = "SpotlightShine", 
                                              position = positionCopyTEMP,
                                              force = searchlightFoe}
-
+    
         sl.shooting_target = newEnt
-
+    
         lightEntities[sl.unit_number].entity = newEnt
         newEnt.set_command(makeMoveCommand(lightEntities[sl.unit_number].waypoint))
     end
-
+    
     -- TODO this line crashes if the hidden entity is killed, so make sure its invulnerable and cleaned up properly
     local lightID = renderSpotLight_def(lightEntities[sl.unit_number].entity.position, sl, surface)
     lightEntities[sl.unit_number].lightID = lightID
