@@ -1,0 +1,11 @@
+{
+    "name": "Searchlights",
+    "version": "0.0.1",
+    "title": "Searchlights",
+    "author": "benjamin rice",
+    "contact": "benjamin.rice@knights.ucf.edu",
+    "homepage": "",
+    "factorio_version": "0.17",
+    "dependencies": ["base >= 0.17"],
+    "description": "Add searchlights which track foes and provide bonuses to turrets."
+}
