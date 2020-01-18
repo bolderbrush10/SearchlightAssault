@@ -1,4 +1,5 @@
 require "searchlight-defines"
+require "searchlight-entity"
 
 -- Item
 local item = table.deepcopy(data.raw["item"]["small-lamp"])

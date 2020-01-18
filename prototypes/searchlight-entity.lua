@@ -1,5 +1,18 @@
 require "searchlight-defines"
 
+local beaconEntity = table.deepcopy(data.raw["beacon"])
+local spotlightAnimation = beaconEntity.animation
+
+local spotlightBeam = table.deepcopy(data.raw["beam"]["laser-beam"])
+
+spotlightBeam.name = "spotlight-beam"
+spotlightBeam.head = spotlightAnimation
+
+
+-- TODOOOOOOOOOOOOOO
+-- use the 'target_type' : position parameter and work from that.
+-- (How will rotating the turret work? Will we still need a hidden entity for the turret to target?)
+
 --
 -- turretEntity; the primary entity which uses a lamp like a turret
 --
@@ -20,15 +33,29 @@ turretEntity.energy_source.usage_priority = "secondary-input"
 
 -- Basically we just want the turret to point itself at things, not have any real effect. We're going to just use draw_light calls in control.lua for the actual effect.
 -- TODO maybe do a subtle shaft of light effect as a beam 'attack'?
-turretEntity.attack_parameters = {
-  type = "beam",
-  cooldown = 100,
-  range = searchlightOuterRange,
-  ammo_type =
-  {
-    category = "laser-turret"
-  }
-}
+-- turretEntity.attack_parameters = {
+--     type = "beam",
+--     cooldown = 100,
+--     range = searchlightOuterRange,
+--     use_shooter_direction = true,
+--     ammo_type =
+--     {
+--         category = "laser-turret",
+--         target_type = "position",
+--         action =
+--         {
+--             type = "area",
+--             radius = 2.0,
+--             action_delivery =
+--             {
+--                 type = "beam",
+--                 beam = "spotlight-beam",
+--                 duration = 10,
+--                 --starting_speed = 0.3
+--             }
+--         }
+--     }
+-- }
 
 --
 -- spotLightSprite; A simple sprite with a directional light effect
@@ -56,7 +83,10 @@ spotLightHiddenEnt.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 --
 -- Add new definitions to game data
 --
-data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
+data:extend{spotlightAnimation, spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
+-- data:extend{spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
+-- data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
+-- data:extend{spotlightAnimation, spotlightBeam}
 
 
 --[[
