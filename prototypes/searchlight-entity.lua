@@ -1,12 +1,12 @@
 require "searchlight-defines"
 
-local beaconEntity = table.deepcopy(data.raw["beacon"])
-local spotlightAnimation = beaconEntity.animation
-
-local spotlightBeam = table.deepcopy(data.raw["beam"]["laser-beam"])
-
-spotlightBeam.name = "spotlight-beam"
-spotlightBeam.head = spotlightAnimation
+-- local beaconEntity = table.deepcopy(data.raw["beacon"])
+-- local spotlightAnimation = beaconEntity.animation
+-- 
+-- local spotlightBeam = table.deepcopy(data.raw["beam"]["laser-beam"])
+-- 
+-- spotlightBeam.name = "spotlight-beam"
+-- spotlightBeam.head = spotlightAnimation
 
 
 -- TODOOOOOOOOOOOOOO
