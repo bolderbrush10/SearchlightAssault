@@ -15,6 +15,27 @@ Strings which would be first-class types in a real programming language:
 -- Set the spotlight entity to red
 
 
+-- TODO energy cost
+-- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
+
+-- TODO Maintain a map of all searchlights instead of polling for them every tick
+-- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
+
+-- Might want to figure out how to use the 'alert_when_attacking' characteristic such that we alert when real foes are present, and not imaginary ones
+-- also look into:
+--  allow_turning_when_starting_attack
+--  attack_from_start_frame
+
+
+function makeLightStartLocation(sl)
+    -- TODO get the orientation of the light and stick this slightly in front
+    --      also figure out how to deal with the unfolding animation
+
+    
+-- TODOOOOOOOOOOOOOO
+-- use the 'target_type' : position parameter and work from that.
+-- (How will rotating the turret work? Will we still need a hidden entity for the turret to target?)
+
 -- TODO Append data to 'global' to have the game save / load data for us
 -- TODO placement of light during 'unfolding' animation
 -- TODO Wait for a small delay after turret creation to start lighting things up / remove the 'unfolding' animation so that way the turret always lines up with the light-effect from the first moment of existance
