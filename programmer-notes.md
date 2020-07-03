@@ -29,3 +29,48 @@ Strings which would be first-class types in a real programming language:
 -- Use the 'TriggerEffect' prototype to play an alert sound if an enemy is detected? Looks like we can set it to play the sound at the 'source' aka the turret itself
     -- We can also create a sticker or particle, which could be fun for making "!" float above the turret's head or something.
     -- (Or Maybe cool flares could shoot out and form a '!'?)
+
+
+
+=================
+
+Feature request for spotlights that track enemies
+
+
+
+Or just write a mod to do it, yourself
+
+- Steal code from this other mod? [MOD 0.10.x] Advanced Illumination - 0.2.0 [BETA]
+  https://forums.factorio.com/viewtopic.php?f=14&t=4872
+
+
+Features:
+
+- Alternate idea: Has a massive sight range, and a moderate effect range.
+  Allows all turrets within effect range to fire at 1/8th fire rate (like, once per second) at anything within its sight range.
+  
+- Changes from white -> yellow -> infrared as it spots an enemy and 'locks on'
+  (Be sure to have a cool 'lock on effect' when this finally happens)
+
+- Half the range of the radar's 'discovery' range 
+  (or like, 2x as far as the active sight range)
+  
+- Gives radar-like map "remote vision" on targeted area
+
+- Very high power cost 
+  (Maybe like 10x solar panels' worth per? 
+   Then again, we want to be an early-game alternative for night vision goggles...)
+   
+- Pretty large - maybe should appear to be on a tower light the large electric pole?
+
+- Multiple spotlights prefer to target different enemies
+
+- Checkbox to allow 'patrol mode' pattern when no enemies in range are known
+  (Recreate your favorite prison-break movie / game! Like WindWaker!)
+
+- Infrared-seeking mode that only targets players & vehicles
+  (Implies that biters are endothermic, which is neat)
+  
+- Built from 5x lamp + 1x Radar (since it's able to target things)
+  - Finally gives an incentive to automate lamp production for non-peaceful players
+
