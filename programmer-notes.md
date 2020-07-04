@@ -47,6 +47,8 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 --  allow_turning_when_starting_attack
 --  attack_from_start_frame
 
+-- TODO can probably make smarter use of forces throughout control.lua
+
 
 function makeLightStartLocation(sl)
     -- TODO get the orientation of the light and stick this slightly in front
