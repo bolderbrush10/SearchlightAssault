@@ -8,14 +8,16 @@ local spotlightBeam =
     width = 0.5,
     damage_interval = 1,
     random_end_animation_rotation = false,
-    light_animations =
+    ground_light_animations =
     {
       ending =
       {
         filename = "__Searchlights__/graphics/spotlight-r.png",
         width = 200,
         height = 200,
+        scale = 1.25,
         flags = { "light" },
+        shift = {0.5, 0},
         blend_mode = beam_blend_mode,
       },
     },
@@ -42,6 +44,7 @@ local spotlightBeam =
 }
 
 data:extend{spotlightBeam}
+
 
 -- turretEntity; the primary entity which uses a lamp like a turret
 local turretEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
@@ -80,7 +83,6 @@ turretEntity.attack_parameters = {
 }
 
 
-
 -- spotLightSprite; A simple sprite with a directional light effect
 local spotLightSprite = {
     type = "sprite",
@@ -90,6 +92,7 @@ local spotLightSprite = {
     width = 200,
     height = 200
 }
+
 
 local dummyEnt = table.deepcopy(data.raw["unit"]["small-biter"])
 dummyEnt.name = "DummyEntity"
