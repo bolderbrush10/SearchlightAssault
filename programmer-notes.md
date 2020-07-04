@@ -19,6 +19,15 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- (Enables the 'red light' attack animation)
 -- Set the spotlight entity to red
 
+-- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
+-- TODO also need to handle construction ghosts for boosted turrets, etc
+
+-- TODO Attach some kind of neat little graphical sticker to turrets that are in boosting range
+
+
+-- TODO delay un-boosting boosted turrets until they finish their folding animation
+--      (but also somehow prevent them from using their expanded range in the meanwhile)
+
 
 -- TODO energy cost
 -- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
@@ -28,6 +37,10 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO Maintain a map of all searchlights instead of polling for them every tick
 -- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
+
+-- TODO fix the string localization being broken for boosted copies of turrets
+
+-- TODO when a spot light dies, make sure to unboost all nearby friends
 
 -- Might want to figure out how to use the 'alert_when_attacking' characteristic such that we alert when real foes are present, and not imaginary ones
 -- also look into:

@@ -90,17 +90,17 @@ SpotlightBeamAlarm.ending =
 data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
 
 
--- SpotLightForDummy; the primary entity which uses a lamp like a turret
+-- SearchLightForDummy; the primary entity which uses a lamp like a turret
 -- TODO: use radar_range?
-local SpotLightForDummy = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
-SpotLightForDummy.flags = {"hidden"}
-SpotLightForDummy.name = "searchlight_dummy"
-SpotLightForDummy.minable.result = "searchlight"
+local SearchLightForDummy = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+SearchLightForDummy.flags = {"hidden"}
+SearchLightForDummy.name = "searchlight-dummy"
+SearchLightForDummy.minable.result = "searchlight"
  -- arbitrary high number btween 5 and 500 to be 'instant'
-SpotLightForDummy.rotation_speed = 50
+SearchLightForDummy.rotation_speed = 50
 -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
-SpotLightForDummy.energy_source.usage_priority = "secondary-input"
-SpotLightForDummy.attack_parameters = {
+SearchLightForDummy.energy_source.usage_priority = "secondary-input"
+SearchLightForDummy.attack_parameters = {
     type = "beam",
     range = searchlightOuterRange,
     cooldown = 40,
@@ -127,9 +127,9 @@ SpotLightForDummy.attack_parameters = {
     -- source_offset
 }
 
-local SpotLightForReal = table.deepcopy(SpotLightForDummy)
-SpotLightForReal.name = "searchlight"
-SpotLightForReal.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
+local SearchLightForReal = table.deepcopy(SearchLightForDummy)
+SearchLightForReal.name = "searchlight"
+SearchLightForReal.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
 -- SpotLightHidden; a hidden entity to help swapping between the 'dummy seeking' and 'real' spotlights
 local SpotLightHidden = table.deepcopy(data.raw["lamp"]["small-lamp"])
@@ -164,10 +164,10 @@ Turtle.selectable_in_game = false
 Turtle.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 
 -- Add new definitions to game data
-data:extend{SpotLightForDummy, SpotLightForReal, SpotLightHidden, Turtle}
+data:extend{SearchLightForDummy, SearchLightForReal, SpotLightHidden, Turtle}
 
 
-function NeedsBoost(entity, table)
+function GetBoostName(entity, table)
   if not string.match(entity.name, boostSuffix)
      and not string.match(entity.name, "searchlight") then
 
@@ -183,54 +183,45 @@ function NeedsBoost(entity, table)
 end
 
 -- Make boosted-range versions of non search light turrets
--- (Factorio might load this script multiple times, so be sure to avoid making dupes)
-currTable = data.raw["electric-turret"]
+-- (Factorio might run this entity-script multiple times, so be sure to avoid making dupes)
+function MakeBoost(currTable, newRange)
+  for index, turret in pairs(currTable) do
+    local boostedName = GetBoostName(turret, currTable)
+    if boostedName then
 
-for index, turret in pairs(currTable) do
-  local boostedName = NeedsBoost(turret, currTable)
-  if boostedName then
-    local boostCopy = table.deepcopy(currTable[turret.name])
-    boostCopy.name = boostedName
-    boostCopy.flags = {"hidden"}
-    boostCopy.create_ghost_on_death = false
-    boostCopy.range = elecBoost
-    if boostCopy.attack_parameters
-      and boostCopy.attack_parameters.ammo_type
-      and boostCopy.attack_parameters.ammo_type.action
-      and boostCopy.attack_parameters.ammo_type.action.action_delivery
-      and boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length then
-        boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = elecBoost
+      local boostCopy = table.deepcopy(currTable[turret.name])
+      boostCopy.localised_name = {"entity-name." .. boostCopy.name}
+      if {"entity-description." .. boostCopy.name} then
+        boostCopy.localised_description = {"entity-description." .. boostCopy.name}
+      end
+      boostCopy.name = boostedName
+      boostCopy.flags = {"hidden"}
+      boostCopy.create_ghost_on_death = false
+
+      if boostCopy.attack_parameters
+         and boostCopy.attack_parameters.range < newRange then
+        boostCopy.attack_parameters.range = newRange
+      end
+
+      if boostCopy.attack_parameters
+        and boostCopy.attack_parameters.ammo_type
+        and boostCopy.attack_parameters.ammo_type.action
+        and boostCopy.attack_parameters.ammo_type.action.action_delivery
+        and boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length then
+          boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = newRange
+      end
+
+      data:extend{boostCopy}
+
     end
-    data:extend{boostCopy}
   end
 end
 
+currTable = data.raw["electric-turret"]
+MakeBoost(currTable, elecBoost)
 
 currTable = data.raw["ammo-turret"]
-
-for index, turret in pairs(currTable) do
-  local boostedName = NeedsBoost(turret, currTable)
-  if boostedName then
-    local boostCopy = table.deepcopy(currTable[turret.name])
-    boostCopy.name = boostedName
-    boostCopy.flags = {"hidden"}
-    boostCopy.create_ghost_on_death = false
-    boostCopy.range = ammoBoost
-    data:extend{boostCopy}
-  end
-end
-
+MakeBoost(currTable, ammoBoost)
 
 currTable = data.raw["fluid-turret"]
-
-for index, turret in pairs(currTable) do
-  local boostedName = NeedsBoost(turret, currTable)
-  if boostedName then
-    local boostCopy = table.deepcopy(currTable[turret.name])
-    boostCopy.name = boostedName
-    boostCopy.flags = {"hidden"}
-    boostCopy.create_ghost_on_death = false
-    boostCopy.range = fluidBoost
-    data:extend{boostCopy}
-  end
-end
+MakeBoost(currTable, fluidBoost)

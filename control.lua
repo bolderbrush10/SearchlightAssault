@@ -2,8 +2,6 @@ require "searchlight-defines"
 require "searchlight-render"
 
 local searchLights = {}
-local hiddenSL_to_dummy = {}
-local hiddenSL_to_sl = {}
 local dummy_to_turtle = {}
 
 script.on_event(defines.events.on_tick, function(event)
@@ -19,7 +17,7 @@ script.on_event(defines.events.on_tick, function(event)
     end
 
     for surfaceName, surface in pairs(game.surfaces) do
-        searchLights = surface.find_entities_filtered{name = "searchlight_dummy"}
+        searchLights = surface.find_entities_filtered{name = "searchlight-dummy"}
 
         for index, sl in pairs(searchLights) do
             ConsiderFoes(sl, surface)
@@ -31,20 +29,24 @@ function ConsiderFriendsAndTurtles(sl, surface)
     local foe = sl.shooting_target
 
     if foe == nil then
-        CreateDummyLight(sl.position, surface)
-        sl.destroy()
+        CreateDummyLight(sl, surface)
     else
-        local friends = surface.find_entities_filtered{force = sl.force,
-                                                       type = "electric-turret",
-                                                       max_distance = searchlightFriendRadius}
-        for index, F in pairs(friends) do
-            if BoostableElectric(F) then
-                -- TODO clone or teleport original object somwhere safe??
-                -- Then swap boosted version in, and swap it back out when its done
-                -- (And remember to increment kill count + damage done somehow, preserve health changes, etc)
-                -- TODO also need to handle construction ghosts, etc
-                F.shooting_target = foe
+        local electfriends = surface.find_entities_filtered{position = sl.position,
+                                                            type = "electric-turret",
+                                                            radius = searchlightFriendRadius}
+        for index, F in pairs(electfriends) do
+            if not UnBoostElectric(F, surface) then
+                BoostElectric(F, surface, foe)
             end
+        end
+
+        local fluidfriends = surface.find_entities_filtered{position = sl.position,
+                                                            type = "fluid-turret",
+                                                            radius = searchlightFriendRadius}
+        for index, F in pairs(fluidfriends) do
+            -- if not UnBoostElectric(F, surface) then
+                BoostFluid(F, surface, foe)
+            -- end
         end
     end
 end
@@ -54,7 +56,7 @@ function ConsiderFoes(sl, surface)
     -- (find_nearest_enemy argument 'force' means "which force's enemies to seek")
     local foe = surface.find_nearest_enemy{position = sl.position,
                                            max_distance = searchlightInnerRange,
-                                           force = searchlightFriend}
+                                           force = "player"}
 
     if foe ~= nil then
         CreateRealLight(sl, surface)
@@ -66,77 +68,185 @@ function ConsiderFoes(sl, surface)
         local turtle = dummy_to_turtle[sl.unit_number]
         foe = surface.find_nearest_enemy{position = turtle.position,
                                          max_distance = searchlightSpotRadius,
-                                         force = searchlightFriend}
+                                         force = "player"}
 
         if foe ~= nil then
             local newLight = CreateRealLight(sl, surface)
             newLight.shooting_target = foe
+            return
         end
+    end
+
+    local friends = surface.find_entities_filtered{position = sl.position,
+                                                   type = "electric-turret",
+                                                   radius = searchlightFriendRadius}
+    for index, F in pairs(friends) do
+        UnBoostElectric(F, surface)
     end
 end
 
+-- TODO go back to the drawing board a little
+--      make the turtle not a foe of the player
+--      make the dummy search light a separate force from the player
+--      and do a more thorough copy of it (including entity.color, lastUser, etc)
 function SpawnTurtle(position, surface)
-    game.print("SpawnTurtle")
-
-    -- local newPos = makeWanderWaypoint(position)
+    -- local newPos = MakeWanderWaypoint(position)
     local newPos = {position.x, position.y - 50}
 
     return surface.create_entity{name = "searchlight_turtle",
                                  position = newPos,
-                                 force = searchlightFoe}
+                                 force = searchlightFoe,
+                                 create_build_effect_smoke = false}
 end
 
-function CreateDummyLight(position, surface)
-    game.print("CreateDummyLight")
-    sl = surface.create_entity{name = "searchlight_dummy",
-                               position = position,
-                               force = "player"}
+function CreateDummyLight(old_sl, surface)
+    new_sl = surface.create_entity{name = "searchlight-dummy",
+                                   position = old_sl.position,
+                                   force = searchlightFriend,
+                                   create_build_effect_smoke = false}
 
-    dummy_to_turtle[sl.unit_number] = SpawnTurtle(sl.position, surface)
-    sl.shooting_target = dummy_to_turtle[sl.unit_number]
-    return sl
-end
+    dummy_to_turtle[new_sl.unit_number] = SpawnTurtle(new_sl.position, surface)
+    new_sl.shooting_target = dummy_to_turtle[new_sl.unit_number]
 
-function CreateRealLight(sl, surface)
-    game.print("CreateRealLight")
-    new_sl = surface.create_entity{name = "searchlight",
-                                   position = sl.position,
-                                   force = "player"}
+    CopySL(old_sl, new_sl)
 
-    if dummy_to_turtle[sl.unit_number] ~= nil then
-        game.print("DestroyTurtle")
-        dummy_to_turtle[sl.unit_number].destroy()
-        dummy_to_turtle[sl.unit_number] = nil
-    else
-        game.print("d to t was nil")
-    end
-
-    sl.destroy()
+    old_sl.destroy()
 
     return new_sl
 end
 
-function makeWanderWaypoint(origin)
+function CreateRealLight(old_sl, surface)
+    new_sl = surface.create_entity{name = "searchlight",
+                                   position = old_sl.position,
+                                   force = "player",
+                                   create_build_effect_smoke = false}
+
+    if dummy_to_turtle[old_sl.unit_number] ~= nil then
+        dummy_to_turtle[old_sl.unit_number].destroy()
+        dummy_to_turtle[old_sl.unit_number] = nil
+    end
+
+    CopySL(old_sl, new_sl)
+
+    old_sl.destroy()
+
+    return new_sl
+end
+
+function MakeWanderWaypoint(origin)
     local bufferedRange = searchlightOuterRange - 5
     return {x = origin.x + math.random(-bufferedRange, bufferedRange),
             y = origin.y + math.random(-bufferedRange, bufferedRange)}
 end
 
-function BoostableElectric(F)
-    if F.shooting_target == nil and len (foe, F) < elecBoost then
-        return true
+-- TODO Can we trade accuracy for more speed?
+function len(a, b)
+    return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
+end
+
+function BoostElectric(oldT, surface, foe)
+    if oldT.shooting_target ~= nil
+       or game.entity_prototypes[oldT.name .. boostSuffix] == nil
+       or len (foe.position, oldT.position) > elecBoost then
+        return nil
     end
 
-    return false
+    local newT = surface.create_entity{name = oldT.name .. boostSuffix,
+                                       position = oldT.position,
+                                       force = oldT.force,
+                                       create_build_effect_smoke = false}
+
+    CopyElectT(oldT, newT)
+    oldT.destroy()
+
+    newT.shooting_target = foe
+
+   return newT
+end
+
+function UnBoostElectric(oldT, surface)
+    if oldT.shooting_target ~= nil
+       or not string.match(oldT.name, boostSuffix) then
+        return nil
+    end
+
+    local newT = surface.create_entity{name = oldT.name:gsub(boostSuffix, ""),
+                                       position = oldT.position,
+                                       force = oldT.force,
+                                       create_build_effect_smoke = false}
+
+    CopyElectT(oldT, newT)
+    oldT.destroy()
+
+   return newT
+end
+
+function BoostFluid(oldT, surface, foe)
+    if oldT.shooting_target ~= nil
+       or game.entity_prototypes[oldT.name .. boostSuffix] == nil
+       or len (foe.position, oldT.position) > fluidBoost then
+        return nil
+    end
+
+    local newT = surface.create_entity{name = oldT.name .. boostSuffix,
+                                       position = oldT.position,
+                                       force = oldT.force,
+                                       create_build_effect_smoke = false}
+
+    CopyFluidT(oldT, newT)
+    oldT.destroy()
+
+    newT.shooting_target = foe
+
+   return newT
+end
+
+function CopySL(oldT, newT)
+    newT.copy_settings(oldT)
+    newT.kills = oldT.kills
+    newT.health = oldT.health
+    newT.last_user  = oldT.last_user
+    newT.orientation = oldT.orientation
+    newT.damage_dealt = oldT.damage_dealt
+
+    newT.energy = oldT.energy
+end
+
+function CopyElectT(oldT, newT)
+    newT.copy_settings(oldT)
+    newT.kills = oldT.kills
+    newT.health = oldT.health
+    newT.last_user  = oldT.last_user
+    newT.orientation = oldT.orientation
+    newT.damage_dealt = oldT.damage_dealt
+
+    newT.energy = oldT.energy
+end
+
+-- TODO Transfer ammo inventory and partial ammo usages for ammo & fluid turrets
+-- TODO Copy wire connections
+
+function CopyFluidT(oldT, newT)
+    newT.copy_settings(oldT)
+    newT.kills = oldT.kills
+    newT.health = oldT.health
+    newT.last_user  = oldT.last_user
+    newT.orientation = oldT.orientation
+    newT.damage_dealt = oldT.damage_dealt
+
+    -- TODO
 end
 
 
 function InitForces()
-        for F in pairs(game.forces) do
-            game.forces[searchlightFoe].set_cease_fire(F, true)
-            game.forces[F].set_cease_fire(searchlightFoe, true)
-        end
+    for F in pairs(game.forces) do
+        game.forces[searchlightFoe].set_cease_fire(F, true)
+        game.forces[searchlightFriend].set_cease_fire(F, true)
 
-        game.forces["player"].set_cease_fire(searchlightFoe, false)
-        game.forces[searchlightFriend].set_cease_fire(searchlightFoe, true)
+        game.forces[F].set_cease_fire(searchlightFoe, true)
+        game.forces[F].set_cease_fire(searchlightFriend, true)
+    end
+
+    game.forces[searchlightFriend].set_friend("player", true)
+    game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
 end

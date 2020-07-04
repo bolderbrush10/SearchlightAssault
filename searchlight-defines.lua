@@ -3,7 +3,7 @@ searchlightFoe = "hddnSLFoe"
 searchlightFriend = "hddnSLFnd"
 
 -- Range at which search light auto-spots foes
-searchlightInnerRange = 30
+searchlightInnerRange = 40
 
 -- Max range at which search light wanders (and possibly spots foes)
 -- (About the same size as the radar's continuous reveal,
@@ -14,7 +14,7 @@ searchlightOuterRange = 100
 searchlightSpotRadius = 1.5
 
 -- Radius at which the spotlight beam boosts the range of friends
-searchlightFriendRadius = 5
+searchlightFriendRadius = 15
 
 -- Speed at which spotlight wanders
 searchlightWanderSpeed = 0.07
@@ -23,16 +23,16 @@ searchlightWanderSpeed = 0.07
 searchlightTrackSpeed = 0.8
 
 -- Identifies range boosted versions of turrets
-boostSuffix = "-boosted"
+boostSuffix = "-sl_boosted"
 
 -- Range boost for electric turrets
-elecBoost = searchlightOuterRange + searchlightFriendRadius + 2
+elecBoost = searchlightOuterRange
 
 -- Range boost for ammo turrets
-ammoBoost = searchlightOuterRange / 2 + searchlightFriendRadius + 2
+ammoBoost = searchlightOuterRange - 20
 
 -- Range boost for fluid turrets
-fluidBoost = searchlightOuterRange / 4 + searchlightFriendRadius + 2
+fluidBoost = searchlightOuterRange - 40
 
 icon =
 {

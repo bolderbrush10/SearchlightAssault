@@ -245,8 +245,6 @@ game.onevent(defines.events.onplayercreated, function(event) OnPlayerCreated(eve
 game.onevent(defines.events.ontick, OnTick)
 
 
---[[
-
 blank = {
      filename = "__Searchlights__/graphics/transparent_pixel.png",
      priority = "extra-high",
@@ -299,57 +297,55 @@ spotlight = {
 --
 -- lightEntity; a hidden entity to make the spotlight effect on ground
 --
---local lightEntity = table.deepcopy(data.raw["lamp"]["small-lamp"])
---
---table.deepcopy(data.raw["lamp"]["small-lamp"])
---
---lightEntity.name = "searchlight-hidden"
---lightEntity.flags = {"placeable-off-grid", "not-on-map"}
---lightEntity.selectable_in_game = false
---lightEntity.collision_box = {{-0.0, -0.0}, {0.0, 0.0}}
---lightEntity.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
---lightEntity.collision_mask = {"not-colliding-with-itself"}
---
----- We dont' intend to leave a corpse at all, but if the worst happens...
---lightEntity.corpse = "small-scorchmark"
---lightEntity.energy_source = {
---  type = "void",
---  usage_priority = "lamp"
---}
---lightEntity.light = spotlight
---lightEntity.light_when_colored = spotlight
---lightEntity.picture_off = blank
---lightEntity.picture_on = blank
+local lightEntity = table.deepcopy(data.raw["lamp"]["small-lamp"])
 
+table.deepcopy(data.raw["lamp"]["small-lamp"])
 
---]]
+lightEntity.name = "searchlight-hidden"
+lightEntity.flags = {"placeable-off-grid", "not-on-map"}
+lightEntity.selectable_in_game = false
+lightEntity.collision_box = {{-0.0, -0.0}, {0.0, 0.0}}
+lightEntity.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+lightEntity.collision_mask = {"not-colliding-with-itself"}
+
+-- We dont' intend to leave a corpse at all, but if the worst happens...
+lightEntity.corpse = "small-scorchmark"
+lightEntity.energy_source = {
+ type = "void",
+ usage_priority = "lamp"
+}
+lightEntity.light = spotlight
+lightEntity.light_when_colored = spotlight
+lightEntity.picture_off = blank
+lightEntity.picture_on = blank
+
 
 -- Basically we just want the turret to point itself at things, not have any real effect. We're going to just use draw_light calls in control.lua for the actual effect.
 -- TODO maybe do a subtle shaft of light effect as a beam 'attack'?
--- turretEntity.attack_parameters = {
---     type = "beam",
---     cooldown = 100,
---     range = searchlightOuterRange,
---     use_shooter_direction = true,
---     ammo_type = table.deepcopy(data.raw["electric-turret"]["laser-turret"]["attack_parameters"]["ammo_type"])
---     ammo_type =
---     {
---         category = "laser-turret",
---         target_type = "position",
---         action =
---         {
---             type = "area",
---             radius = 2.0,
---             action_delivery =
---             {
---                 type = "beam",
---                 beam = "spotlight-beam",
---                 duration = 10,
---                 --starting_speed = 0.3
---             }
---         }
---     }
--- }
+turretEntity.attack_parameters = {
+    type = "beam",
+    cooldown = 100,
+    range = searchlightOuterRange,
+    use_shooter_direction = true,
+    ammo_type = table.deepcopy(data.raw["electric-turret"]["laser-turret"]["attack_parameters"]["ammo_type"])
+    ammo_type =
+    {
+        category = "laser-turret",
+        target_type = "position",
+        action =
+        {
+            type = "area",
+            radius = 2.0,
+            action_delivery =
+            {
+                type = "beam",
+                beam = "spotlight-beam",
+                duration = 10,
+                --starting_speed = 0.3
+            }
+        }
+    }
+}
 
 
 local beaconEntity = table.deepcopy(data.raw["beacon"])
@@ -372,9 +368,9 @@ spotLightHiddenEnt.selectable_in_game = false
 spotLightHiddenEnt.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 
 
--- data:extend{spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
--- data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
--- data:extend{spotlightAnimation, spotlightBeam}
+data:extend{spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
+data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
+data:extend{spotlightAnimation, spotlightBeam}
 
 
 
@@ -527,6 +523,11 @@ function makeMoveCommand(destination)
     return newCommand
 end
 
+
+-- TODO trade accuracy for speed
+function len(a, b)
+    return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
+end
 
 
 ========================================================================
