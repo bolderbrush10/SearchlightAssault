@@ -2,48 +2,43 @@ require "searchlight-defines"
 
 local spotlightBeam =
 {
-  name = "spotlight-beam",
-  type = "beam",
-  damage_interval = 20,
-  flags = {"not-on-map"},
-  width = 0.5,
-  random_target_offset = true,
-  target_offset = {0.5,-0.5},
-  action_triggered_automatically = false,
-  random_end_animation_rotation = false,
-  ground_light_animations =
-  {
+    type = "beam",
+    name = "spotlight-beam",
+    flags = {"not-on-map"},
+    width = 0.5,
+    damage_interval = 1,
+    random_end_animation_rotation = false,
+    light_animations =
+    {
+      ending =
+      {
+        filename = "__Searchlights__/graphics/spotlight-r.png",
+        width = 200,
+        height = 200,
+        flags = { "light" },
+        blend_mode = beam_blend_mode,
+      },
+    },
+    head =
+    {
+      filename = "__Searchlights__/graphics/transparent_pixel.png",
+      width = 1,
+      height = 1,
+    },
     tail =
     {
-      -- filename = "__base__/graphics/entity/laser-turret/hr-laser-end-light.png",
-      filename = "__Searchlights__/graphics/spotlight-r2.png",
-      flags = { "light", "no-crop" },
-      -- width = 200,
-      -- height = 200,
-        width = 100,
-        height = 400,
-        scale = 2,
+      filename = "__Searchlights__/graphics/transparent_pixel.png",
+      width = 1,
+      height = 1,
+    },
+    body =
+    {
+      {
+        filename = "__Searchlights__/graphics/transparent_pixel.png",
+        width = 1,
+        height = 1,
+      },
     }
-  },
-
-  tail =
-  {
-    filename = "__Searchlights__/graphics/transparent_pixel.png",
-    width = 1,
-    height = 1,
-  },
-  body =
-  {
-    filename = "__Searchlights__/graphics/transparent_pixel.png",
-    width = 1,
-    height = 1,
-  },
-  head =
-  {
-    filename = "__Searchlights__/graphics/transparent_pixel.png",
-    width = 1,
-    height = 1,
-  },
 }
 
 data:extend{spotlightBeam}
@@ -75,7 +70,7 @@ turretEntity.attack_parameters = {
             beam = "spotlight-beam",
             max_length = 24,
             duration = 40,
-            source_offset = {0, -1.31439 }
+            source_offset = {-1, -1.31439 }
           }
         }
     }
