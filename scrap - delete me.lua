@@ -16,7 +16,7 @@ local elevenPiOverSix = (11 * math.pi / 6)
 function unitTestGetDirection()
     local posA = {x = 0, y = 0}
     local posB = {x = 2, y = 2}
-    
+
     game.print("result (1): " .. getDirection(posA, posB))
     posB = {x=-2, y = 2}
     game.print("result (7): " .. getDirection(posA, posB))
@@ -24,7 +24,7 @@ function unitTestGetDirection()
     game.print("result (5): " .. getDirection(posA, posB))
     posB = {x = 2, y=-2}
     game.print("result (3): " .. getDirection(posA, posB))
-    
+
     posB = {x = 0, y = 2}
     game.print("result (0): " .. getDirection(posA, posB))
     posB = {x = 2, y = 0}
@@ -33,7 +33,7 @@ function unitTestGetDirection()
     game.print("result (4): " .. getDirection(posA, posB))
     posB = {x=-2, y = 0}
     game.print("result (6): " .. getDirection(posA, posB))
-    
+
 --    northwest:  7
 --    west:       6
 --    southwest:  5
@@ -50,10 +50,10 @@ function getDirection(a, b)
     if theta_radians < 0 then
         theta_radians = theta_radians + (math.pi * 2)
     end
-    
+
     local player = game.players[1]
     --game.print("radians: " .. theta_radians)
-        
+
     if theta_radians < piOverSix then
         return defines.direction.north
     elseif theta_radians < piOverThree then
@@ -85,11 +85,11 @@ function UpdateUnitsCommands(player_index)
         local min_dist = agro_area_rad + 10;
         local closest_index = -1
         local surface = player.surface
-       
+
         for index, target in ipairs(targets) do
                 if target.health then
                         if target.force == game.forces.enemy and target.type ~= "turret" and target.type ~= "unit" then
-                                local dist = GetDistance(target.position, pos)                 
+                                local dist = GetDistance(target.position, pos)
                                 if min_dist > dist then
                                         min_dist = dist
                                         closest_index = index
@@ -97,10 +97,10 @@ function UpdateUnitsCommands(player_index)
                         end
                 end
         end
-       
+
         local unit_count = 0
         if closest_index == -1 then
-               
+
                 local attOn = game.players[player_index].get_item_count("attractor-on")
                 local attOff = game.players[player_index].get_item_count("attractor-off")
                 local lastState = nil
@@ -112,7 +112,7 @@ function UpdateUnitsCommands(player_index)
                         end
                         global.evolution[game.players[player_index].name].lastState = nil
                 end
-               
+
                 if attOn > 0 and attOff == 0 then
                         if attOn > 1 then
                                 game.players[player_index].removeitem({name = "attractor-on", count=(attOn - 1)})
@@ -141,31 +141,31 @@ function UpdateUnitsCommands(player_index)
                         lastState = "off"
                 end
                 global.evolution[game.players[player_index].name].lastState = lastState
-               
+
                 if lastState == "off" then return end
                 local call_back_area = {{pos.x -  call_back_area_rad, pos.y -  call_back_area_rad}, {pos.x +  call_back_area_rad, pos.y +  call_back_area_rad}}
                 local biters = surface.find_entities_filtered{area = call_back_area, type = "unit"}
                 for index, biter in ipairs(biters) do
                         if biter.force == (player.force) then
-                                biter.set_command({type = defines.command.go_to_location, destination = pos, radius = 10, distraction = defines.distraction.byanything});      
+                                biter.set_command({type = defines.command.go_to_location, destination = pos, radius = 10, distraction = defines.distraction.byanything});
                                 unit_count = unit_count + 1
-                               
+
                         end
                         if unit_count > max_unit_count then return end
-                end    
+                end
         else
                 local call_back_area = {{pos.x -  call_back_area_rad, pos.y -  call_back_area_rad}, {pos.x +  call_back_area_rad, pos.y +  call_back_area_rad}}
                 local biters = player.surface.find_entities_filtered{area = call_back_area, type = "unit"}
                 for index, biter in ipairs(biters) do
                         if biter.force == player.force then
                                 biter.set_command({type = defines.command.attack, target = targets[closest_index], distraction = defines.distraction.byanything});
-                                unit_count = unit_count + 1                                    
+                                unit_count = unit_count + 1
                         end
                         if unit_count > max_unit_count then return end
-                end    
+                end
         end
 end
- 
+
 function GetNearest( objects, point )
 	if #objects == 0 then
 		return nil
@@ -243,11 +243,6 @@ game.onevent(defines.events.onpreplayermineditem, function(event) OnEntityDestro
 game.onevent(defines.events.onrobotpremined, function(event) OnEntityDestroy(event.entity) end)
 game.onevent(defines.events.onplayercreated, function(event) OnPlayerCreated(event.playerindex) end)
 game.onevent(defines.events.ontick, OnTick)
-
-
--- data:extend{spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
--- data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
--- data:extend{spotlightAnimation, spotlightBeam}
 
 
 --[[
@@ -336,6 +331,7 @@ spotlight = {
 --     cooldown = 100,
 --     range = searchlightOuterRange,
 --     use_shooter_direction = true,
+--     ammo_type = table.deepcopy(data.raw["electric-turret"]["laser-turret"]["attack_parameters"]["ammo_type"])
 --     ammo_type =
 --     {
 --         category = "laser-turret",
@@ -376,23 +372,514 @@ spotLightHiddenEnt.selectable_in_game = false
 spotLightHiddenEnt.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 
 
+-- data:extend{spotlightBeam, turretEntity, spotLightSprite, spotLightHiddenEnt}
+-- data:extend{turretEntity, spotLightSprite, spotLightHiddenEnt}
+-- data:extend{spotlightAnimation, spotlightBeam}
 
 
--- 'sl' for 'SearchLight' 
+
+
+-- 'sl' for 'SearchLight'
 function LightUpFoes(sl, surface)
     -- Instantly find foes within the inner range
-    local nearestFoe = surface.find_nearest_enemy{position = sl.position, 
+    local nearestFoe = surface.find_nearest_enemy{position = sl.position,
                                                   max_distance = searchlightInnerRange}
-    
+
     if nearestFoe ~= nil then
         local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
-        
+
         sl.shooting_target = nearestFoe
-        return 
+        return
     end
-    
+
     -- If we're not directly shining on a foe, make up a random waypoint to track the light towards
-    
+
     local wanderPos = makeWanderWaypoint(sl.position)
     local lightID = renderSpotLight_def(wanderPos, sl, surface)
 end
+
+
+
+-- TODO interpolate from wander position to nearest foe instead of snapping over, etc
+-- TODO destroy hidden entities when sl is destroyed / removed etc
+-- TODO spotlight should probably only wander a 180degree arc around its inital placement
+-- TODO disable when no electricity / reduce range according to electric satisfaction
+-- 'sl' for 'SearchLight'
+function LightUpFoes(sl, surface)
+    -- Instantly find foes within the inner range
+    local nearestFoe = surface.find_nearest_enemy{position = sl.position,
+                                                  max_distance = searchlightOuterRange}
+
+    if nearestFoe ~= nil then
+        local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
+        lightEntities[sl.unit_number] = {lightID = lightID,
+                                         position = nearestFoe.position,
+                                         waypoint = nearestFoe.position}
+        sl.shooting_target = nearestFoe
+        -- TODO move light entity to this foe's location
+        return
+    else
+        return
+    end
+
+    -- If we're not directly shining on a foe, make up a random waypoint to track the light towards
+
+    if lightEntities[sl.unit_number] == nil then
+        local wanderPos = makeWanderWaypoint(sl.position)
+        local lightID = renderSpotLight_def(wanderPos, sl, surface)
+        lightEntities[sl.unit_number] = {lightID = lightID,
+                                         position = makeLightStartLocation(sl),
+                                         waypoint = wanderPos}
+
+        -- flicker the spotlight at the new location so we can see what we're doing
+        -- TODO remove this flicker when development is done
+        renderSpotLight_red(lightEntities[sl.unit_number].waypoint, sl, surface)
+        return
+    end
+
+    -- If the light has gotten close enough to waypoint, make a new waypoint
+    -- (Using distances smaller than 3 will fail.
+    --  The game engine's pathfinding for entities is a 'close enough' kind of thing)
+    if len(lightEntities[sl.unit_number].position,
+           lightEntities[sl.unit_number].waypoint) < 3 then
+        lightEntities[sl.unit_number].waypoint = makeWanderWaypoint(sl.position)
+
+        if lightEntities[sl.unit_number].entity then
+            lightEntities[sl.unit_number].entity.set_command(makeMoveCommand(lightEntities[sl.unit_number].waypoint))
+        end
+
+        -- flicker the spotlight at the new location so we can see what we're doing
+        -- TODO remove this flicker when done developing
+        renderSpotLight_red(lightEntities[sl.unit_number].waypoint, sl, surface)
+    end
+
+    local newPosition = moveTowards(lightEntities[sl.unit_number].position,
+                                    lightEntities[sl.unit_number].waypoint,
+                                    searchlightTrackSpeed)
+
+    if lightEntities[sl.unit_number].entity == nil then
+        -- TODO invisible target w/ noclip or something
+
+        -- TODO Why the heck were we doing this?
+        -- Just to move ourselves out of the turret, right?
+        local positionCopyTEMP = newPosition
+        positionCopyTEMP.x = positionCopyTEMP.x + 4
+
+        local newEnt = surface.create_entity{name = "SpotlightShine",
+                                             position = positionCopyTEMP,
+                                             force = searchlightFoe}
+
+        sl.shooting_target = newEnt
+
+        lightEntities[sl.unit_number].entity = newEnt
+        newEnt.set_command(makeMoveCommand(lightEntities[sl.unit_number].waypoint))
+    end
+
+    -- TODO this line crashes if the hidden entity is killed, so make sure its invulnerable and cleaned up properly
+    local lightID = renderSpotLight_def(lightEntities[sl.unit_number].entity.position, sl, surface)
+    lightEntities[sl.unit_number].lightID = lightID
+    lightEntities[sl.unit_number].position = lightEntities[sl.unit_number].entity.position
+end
+
+function makeLightStartLocation(sl)
+    -- TODO get the orientation of the light and stick this slightly in front
+    --      also figure out how to deal with the unfolding animation
+    return sl.position
+end
+
+function makeWanderWaypoint(origin)
+    -- make it easier to find the light for now
+    -- x = origin.x + math.random(-searchlightOuterRange, searchlightOuterRange)
+    -- y = origin.y + math.random(-searchlightOuterRange, searchlightOuterRange)
+
+    local waypoint = {x = origin.x + math.random(-searchlightInnerRange, searchlightInnerRange),
+                      y = origin.y + math.random(-searchlightInnerRange, searchlightInnerRange)}
+
+    return waypoint
+end
+
+-- TODO Test speed on this vs engine pathfinder w/ noclip
+-- TODO This seems buggy as heck, test it
+function moveTowards(currPos, destPos, speed)
+    local vec = {x = destPos.x - currPos.x,
+                 y = destPos.y - currPos.y}
+
+    local distance = len(currPos, destPos)
+
+    local norm = {x = 0, y = 0}
+
+    if distance ~= 0 then
+        norm.x = vec.x / distance
+        norm.y = vec.y / distance
+    end
+
+    -- TODO stop overshooting
+    local newPos = {x = currPos.x + (speed * norm.x),
+                    y = currPos.y + (speed * norm.y)}
+
+    return newPos
+end
+
+function makeMoveCommand(destination)
+    local newCommand = defines.command
+    newCommand.type = defines.command.go_to_location
+    newCommand.destination = destination
+    return newCommand
+end
+
+
+
+========================================================================
+
+
+
+
+{
+    type = "electric-turret",
+    name = "laser-turret",
+    icon = "__base__/graphics/icons/laser-turret.png",
+    icon_size = 32,
+    flags = { "placeable-player", "placeable-enemy", "player-creation"},
+    minable = { mining_time = 0.5, result = "laser-turret" },
+    max_health = 1000,
+    collision_box = {{ -0.7, -0.7}, {0.7, 0.7}},
+    selection_box = {{ -1, -1}, {1, 1}},
+    rotation_speed = 0.01,
+    preparing_speed = 0.05,
+    dying_explosion = "medium-explosion",
+    corpse = "laser-turret-remnants",
+    folding_speed = 0.05,
+    energy_source =
+    {
+      type = "electric",
+      buffer_capacity = "801kJ",
+      input_flow_limit = "9600kW",
+      drain = "24kW",
+      usage_priority = "primary-input"
+    },
+    folded_animation =
+    {
+      layers =
+      {
+        laser_turret_extension{frame_count=1, line_length = 1},
+        laser_turret_extension_shadow{frame_count=1, line_length=1},
+        laser_turret_extension_mask{frame_count=1, line_length=1}
+      }
+    },
+    preparing_animation =
+    {
+      layers =
+      {
+        laser_turret_extension{},
+        laser_turret_extension_shadow{},
+        laser_turret_extension_mask{}
+      }
+    },
+    prepared_animation =
+    {
+      layers =
+      {
+        laser_turret_shooting(),
+        laser_turret_shooting_shadow(),
+        laser_turret_shooting_mask()
+      }
+    },
+    --attacking_speed = 0.1,
+    energy_glow_animation = laser_turret_shooting_glow(),
+    glow_light_intensity = 0.5, -- defaults to 0
+    folding_animation =
+    {
+      layers =
+      {
+        laser_turret_extension{run_mode = "backward"},
+        laser_turret_extension_shadow{run_mode = "backward"},
+        laser_turret_extension_mask{run_mode = "backward"}
+      }
+    },
+    base_picture =
+    {
+      layers =
+      {
+        {
+          filename = "__base__/graphics/entity/laser-turret/laser-turret-base.png",
+          priority = "high",
+          width = 70,
+          height = 52,
+          direction_count = 1,
+          frame_count = 1,
+          shift = util.by_pixel(0, 2),
+          hr_version =
+          {
+            filename = "__base__/graphics/entity/laser-turret/hr-laser-turret-base.png",
+            priority = "high",
+            width = 138,
+            height = 104,
+            direction_count = 1,
+            frame_count = 1,
+            shift = util.by_pixel(-0.5, 2),
+            scale = 0.5
+          }
+        },
+        {
+          filename = "__base__/graphics/entity/laser-turret/laser-turret-base-shadow.png",
+          line_length = 1,
+          width = 66,
+          height = 42,
+          draw_as_shadow = true,
+          direction_count = 1,
+          frame_count = 1,
+          shift = util.by_pixel(6, 3),
+          hr_version =
+          {
+            filename = "__base__/graphics/entity/laser-turret/hr-laser-turret-base-shadow.png",
+            line_length = 1,
+            width = 132,
+            height = 82,
+            draw_as_shadow = true,
+            direction_count = 1,
+            frame_count = 1,
+            shift = util.by_pixel(6, 3),
+            scale = 0.5
+          }
+        }
+      }
+    },
+    vehicle_impact_sound =  { filename = "__base__/sound/car-metal-impact.ogg", volume = 0.65 },
+
+    attack_parameters =
+    {
+      type = "beam",
+      cooldown = 40,
+      range = 24,
+      source_direction_count = 64,
+      source_offset = {0, -3.423489 / 4},
+      damage_modifier = 2,
+      ammo_type =
+      {
+        category = "laser-turret",
+        energy_consumption = "800kJ",
+        action =
+        {
+          type = "direct",
+          action_delivery =
+          {
+            type = "beam",
+            beam = "laser-beam",
+            max_length = 24,
+            duration = 40,
+            source_offset = {0, -1.31439 }
+          }
+        }
+      }
+    },
+
+    call_for_help_radius = 40
+  },
+
+
+
+
+
+
+
+  =====================================================================
+
+
+
+  local laser_beam_blend_mode = "additive"
+
+function make_laser_beam(sound)
+  local result =
+  {
+    type = "beam",
+    flags = {"not-on-map"},
+    width = 0.5,
+    damage_interval = 20,
+    random_target_offset = true,
+    action_triggered_automatically = false,
+    action =
+    {
+      type = "direct",
+      action_delivery =
+      {
+        type = "instant",
+        target_effects =
+        {
+          {
+            type = "damage",
+            damage = { amount = 10, type = "laser"}
+          }
+        }
+      }
+    },
+    head =
+    {
+      filename = "__base__/graphics/entity/laser-turret/hr-laser-body.png",
+      flags = beam_non_light_flags,
+      line_length = 8,
+      width = 64,
+      height = 12,
+      frame_count = 8,
+      scale = 0.5,
+      animation_speed = 0.5,
+      blend_mode = laser_beam_blend_mode
+    },
+    tail =
+    {
+      filename = "__base__/graphics/entity/laser-turret/hr-laser-end.png",
+      flags = beam_non_light_flags,
+      width = 110,
+      height = 62,
+      frame_count = 8,
+      shift = util.by_pixel(11.5, 1),
+      scale = 0.5,
+      animation_speed = 0.5,
+      blend_mode = laser_beam_blend_mode
+    },
+    body =
+    {
+      {
+        filename = "__base__/graphics/entity/laser-turret/hr-laser-body.png",
+        flags = beam_non_light_flags,
+        line_length = 8,
+        width = 64,
+        height = 12,
+        frame_count = 8,
+        scale = 0.5,
+        animation_speed = 0.5,
+        blend_mode = laser_beam_blend_mode
+      }
+    },
+
+    light_animations =
+    {
+      head =
+      {
+        filename = "__base__/graphics/entity/laser-turret/hr-laser-body-light.png",
+        line_length = 8,
+        width = 64,
+        height = 12,
+        frame_count = 8,
+        scale = 0.5,
+        animation_speed = 0.5,
+      },
+      tail =
+      {
+        filename = "__base__/graphics/entity/laser-turret/hr-laser-end-light.png",
+        width = 110,
+        height = 62,
+        frame_count = 8,
+        shift = util.by_pixel(11.5, 1),
+        scale = 0.5,
+        animation_speed = 0.5,
+      },
+      body =
+      {
+        {
+          filename = "__base__/graphics/entity/laser-turret/hr-laser-body-light.png",
+          line_length = 8,
+          width = 64,
+          height = 12,
+          frame_count = 8,
+          scale = 0.5,
+          animation_speed = 0.5,
+        }
+      }
+    },
+
+    ground_light_animations =
+    {
+      head =
+      {
+        filename = "__base__/graphics/entity/laser-turret/laser-ground-light-head.png",
+        line_length = 1,
+        width = 256,
+        height = 256,
+        repeat_count = 8,
+        scale = 0.5,
+        shift = util.by_pixel(-32, 0),
+        animation_speed = 0.5,
+        tint = {0.5, 0.05, 0.05}
+      },
+      tail =
+      {
+        filename = "__base__/graphics/entity/laser-turret/laser-ground-light-tail.png",
+        line_length = 1,
+        width = 256,
+        height = 256,
+        repeat_count = 8,
+        scale = 0.5,
+        shift = util.by_pixel(32, 0),
+        animation_speed = 0.5,
+        tint = {0.5, 0.05, 0.05}
+      },
+      body =
+      {
+        filename = "__base__/graphics/entity/laser-turret/laser-ground-light-body.png",
+        line_length = 1,
+        width = 64,
+        height = 256,
+        repeat_count = 8,
+        scale = 0.5,
+        animation_speed = 0.5,
+        tint = {0.5, 0.05, 0.05}
+      }
+    }
+  }
+
+  if sound then
+    result.working_sound =
+    {
+      sound =
+      {
+        filename = "__base__/sound/fight/electric-beam.ogg",
+        volume = 1
+      },
+      max_sounds_per_type = 4
+    }
+    result.name = "laser-beam"
+  else
+    result.name = "laser-beam-no-sound"
+  end
+  return result;
+end
+
+data:extend(
+{
+  make_laser_beam(true)
+}
+)
+
+
+  =====================================================================
+
+turretEntity.attack_parameters = {
+    type = "beam",
+    range = searchlightOuterRange,
+    cooldown = 40,
+    source_direction_count = 64,
+    source_offset = {0, -3.423489 / 4},
+    ammo_type =
+    {
+      category = "laser-turret",
+      action =
+      {
+          type = "direct",
+          action_delivery =
+          {
+            type = "beam",
+            beam = "spotlight-beam",
+            max_length = 24,
+            duration = 40,
+            source_offset = {0, -1.31439 }
+          }
+        }
+    }
+    -- Optional properties
+    -- source_direction_count
+    -- source_offset
+}
+
+
+  =====================================================================
+
