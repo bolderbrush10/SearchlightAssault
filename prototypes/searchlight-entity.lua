@@ -93,7 +93,8 @@ data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
 -- SpotLightForDummy; the primary entity which uses a lamp like a turret
 -- TODO: use radar_range?
 local SpotLightForDummy = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
-SpotLightForDummy.name = "searchlight-dummy"
+SpotLightForDummy.flags = {"hidden"}
+SpotLightForDummy.name = "searchlight_dummy"
 SpotLightForDummy.minable.result = "searchlight"
  -- arbitrary high number btween 5 and 500 to be 'instant'
 SpotLightForDummy.rotation_speed = 50
@@ -127,16 +128,40 @@ SpotLightForDummy.attack_parameters = {
 }
 
 local SpotLightForReal = table.deepcopy(SpotLightForDummy)
-SpotLightForReal.name = "searchlight-real"
+SpotLightForReal.name = "searchlight"
 SpotLightForReal.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
+-- SpotLightHidden; a hidden entity to help swapping between the 'dummy seeking' and 'real' spotlights
+local SpotLightHidden = table.deepcopy(data.raw["lamp"]["small-lamp"])
 
-local DummyEnt = table.deepcopy(data.raw["unit"]["small-spitter"])
-DummyEnt.name = "SpotLightDummy"
-DummyEnt.collision_box = {{0, 0}, {0, 0}} -- enable noclip
-DummyEnt.collision_mask = {"not-colliding-with-itself"}
-DummyEnt.selectable_in_game = false
-DummyEnt.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+table.deepcopy(data.raw["lamp"]["small-lamp"])
+
+SpotLightHidden.name = "searchlight-hidden"
+SpotLightHidden.flags = {"placeable-off-grid", "not-on-map"}
+SpotLightHidden.selectable_in_game = false
+SpotLightHidden.collision_box = {{-0.0, -0.0}, {0.0, 0.0}}
+SpotLightHidden.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+SpotLightHidden.collision_mask = {"not-colliding-with-itself"}
+
+-- We don't intend to leave a corpse at all, but if the worst happens...
+SpotLightHidden.corpse = "small-scorchmark"
+SpotLightHidden.energy_source = {
+ type = "void",
+ usage_priority = "lamp"
+}
+-- SpotLightHidden.light = Light_Layer_SpotLight_DimLight
+-- SpotLightHidden.light_when_colored = Light_Layer_SpotLight_DimLight
+-- SpotLightHidden.picture_off = transparent_pixel
+-- SpotLightHidden.picture_on = transparent_pixel
+
+
+-- The dummy seeking spotlight's beam draws where the turtle is
+local Turtle = table.deepcopy(data.raw["unit"]["small-spitter"])
+Turtle.name = "searchlight_turtle"
+Turtle.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+Turtle.collision_mask = {"not-colliding-with-itself"}
+Turtle.selectable_in_game = false
+Turtle.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 
 -- Add new definitions to game data
-data:extend{SpotLightForDummy, DummyEnt}
+data:extend{SpotLightForDummy, SpotLightForReal, SpotLightHidden, Turtle}

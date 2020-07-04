@@ -1,7 +1,7 @@
-    game.print("hello world")
-    for key,value in pairs(o) do
-        game.print("found member " .. key);
-    end
+game.print("hello world")
+for key,value in pairs(o) do
+    game.print("found member " .. key);
+end
 
 
 local piOverSix       = (math.pi / 6)

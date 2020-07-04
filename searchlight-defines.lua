@@ -3,14 +3,12 @@ searchlightFoe = "hddnSLFoe"
 searchlightFriend = "hddnSLFnd"
 
 -- Range at which search light auto-spots foes
---searchlightInnerRange = 40
-searchlightInnerRange = 10
+searchlightInnerRange = 30
 
 -- Max range at which search light wanders (and possibly spots foes)
--- (About the same size as the radar's continuous reveal, 
+-- (About the same size as the radar's continuous reveal,
 --  which seems fair, since the light's built from a radar)
---searchlightOuterRange = 100
-searchlightOuterRange = 40
+searchlightOuterRange = 100
 
 -- Speed at which spotlight wanders
 searchlightWanderSpeed = 0.07
