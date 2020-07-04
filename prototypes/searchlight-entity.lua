@@ -165,3 +165,72 @@ Turtle.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 
 -- Add new definitions to game data
 data:extend{SpotLightForDummy, SpotLightForReal, SpotLightHidden, Turtle}
+
+
+function NeedsBoost(entity, table)
+  if not string.match(entity.name, boostSuffix)
+     and not string.match(entity.name, "searchlight") then
+
+    local boostedName =  entity.name .. boostSuffix
+
+    if table[boostedName] == nil then
+      return boostedName
+    end
+
+  end
+
+  return nil
+end
+
+-- Make boosted-range versions of non search light turrets
+-- (Factorio might load this script multiple times, so be sure to avoid making dupes)
+currTable = data.raw["electric-turret"]
+
+for index, turret in pairs(currTable) do
+  local boostedName = NeedsBoost(turret, currTable)
+  if boostedName then
+    local boostCopy = table.deepcopy(currTable[turret.name])
+    boostCopy.name = boostedName
+    boostCopy.flags = {"hidden"}
+    boostCopy.create_ghost_on_death = false
+    boostCopy.range = elecBoost
+    if boostCopy.attack_parameters
+      and boostCopy.attack_parameters.ammo_type
+      and boostCopy.attack_parameters.ammo_type.action
+      and boostCopy.attack_parameters.ammo_type.action.action_delivery
+      and boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length then
+        boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = elecBoost
+    end
+    data:extend{boostCopy}
+  end
+end
+
+
+currTable = data.raw["ammo-turret"]
+
+for index, turret in pairs(currTable) do
+  local boostedName = NeedsBoost(turret, currTable)
+  if boostedName then
+    local boostCopy = table.deepcopy(currTable[turret.name])
+    boostCopy.name = boostedName
+    boostCopy.flags = {"hidden"}
+    boostCopy.create_ghost_on_death = false
+    boostCopy.range = ammoBoost
+    data:extend{boostCopy}
+  end
+end
+
+
+currTable = data.raw["fluid-turret"]
+
+for index, turret in pairs(currTable) do
+  local boostedName = NeedsBoost(turret, currTable)
+  if boostedName then
+    local boostCopy = table.deepcopy(currTable[turret.name])
+    boostCopy.name = boostedName
+    boostCopy.flags = {"hidden"}
+    boostCopy.create_ghost_on_death = false
+    boostCopy.range = fluidBoost
+    data:extend{boostCopy}
+  end
+end

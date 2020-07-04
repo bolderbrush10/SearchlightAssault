@@ -23,6 +23,9 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO energy cost
 -- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
 
+-- TODO gun turrets should get a much smaller boost than electric, and fluid turrets even less so
+-- TODO radar integration
+
 -- TODO Maintain a map of all searchlights instead of polling for them every tick
 -- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
 
@@ -35,6 +38,12 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 function makeLightStartLocation(sl)
     -- TODO get the orientation of the light and stick this slightly in front
     --      also figure out how to deal with the unfolding animation
+
+
+-- TODO spawn turtle in general direction turret is pointing at
+
+
+-- TODO clean up unused crap across all files
 
 
 -- TODOOOOOOOOOOOOOO

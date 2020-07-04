@@ -10,11 +10,29 @@ searchlightInnerRange = 30
 --  which seems fair, since the light's built from a radar)
 searchlightOuterRange = 100
 
+-- Radius at which the spotlight beam detects foes
+searchlightSpotRadius = 1.5
+
+-- Radius at which the spotlight beam boosts the range of friends
+searchlightFriendRadius = 5
+
 -- Speed at which spotlight wanders
 searchlightWanderSpeed = 0.07
 
 -- Speed at which spotlight tracks a spotted foe
 searchlightTrackSpeed = 0.8
+
+-- Identifies range boosted versions of turrets
+boostSuffix = "-boosted"
+
+-- Range boost for electric turrets
+elecBoost = searchlightOuterRange + searchlightFriendRadius + 2
+
+-- Range boost for ammo turrets
+ammoBoost = searchlightOuterRange / 2 + searchlightFriendRadius + 2
+
+-- Range boost for fluid turrets
+fluidBoost = searchlightOuterRange / 4 + searchlightFriendRadius + 2
 
 icon =
 {
