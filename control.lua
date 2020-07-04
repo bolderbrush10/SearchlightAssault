@@ -31,7 +31,6 @@ end
 function SpawnDummy(position, surface)
     local newPos = position
     newPos.x = newPos.x + 5
-    return surface.create_entity{name = "DummyEntity",
-                                 position = position,
-                                 force = searchlightFoe}
+    return surface.create_entity{name = "SpotLightDummy",
+                                 position = position}
 end
