@@ -188,9 +188,6 @@ function Boost(oldT, surface, foe)
    return newT
 end
 
-
--- TODO Transfer ammo inventory and partial ammo usages for ammo & fluid turrets
--- TODO Copy wire connections
 function CopyTurret(oldT, newT)
     newT.copy_settings(oldT)
     newT.kills = oldT.kills
@@ -199,11 +196,15 @@ function CopyTurret(oldT, newT)
     newT.orientation = oldT.orientation
     newT.damage_dealt = oldT.damage_dealt
 
-    if oldT.type == "electric-turret" then
+    if oldT.energy ~= nil then
         newT.energy = oldT.energy
-    elseif oldT.type == "ammo-turret" then
+    end
+
+    if oldT.get_output_inventory() ~= nil then
         CopyItems(oldT, newT)
-    else
+    end
+
+    if oldT.fluidbox ~= nil then
         CopyFluids(oldT, newT)
     end
 end
