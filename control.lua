@@ -204,6 +204,8 @@ function CopyTurret(oldT, newT)
         CopyItems(oldT, newT)
     end
 
+    -- TODO fuel, module, and burnt_result inventories
+
     if oldT.fluidbox ~= nil then
         CopyFluids(oldT, newT)
     end
