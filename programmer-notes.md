@@ -50,6 +50,12 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO can probably make smarter use of forces throughout control.lua
 
 
+-- TODO enemies are stutter-stepping toward the turrets
+--      (because the turrets keep getting destroyed and created by control.lua)
+--      fix this
+--      (possibly by having a time out between boosting and unboosting turrets
+--       and swapping between the real and dummy spotlights)
+
 function makeLightStartLocation(sl)
     -- TODO get the orientation of the light and stick this slightly in front
     --      also figure out how to deal with the unfolding animation

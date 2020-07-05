@@ -1,6 +1,12 @@
 require "searchlight-defines"
 require "searchlight-entity"
 
+local icon =
+{
+    filename = "__Searchlights__/graphics/terrible2.png",
+    icon_size = 82
+}
+
 -- Item
 local item = table.deepcopy(data.raw["item"]["small-lamp"])
 

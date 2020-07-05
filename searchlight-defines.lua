@@ -17,10 +17,10 @@ searchlightSpotRadius = 1.5
 searchlightFriendRadius = 15
 
 -- Speed at which spotlight wanders
-searchlightWanderSpeed = 0.07
+searchlightWanderSpeed = 0.5
 
 -- Speed at which spotlight tracks a spotted foe
-searchlightTrackSpeed = 0.8
+searchlightTrackSpeed = 1.5
 
 -- Identifies range boosted versions of turrets
 boostSuffix = "-sl_boosted"
@@ -33,12 +33,3 @@ ammoBoost = searchlightOuterRange - 20
 
 -- Range boost for fluid turrets
 fluidBoost = searchlightOuterRange - 40
-
-icon =
-{
-    filename = "__Searchlights__/graphics/terrible2.png",
-    icon_size = 82
-}
-
-yellowSpotlightColor = {r = 0.7, g = 0.7, b = 0, a = 0.8}
-redSpotlightColor = {r = 1, g = 0.2, b = 0.2, a = 1}

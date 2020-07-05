@@ -7,15 +7,25 @@ local Layer_transparent_pixel =
   height = 1,
 }
 
+local Layer_transparent_animation =
+{
+  filename = "__Searchlights__/graphics/transparent_pixels.png",
+  width = 8,
+  height = 8,
+  direction_count = 1,
+}
+
 local Light_Layer_SpotLight_NormLight =
 {
   filename = "__Searchlights__/graphics/spotlight-r.png",
   width = 200,
   height = 200,
-  scale = 1.25,
+  scale = 1.5,
   flags = { "light" },
   shift = {0.3, 0},
 }
+
+local redTint = {r=1.0, g=0.1, b=0.1, a=1}
 
 local Light_Layer_SpotLight_NormLight_Less = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_NormLight_Less.filename = "__Searchlights__/graphics/spotlight-r-less.png"
@@ -23,47 +33,50 @@ Light_Layer_SpotLight_NormLight_Less.filename = "__Searchlights__/graphics/spotl
 local Light_Layer_SpotLight_RimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_RimLight.filename = "__Searchlights__/graphics/spotlight-r-rim.png"
 
+-- TODO make this a 'heat shimmer' animation, so it looks awesome during the day
 local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
 
 local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_NormLight_Red.tint = {r=1.0, g=0.1, b=0.1, a=1}
+Light_Layer_SpotLight_NormLight_Red.tint = redTint
 
 local Light_Layer_SpotLight_RimLight_Red = table.deepcopy(Light_Layer_SpotLight_RimLight)
-Light_Layer_SpotLight_RimLight_Red.tint = {r=1.0, g=0.1, b=0.1, a=1}
+Light_Layer_SpotLight_RimLight_Red.tint = redTint
 
 local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
-Light_Layer_SpotLight_DimLight_Red.tint = {r=1.0, g=0.1, b=0.1, a=1}
+Light_Layer_SpotLight_DimLight_Red.tint = redTint
+
 
 local SpotlightBeamPassive =
 {
-    type = "beam",
-    name = "spotlight-beam-passive",
-    flags = {"not-on-map"},
-    width = 0.5,
-    damage_interval = 1,
-    random_end_animation_rotation = false,
-    ground_light_animations =
-    {
-      ending =
-      {
-        layers =
-        {
-          Light_Layer_SpotLight_NormLight,
-        }
-      }
-    },
+  type = "beam",
+  name = "spotlight-beam-passive",
+  flags = {"not-on-map"},
+  width = 0.5,
+  damage_interval = 1,
+  random_end_animation_rotation = false,
+  ground_light_animations =
+  {
     ending =
     {
       layers =
       {
-        Light_Layer_SpotLight_DimLight,
+        Light_Layer_SpotLight_NormLight,
       }
-    },
-    head = Layer_transparent_pixel,
-    tail = Layer_transparent_pixel,
-    body = Layer_transparent_pixel,
+    }
+  },
+  ending =
+  {
+    layers =
+    {
+      Light_Layer_SpotLight_DimLight,
+    }
+  },
+  head = Layer_transparent_pixel,
+  tail = Layer_transparent_pixel,
+  body = Layer_transparent_pixel,
 }
+
 
 local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
 SpotlightBeamAlarm.name = "spotlight-beam-alarm"
@@ -100,71 +113,83 @@ SearchLightForDummy.minable.result = "searchlight"
 SearchLightForDummy.rotation_speed = 50
 -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
 SearchLightForDummy.energy_source.usage_priority = "secondary-input"
-SearchLightForDummy.attack_parameters = {
-    type = "beam",
-    range = searchlightOuterRange,
-    cooldown = 40,
-    source_direction_count = 64,
-    source_offset = {0, -3.423489 / 4},
-    ammo_type =
+SearchLightForDummy.attack_parameters =
+{
+  type = "beam",
+  range = searchlightOuterRange,
+  cooldown = 40,
+  source_direction_count = 64,
+  source_offset = {0, -3.423489 / 4},
+  ammo_type =
+  {
+    category = "laser-turret",
+    action =
     {
-      category = "laser-turret",
-      action =
+      type = "direct",
+      action_delivery =
       {
-          type = "direct",
-          action_delivery =
-          {
-            type = "beam",
-            beam = "spotlight-beam-passive",
-            max_length = searchlightOuterRange,
-            duration = 40,
-            source_offset = {-1, -1.31439 }
-          }
-        }
+        type = "beam",
+        beam = "spotlight-beam-passive",
+        max_length = searchlightOuterRange,
+        duration = 40,
+        source_offset = {-1, -1.31439 }
+      }
     }
-    -- Optional properties
-    -- source_direction_count
-    -- source_offset
+  }
 }
+
 
 local SearchLightForReal = table.deepcopy(SearchLightForDummy)
 SearchLightForReal.name = "searchlight"
 SearchLightForReal.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
--- SpotLightHidden; a hidden entity to help swapping between the 'dummy seeking' and 'real' spotlights
-local SpotLightHidden = table.deepcopy(data.raw["lamp"]["small-lamp"])
-
-table.deepcopy(data.raw["lamp"]["small-lamp"])
-
-SpotLightHidden.name = "searchlight-hidden"
-SpotLightHidden.flags = {"placeable-off-grid", "not-on-map"}
-SpotLightHidden.selectable_in_game = false
-SpotLightHidden.collision_box = {{-0.0, -0.0}, {0.0, 0.0}}
-SpotLightHidden.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
-SpotLightHidden.collision_mask = {"not-colliding-with-itself"}
-
--- We don't intend to leave a corpse at all, but if the worst happens...
-SpotLightHidden.corpse = "small-scorchmark"
-SpotLightHidden.energy_source = {
- type = "void",
- usage_priority = "lamp"
-}
--- SpotLightHidden.light = Light_Layer_SpotLight_DimLight
--- SpotLightHidden.light_when_colored = Light_Layer_SpotLight_DimLight
--- SpotLightHidden.picture_off = transparent_pixel
--- SpotLightHidden.picture_on = transparent_pixel
-
 
 -- The dummy seeking spotlight's beam draws where the turtle is
-local Turtle = table.deepcopy(data.raw["unit"]["small-spitter"])
-Turtle.name = "searchlight_turtle"
-Turtle.collision_box = {{0, 0}, {0, 0}} -- enable noclip
-Turtle.collision_mask = {"not-colliding-with-itself"}
-Turtle.selectable_in_game = false
-Turtle.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+local Turtle =
+{
+  type = "unit",
+  name = "searchlight-turtle",
+  flags =
+  {
+    "placeable-off-grid",
+    "not-on-map",
+    "not-blueprintable",
+    "not-deconstructable",
+    "hidden",
+    "not-flammable",
+    "no-copy-paste",
+    "not-selectable-in-game",
+  },
+  collision_mask = {"not-colliding-with-itself"},
+  collision_box = {{0, 0}, {0, 0}}, -- enable noclip
+  selectable_in_game = false,
+  selection_box = {{-0.0, -0.0}, {0.0, 0.0}},
+  -- We don't intend to leave a corpse at all, but if the worst happens...
+  corpse = "small-scorchmark",
+  ai_settings =
+  {
+    allow_try_return_to_spawner = false,
+    destroy_when_commands_fail = true
+  },
+  movement_speed = searchlightTrackSpeed,
+  distance_per_frame = 1,
+  pollution_to_join_attack = 5000,
+  distraction_cooldown = 1,
+  vision_distance = 1,
+  attack_parameters =
+  {
+    type = "projectile",
+    range = 1,
+    cooldown = 100,
+    ammo_type = make_unit_melee_ammo_type(1),
+    animation = Layer_transparent_animation,
+  },
+  run_animation = Layer_transparent_animation,
+}
+
 
 -- Add new definitions to game data
-data:extend{SearchLightForDummy, SearchLightForReal, SpotLightHidden, Turtle}
+data:extend{SearchLightForDummy, SearchLightForReal, Turtle}
 
 
 function GetBoostName(entity, table)
@@ -182,6 +207,7 @@ function GetBoostName(entity, table)
   return nil
 end
 
+
 -- Make boosted-range versions of non search light turrets
 -- (Factorio might run this entity-script multiple times, so be sure to avoid making dupes)
 function MakeBoost(currTable, newRange)
@@ -190,11 +216,13 @@ function MakeBoost(currTable, newRange)
     if boostedName then
 
       local boostCopy = table.deepcopy(currTable[turret.name])
-      -- Inspired by Mooncat. Thanks Mooncat.
+
+      -- Inspired by Mooncat. Thanks, Mooncat.
       boostCopy.localised_name = {"entity-name." .. boostCopy.name}
       if {"entity-description." .. boostCopy.name} then
         boostCopy.localised_description = {"entity-description." .. boostCopy.name}
       end
+
       boostCopy.name = boostedName
       boostCopy.flags = {"hidden"}
       boostCopy.create_ghost_on_death = false
@@ -217,6 +245,7 @@ function MakeBoost(currTable, newRange)
     end
   end
 end
+
 
 currTable = data.raw["electric-turret"]
 MakeBoost(currTable, elecBoost)

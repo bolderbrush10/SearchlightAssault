@@ -65,7 +65,7 @@ function SpawnTurtle(position, surface)
     -- local newPos = MakeWanderWaypoint(position)
     local newPos = {position.x, position.y - 50}
 
-    return surface.create_entity{name = "searchlight_turtle",
+    return surface.create_entity{name = "searchlight-turtle",
                                  position = newPos,
                                  force = searchlightFoe,
                                  fast_replace = true,
@@ -81,6 +81,8 @@ function CreateDummyLight(old_sl, surface)
                                    create_build_effect_smoke = false}
 
     dummy_to_turtle[new_sl.unit_number] = SpawnTurtle(new_sl.position, surface)
+    dummy_to_turtle[new_sl.unit_number].destructible = false
+    dummy_to_turtle[new_sl.unit_number].speed = searchlightWanderSpeed
     new_sl.shooting_target = dummy_to_turtle[new_sl.unit_number]
 
     CopyTurret(old_sl, new_sl)
