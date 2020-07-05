@@ -157,12 +157,21 @@ function Boost(oldT, surface, foe)
 
     local foeLen = len(foe.position, oldT.position)
 
-    if oldT.type == "electric-turret" and foeLen >= elecBoost then
+    -- Just take a wild guess at minimum range for most turrets,
+    -- since we can't discover this at runtime
+    if foeLen <= 12 then
         return nil
+
+    elseif oldT.type == "electric-turret" and foeLen >= elecBoost then
+        return nil
+
     elseif oldT.type == "ammo-turret" and foeLen >= ammoBoost then
         return nil
+
+    -- TODO Also calculate firing arc, somehow
     elseif foeLen >= fluidBoost then
         return nil
+
     end
 
     local newT = surface.create_entity{name = oldT.name .. boostSuffix,
@@ -193,12 +202,41 @@ function CopyTurret(oldT, newT)
     if oldT.type == "electric-turret" then
         newT.energy = oldT.energy
     elseif oldT.type == "ammo-turret" then
-        -- TODO
+        CopyItems(oldT, newT)
     else
-        -- TODO
+        CopyFluids(oldT, newT)
     end
 end
 
+-- "Do note that reading from a LuaFluidBox creates a new table and writing will copy the given fields from the table into the engine's own fluid box structure. Therefore, the correct way to update a fluidbox of an entity is to read it first, modify the table, then write the modified table back. Directly accessing the returned table's attributes won't have the desired effect."
+-- https://lua-api.factorio.com/latest/LuaFluidBox.html
+function CopyFluids(oldT, newT)
+
+    -- Must manually index this part, too.
+    for boxindex = 1, #oldT.fluidbox do
+        local oldFluid = oldT.fluidbox[boxindex]
+        local newFluid = newT.fluidbox[boxindex]
+
+        newFluid = oldFluid
+        newT.fluidbox[boxindex] = newFluid
+    end
+
+end
+
+
+-- TODO Yes, it seems to be working... But is it really?
+--      Should try to test with like a car or something.
+function CopyItems(oldT, newT)
+
+    for boxindex = 1, #oldT.get_output_inventory() do
+        local oldStack = oldT.get_output_inventory()[boxindex]
+        local newStack = newT.get_output_inventory()[boxindex]
+
+        newStack = oldStack
+        newT.get_output_inventory().insert(newStack)
+    end
+
+end
 
 function MakeWanderWaypoint(origin)
     local bufferedRange = searchlightOuterRange - 5

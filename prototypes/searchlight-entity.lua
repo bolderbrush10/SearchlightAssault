@@ -190,6 +190,7 @@ function MakeBoost(currTable, newRange)
     if boostedName then
 
       local boostCopy = table.deepcopy(currTable[turret.name])
+      -- Inspired by Mooncat. Thanks Mooncat.
       boostCopy.localised_name = {"entity-name." .. boostCopy.name}
       if {"entity-description." .. boostCopy.name} then
         boostCopy.localised_description = {"entity-description." .. boostCopy.name}

@@ -4,6 +4,10 @@ for key,value in pairs(o) do
 end
 
 
+game.print(serpent.block(fluidTurret.fluidbox))
+
+
+
 local piOverSix       = (math.pi / 6)
 local piOverThree     = (math.pi / 3)
 local twoPiOverThree  = (2  * math.pi / 3)
