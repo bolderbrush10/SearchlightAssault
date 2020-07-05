@@ -17,10 +17,10 @@ searchlightSpotRadius = 1.5
 searchlightFriendRadius = 15
 
 -- Speed at which spotlight wanders
-searchlightWanderSpeed = 0.5
+searchlightWanderSpeed = 0.2
 
 -- Speed at which spotlight tracks a spotted foe
-searchlightTrackSpeed = 1.5
+searchlightTrackSpeed = 1.3
 
 -- Identifies range boosted versions of turrets
 boostSuffix = "-sl_boosted"

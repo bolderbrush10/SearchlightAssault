@@ -35,12 +35,18 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO gun turrets should get a much smaller boost than electric, and fluid turrets even less so
 -- TODO radar integration
 
+-- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
+
 -- TODO Maintain a map of all searchlights instead of polling for them every tick
 -- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
 
--- TODO fix the string localization being broken for boosted copies of turrets
+-- TODO preserve mining progress somehow when things are boosted unboosted
 
 -- TODO when a spot light dies, make sure to unboost all nearby friends
+
+
+-- TODO When a spotlight spots a foe, there's a moment where there's no light at all.
+--      Maybe we could manually render some kind of 'alert flash' at the enemy location while the transition is happening
 
 -- Might want to figure out how to use the 'alert_when_attacking' characteristic such that we alert when real foes are present, and not imaginary ones
 -- also look into:
