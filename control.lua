@@ -366,12 +366,16 @@ function InitForces()
 end
 
 
-function LookupArc()
-    for E in pairs(game.entity_prototypes) do
-        if E.attack_parameters
-           and E.attack_parameters.turn_range then
-            firing_arcs[E.name] = E.attack_parameters.turn_range
-        end
+function LookupArc(turret)
+    if firing_arcs[turret.name] then
+        return firing_arcs[turret.name]
+    end
+
+    local tPrototype = game.entity_prototypes[turret.name]
+
+    if E.attack_parameters
+       and E.attack_parameters.turn_range then
+        firing_arcs[E.name] = E.attack_parameters.turn_range
     end
 
     game.print(serpent.block(firing_arcs))
