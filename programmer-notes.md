@@ -37,6 +37,11 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
 
+-- TODO Update recipe for searchlight
+
+-- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
+--      (Don't forget to mention this in the item description texts)
+
 -- TODO Maintain a map of all searchlights instead of polling for them every tick
 -- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
 
@@ -44,6 +49,7 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO when a spot light dies, make sure to unboost all nearby friends
 
+-- TODO Are there non-energy, non-ammo, non-fluid type turrets? Should we try to fix this mod for them?
 
 -- TODO When a spotlight spots a foe, there's a moment where there's no light at all.
 --      Maybe we could manually render some kind of 'alert flash' at the enemy location while the transition is happening

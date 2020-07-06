@@ -3,7 +3,10 @@
 
 require("searchlight-defines")
 
-function GetBoostName(entity, table)
+-- You should declare your functions and vars as local in data*.lua files,
+-- because other mods apparently have access to your functions at this step (-_-)
+
+local function GetBoostName(entity, table)
   if not string.match(entity.name, boostSuffix)
      and not string.match(entity.name, "searchlight") then
 
@@ -21,7 +24,7 @@ end
 
 -- Make boosted-range versions of non search light turrets
 -- (Factorio might run this entity-script multiple times, so be sure to avoid making dupes)
-function MakeBoost(currTable, newRange)
+local function MakeBoost(currTable, newRange)
   for index, turret in pairs(currTable) do
     local boostedName = GetBoostName(turret, currTable)
     if boostedName then

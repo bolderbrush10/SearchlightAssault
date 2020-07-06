@@ -1,5 +1,8 @@
 require "searchlight-defines"
 
+-- You should declare your functions and vars as local in data*.lua files,
+-- because other mods apparently have access to your functions at this step (-_-)
+
 local Layer_transparent_pixel =
 {
   filename = "__Searchlights__/graphics/transparent_pixel.png",

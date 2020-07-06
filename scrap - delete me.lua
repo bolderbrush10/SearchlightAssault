@@ -7,6 +7,13 @@ end
 game.print(serpent.block(fluidTurret.fluidbox))
 
 
+LuaGameScript
+table_to_json(data) → string
+
+json_to_table(json) → Any
+
+
+
 if v.type=="unit" then v.setcommand{type=defines.command.wander, distraction=defines.distraction.byenemy} end
 
  defines.command.wander

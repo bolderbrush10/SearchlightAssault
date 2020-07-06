@@ -5,7 +5,7 @@ local searchLights = {}
 local real_sl_to_lsp = {} -- lsp == last shooting position
 local dummy_to_turtle = {}
 local turtle_to_waypoint = {}
-
+local firing_arcs = {}
 
 script.on_event(defines.events.on_tick, function(event)
     InitForces()
@@ -363,4 +363,16 @@ function InitForces()
 
     game.forces[searchlightFriend].set_friend("player", true)
     game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
+end
+
+
+function LookupArc()
+    for E in pairs(game.entity_prototypes) do
+        if E.attack_parameters
+           and E.attack_parameters.turn_range then
+            firing_arcs[E.name] = E.attack_parameters.turn_range
+        end
+    end
+
+    game.print(serpent.block(firing_arcs))
 end
