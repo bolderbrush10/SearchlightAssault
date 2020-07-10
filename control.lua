@@ -6,8 +6,14 @@ local real_sl_to_lsp = {} -- lsp == last shooting position
 local dummy_to_turtle = {}
 local turtle_to_waypoint = {}
 local firing_arcs = {}
+local firing_range = {}
+
+
+-- These we don't need to put in the globals, since it's fine to recalulate them on game load
+local DirectionToVector = {}
 
 script.on_event(defines.events.on_tick, function(event)
+    InitTables()
     InitForces()
 
     for surfaceName, surface in pairs(game.surfaces) do
@@ -76,7 +82,6 @@ end
 -- if it was targeting something.
 function SpawnTurtle(sl, surface, location)
     if location == nil then
-        game.print(sl.orientation)
         -- Start somewhere close to the turret's base & orientation
         location = OrientationToPosition(sl.position, sl.orientation, 2)
     end
@@ -108,9 +113,6 @@ function CreateDummyLight(old_sl, surface, last_shooting_position)
                                    fast_replace = true,
                                    create_build_effect_smoke = false}
 
-    -- TODO delay this until the unpacking animation is finished,
-    --      or have an instant unpack, or something.
-    --      Because our orientation is apparently always zero while that's running.
     SpawnTurtle(new_sl, surface, last_shooting_position)
 
     CopyTurret(old_sl, new_sl)
@@ -239,12 +241,15 @@ end
 
 
 function Boost(oldT, surface, foe)
-    if oldT.shooting_target ~= nil
-       or game.entity_prototypes[oldT.name .. boostSuffix] == nil then
+    if game.entity_prototypes[oldT.name .. boostSuffix] == nil then
         return nil
     end
 
     local foeLen = len(foe.position, oldT.position)
+
+    if foeLen <= LookupRange(oldT) and oldT.shooting_target ~= nil then
+        return nil
+    end
 
     -- Just take a wild guess at minimum range for most turrets,
     -- since we can't discover this at runtime.
@@ -258,10 +263,11 @@ function Boost(oldT, surface, foe)
     elseif oldT.type == "ammo-turret" and foeLen >= ammoBoost then
         return nil
 
-    -- TODO Also calculate firing arc, somehow
     elseif foeLen >= fluidBoost then
+        return nil
+    end
 
-        -- turn_range = 1.0 / 3.0 for flame turrets...
+    if not IsPositionWithinTurretArc(foe.position, oldT) then
         return nil
     end
 
@@ -285,6 +291,7 @@ function CopyTurret(oldT, newT)
     newT.kills = oldT.kills
     newT.health = oldT.health
     newT.last_user  = oldT.last_user
+    newT.direction = oldT.direction
     newT.orientation = oldT.orientation
     newT.damage_dealt = oldT.damage_dealt
 
@@ -343,11 +350,79 @@ function CopyItems(oldTinv, newTinv)
 end
 
 
--- TODO Can we trade accuracy for more speed?
+function IsPositionWithinTurretArc(pos, turret)
+    local arc = LookupArc(turret)
+
+    if arc <= 0 then
+        return true
+    end
+
+    local arcRad = arc * math.pi
+
+    local vecTurPos = {x = pos.x - turret.position.x,
+                       y = pos.y - turret.position.y}
+    local vecTurDir = DirectionToVector[turret.direction]
+
+    local tanPos = math.atan2(vecTurPos.y, vecTurPos.x)
+    local tanDir = math.atan2(vecTurDir.y, vecTurDir.x)
+
+    local angleL = tanDir - tanPos
+    local angLAdjust = angleL
+    if angLAdjust < 0 then
+        angLAdjust = angLAdjust + (math.pi * 2)
+    end
+
+    local angleR = tanPos - tanDir
+    local angRAdjust = angleR
+    if angRAdjust < 0 then
+        angRAdjust = angRAdjust + (math.pi * 2)
+    end
+
+    return angLAdjust < arcRad or angRAdjust < arcRad
+end
+
+
 function len(a, b)
     return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
 end
 
+
+function LookupArc(turret)
+    if firing_arcs[turret.name] then
+        return firing_arcs[turret.name]
+    end
+
+    local tPrototype = game.entity_prototypes[turret.name]
+
+    if tPrototype.attack_parameters
+       and tPrototype.attack_parameters.turn_range then
+        firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
+    else
+        firing_arcs[turret.name] = -1
+    end
+
+    return firing_arcs[turret.name]
+end
+
+
+function LookupRange(turret)
+    if firing_range[turret.name] then
+        return firing_range[turret.name]
+    end
+
+    local tPrototype = game.entity_prototypes[turret.name]
+
+    if tPrototype.turret_range then
+        firing_range[turret.name] = tPrototype.turret_range
+    elseif tPrototype.attack_parameters
+       and tPrototype.attack_parameters.range then
+        firing_range[turret.name] = tPrototype.attack_parameters.range
+    else
+        firing_range[turret.name] = -1
+    end
+
+    return firing_range[turret.name]
+end
 
 function InitForces()
     -- game.create_force(searchlightFoe)
@@ -366,17 +441,15 @@ function InitForces()
 end
 
 
-function LookupArc(turret)
-    if firing_arcs[turret.name] then
-        return firing_arcs[turret.name]
-    end
-
-    local tPrototype = game.entity_prototypes[turret.name]
-
-    if E.attack_parameters
-       and E.attack_parameters.turn_range then
-        firing_arcs[E.name] = E.attack_parameters.turn_range
-    end
-
-    game.print(serpent.block(firing_arcs))
+function InitTables()
+    -- Directions come as a number between 0 and 8 (as used in defines.direction)
+    -- Let's represent them as vectors, as aligned to the screen-coordinate system
+    DirectionToVector[defines.direction.north]     = {x =  0, y = -1}
+    DirectionToVector[defines.direction.northwest] = {x = -1, y = -1}
+    DirectionToVector[defines.direction.west]      = {x = -1, y =  0}
+    DirectionToVector[defines.direction.southwest] = {x = -1, y =  1}
+    DirectionToVector[defines.direction.south]     = {x =  0, y =  1}
+    DirectionToVector[defines.direction.southeast] = {x =  1, y =  1}
+    DirectionToVector[defines.direction.east]      = {x =  1, y =  0}
+    DirectionToVector[defines.direction.northeast] = {x =  1, y = -1}
 end

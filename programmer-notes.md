@@ -39,8 +39,27 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO Update recipe for searchlight
 
+
+-- TODO Get people to play test the balance
+
 -- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
 --      (Don't forget to mention this in the item description texts)
+
+-- So, obviously the balance of this mod is always going to be whack. Any meaningful amount of +Range is ridiculously powerful, no matter where we put it in the tech tree.
+-- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted?
+-- Maybe have two different 'ranges' of boost? Such that it can boost 1 turret out to X meters, and then all the rest to X - Z meters?
+
+-- Maybe require players to connect their light with wire to the turrets they want it to affect?
+-- Connect it to a beacon to have the light auto-boost in a radius?
+-- Have another version that takes a beacon as an ingredient to auto-boost?
+
+
+
+-- TODO add a layer of animated glowing lines to boosted turrets?
+-- TODO Recipe should probably require something power related (an accumulator?) regardless of if we with the seperate-recipe using a beacon idea
+
+
+-- TODO Can we copy current animation frame when boosting?
 
 -- TODO Maintain a map of all searchlights instead of polling for them every tick
 -- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
@@ -77,6 +96,16 @@ function makeLightStartLocation(sl)
 
 
 -- TODO clean up unused crap across all files
+
+
+-- TODO ask on forums about saving / loading events, so we can restore turrets on save, recalculate unimportant tables on load, etc
+
+
+-- TODO Break apart into a 'boostable turrets' mod
+        Let people use mod settings to control what level the boosting is
+-- TODO How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
+-- TODO Or just make a stand-alone version of the mod and a non-standalone version?
+
 
 
 -- TODOOOOOOOOOOOOOO
