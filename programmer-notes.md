@@ -1,3 +1,33 @@
+Action at time:
+Made a TON of searchlights, some near a biter nest.
+A bunch of biters swarmed, and some worms were spitting at the lights.
+
+
+Did it again.
+Action at time:
+
+Just made like 50 searchlights really close together really quickly.
+
+
+The mod Searchlights caused a non-recoverable error.
+Please report this error to the mod author.
+
+Error while running event Searchlights::on_tick (ID 0)
+LuaEntity API call when LuaEntity was invalid.
+stack traceback:
+  __Searchlights__/control.lua:219: in function 'RushTurtle'
+  __Searchlights__/control.lua:108: in function 'ConsiderTurtles'
+  __Searchlights__/control.lua:73: in function 'HandleSearchlights'
+  __Searchlights__/control.lua:30: in function <__Searchlights__/control.lua:28>
+stack traceback:
+  [C]: in function '__index'
+  __Searchlights__/control.lua:219: in function 'RushTurtle'
+  __Searchlights__/control.lua:108: in function 'ConsiderTurtles'
+  __Searchlights__/control.lua:73: in function 'HandleSearchlights'
+  __Searchlights__/control.lua:30: in function <__Searchlights__/control.lua:28>
+
+
+
 Strings which would be first-class types in a real programming language:
 
 "small-searchlight"
@@ -8,16 +38,7 @@ etc
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
 
--- Plan:
--- Leave the searchlight 'on' until it wanders over an enemy
--- Set the turret prepare range to max distance when it finds an enemy,
--- set its target to that enemy
--- (Enables the 'yellow light' prepare animation)
--- Slow down wandering significantly
--- Set the spotlight entity to yellow
--- After 2 seconds, set the turret range to max
--- (Enables the 'red light' attack animation)
--- Set the spotlight entity to red
+-- TODO huge performance problem with ~100 spotlights, even if there are no turtles spawned
 
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
@@ -40,6 +61,10 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO Update recipe for searchlight
 
 
+-- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
+--      When the spotlight is boosting / controlling the turret, it can play a little laser light animation on the turret's link box and also the spotlight's link box thing
+
+
 -- TODO Get people to play test the balance
 
 -- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
@@ -47,11 +72,14 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- So, obviously the balance of this mod is always going to be whack. Any meaningful amount of +Range is ridiculously powerful, no matter where we put it in the tech tree.
 -- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted?
+-- (Maybe we can have a 'flash' go off when turrets energize / deenergize to hide the stuttering attack that happens when turrets are being swapped in and out?)
 -- Maybe have two different 'ranges' of boost? Such that it can boost 1 turret out to X meters, and then all the rest to X - Z meters?
 
 -- Maybe require players to connect their light with wire to the turrets they want it to affect?
 -- Connect it to a beacon to have the light auto-boost in a radius?
 -- Have another version that takes a beacon as an ingredient to auto-boost?
+-- Have a version that takes a radar for a really big boost?
+-- Nah. Honestly, imagine what the actual game devs would do. There'd just be ONE version of a turret. So don't be like this.
 
 
 
@@ -80,6 +108,13 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO can probably make smarter use of forces throughout control.lua
 
+-- TODO Need to make a ghost for the searchlight.
+--      And also double check that everything works properly with construction robots in the on_event functions.
+--      Right now, if a real searchlight is destroyed, it puts up a ghost. But not the dummy light. And a bunch of other issues.
+
+
+-- TODO Make use of graphics_variation for whatever effect we do use for the searchlight boost
+
 
 -- TODO enemies are stutter-stepping toward the turrets
 --      (because the turrets keep getting destroyed and created by control.lua)
@@ -97,6 +132,21 @@ function makeLightStartLocation(sl)
 
 -- TODO clean up unused crap across all files
 
+-- TODO deconstruction planner doesn't affect dummy turrets, but it should
+
+
+-- TODO Make the searchlight effect during the daytime a heat haze glimmer kinda thing
+
+
+-- TODO Use the on_nth_tick(tick, f) to handle timer checking at a more reasonable, albiet less accurate rate (like, for checking if we should unboost turrets)
+
+on_nth_tick(tick, f)
+
+Register a handler to run every nth tick(s). When the game is on tick 0 it will trigger all registered handlers.
+
+Parameters
+tick :: uint or array of uint: The nth-tick(s) to invoke the handler on. Passing nil as the only parameter will unregister all nth-tick handlers.
+f :: function(NthTickEvent): The handler to run. Passing nil will unregister the handler for the provided ticks.
 
 -- TODO ask on forums about saving / loading events, so we can restore turrets on save, recalculate unimportant tables on load, etc
 
@@ -107,17 +157,13 @@ function makeLightStartLocation(sl)
 -- TODO Or just make a stand-alone version of the mod and a non-standalone version?
 
 
+-- TODO Organize control.lua into a couple more files (like, boostrange.lua), etc
 
--- TODOOOOOOOOOOOOOO
--- use the 'target_type' : position parameter and work from that.
--- (How will rotating the turret work? Will we still need a hidden entity for the turret to target?)
 
--- TODO Append data to 'global' to have the game save / load data for us
--- TODO placement of light during 'unfolding' animation
--- TODO Wait for a small delay after turret creation to start lighting things up / remove the 'unfolding' animation so that way the turret always lines up with the light-effect from the first moment of existance
--- TODO interpolate from wander position to nearest foe instead of snapping over, etc
+-- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+
+
 -- TODO disable when no electricity / reduce range according to electric satisfaction
--- TODO Use the beam prototype's ground_light_animations and light_animations 'start / ending / head / tail / body' effects
 
 -- Possibly can use this attack type to do cool stuff?
 -- https://wiki.factorio.com/Types/TriggerDelivery#target_effects

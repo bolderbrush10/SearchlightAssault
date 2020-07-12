@@ -1,3 +1,5 @@
+-- TODO Should I worry about any other mods interfering with these non-local vars?
+
 -- Force names
 searchlightFoe = "hddnSLFoe"
 searchlightFriend = "hddnSLFnd"
@@ -33,3 +35,7 @@ ammoBoost = searchlightOuterRange - 20
 
 -- Range boost for fluid turrets
 fluidBoost = searchlightOuterRange - 40
+
+-- Delay in ticks between boosting and unboosting
+-- (game runs at 60 ticks per second)
+boostDelay = 3 * 60

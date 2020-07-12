@@ -6,6 +6,51 @@ require("searchlight-defines")
 -- You should declare your functions and vars as local in data*.lua files,
 -- because other mods apparently have access to your functions at this step (-_-)
 
+
+local BoostAnim =
+{
+  filename = "__Searchlights__/graphics/boost/hr-boost.png",
+  priority = "high",
+  width = 138,
+  height = 104,
+  frame_count = 8,
+  line_length = 4,
+  animation_speed = 1,
+  direction_count = 1,
+  run_mode = "forward",
+  blend_mode = "normal",
+  axially_symmetrical = false,
+  hr_version =
+  {
+    filename = "__Searchlights__/graphics/boost/hr-boost.png",
+    priority = "high",
+    width = 138,
+    height = 104,
+    frame_count = 8,
+    line_length = 4,
+    animation_speed = 1,
+    direction_count = 1,
+    run_mode = "forward",
+    blend_mode = "normal",
+    axially_symmetrical = false,
+  }
+}
+
+local BoostSmoke =
+{
+  name = "range-boost-smoke",
+  type = "trivial-smoke",
+  animation = BoostAnim,
+  duration = 255,
+  affected_by_wind = false,
+  show_when_smoke_off = true,
+  cyclic = true,
+  -- TODO glow animation? All the other properties, too
+}
+
+data:extend{BoostSmoke}
+
+
 local function GetBoostName(entity, table)
   if not string.match(entity.name, boostSuffix)
      and not string.match(entity.name, "searchlight") then
@@ -54,13 +99,56 @@ local function MakeBoost(currTable, newRange)
           boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = newRange
       end
 
+      -- if boostCopy.base_picture then
+
+      --   -- for index, layer in pairs(boostCopy.base_picture.layers) do
+
+      --   --   -- layer.filenames = {}
+      --   --   -- for x = 0, 8 do
+      --   --   --   table.insert(layer.filenames, layer.filename)
+      --   --   -- end
+
+      --   --   -- layer.filename = nil
+      --   --   layer.width = 10
+      --   --   layer.height = 10
+
+      --   --   layer.frame_count = 8
+      --   --   layer.run_mode = "forward-then-backward"
+
+      --   --   if layer.hr_version then
+      --   --     layer.hr_version.frame_count = 8
+      --   --     layer.hr_version.width = 10
+      --   --     layer.hr_version.height = 10
+
+      --   --     -- layer.hr_version.filenames = {}
+      --   --     -- for x = 0, 8 do
+      --   --     --   table.insert(layer.hr_version.filenames, layer.hr_version.filename)
+      --   --     -- end
+      --   --     -- layer.hr_version.filename = nil
+      --   --   end
+      --   -- end
+
+      --   boostCopy.base_picture.filename = nil
+      --   boostCopy.base_picture.layers = {}
+      --   table.insert(boostCopy.base_picture.layers, BoostAnim)
+      -- end
+
+      -- boostCopy.created_smoke =
+      -- {
+      --   smoke_name = "range-boost-smoke"
+      -- }
+
+      boostCopy.energy_glow_animation = BoostAnim
+
+      log(serpent.block(boostCopy))
+
       data:extend{boostCopy}
 
     end
   end
 end
 
-
+local currTable
 currTable = data.raw["electric-turret"]
 MakeBoost(currTable, elecBoost)
 

@@ -23,7 +23,7 @@ local Light_Layer_SpotLight_NormLight =
   filename = "__Searchlights__/graphics/spotlight-r.png",
   width = 200,
   height = 200,
-  scale = 1.5,
+  scale = 2,
   flags = { "light" },
   shift = {0.3, 0},
 }
@@ -55,7 +55,7 @@ local SpotlightBeamPassive =
   type = "beam",
   name = "spotlight-beam-passive",
   flags = {"not-on-map"},
-  width = 0.5,
+  width = 1,
   damage_interval = 1,
   random_end_animation_rotation = false,
   ground_light_animations =
@@ -176,7 +176,7 @@ local Turtle =
   ai_settings =
   {
     allow_try_return_to_spawner = false,
-    destroy_when_commands_fail = true
+    destroy_when_commands_fail = false,
   },
   movement_speed = searchlightTrackSpeed,
   distance_per_frame = 1,

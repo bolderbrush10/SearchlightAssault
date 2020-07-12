@@ -1,27 +1,73 @@
 require "searchlight-defines"
 require "searchlight-render"
 
-local searchLights = {}
-local real_sl_to_lsp = {} -- lsp == last shooting position
-local dummy_to_turtle = {}
-local turtle_to_waypoint = {}
-local firing_arcs = {}
-local firing_range = {}
-
+global.searchLights = {}
+global.real_sl_to_lsp = {} -- lsp == last shooting position
+global.dummy_to_turtle = {}
+global.turtle_to_waypoint = {}
+global.firing_arcs = {}
+global.firing_range = {}
+global.unboost_timers = {}
 
 -- These we don't need to put in the globals, since it's fine to recalulate them on game load
+-- (We'll do that at the bottom of the file, here)
 local DirectionToVector = {}
 
-script.on_event(defines.events.on_tick, function(event)
-    InitTables()
-    InitForces()
 
+script.on_init(
+function(event)
+    InitForces()
+end)
+
+script.on_load(
+function(event)
+    InitTables()
+end)
+
+script.on_event(defines.events.on_tick,
+function(event)
+     -- TODO move to mod init
+    HandleSearchlights()
+end)
+
+script.on_event(defines.events.on_built_entity,
+function(event)
+
+    -- event.created_entity.dosomething
+
+end,
+{{filter="type", type = "turret"},
+ {filter="name", name = "searchlight"}})
+
+script.on_event(defines.events.on_entity_died,
+function(event)
+
+    if event.entity.name == "searchlight-turtle" then
+        game.print("dead turtle")
+    end
+
+end,
+{{filter="type", type = "turret"},
+ {filter="type", type = "unit"},
+ {filter="name", name = "searchlight"},
+ {filter="name", name = "searchlight-dummy"},
+ {filter="name", name = "searchlight-turtle"}})
+
+script.on_event(defines.events.on_pre_player_mined_item,
+function(event)
+
+end,
+{{filter="type", type = "turret"},
+ {filter="name", name = "searchlight"},
+ {filter="name", name = "searchlight-dummy"}})
+
+function HandleSearchlights()
     for surfaceName, surface in pairs(game.surfaces) do
-        searchLights = surface.find_entities_filtered{name = {"searchlight",
+        global.searchLights = surface.find_entities_filtered{name = {"searchlight",
                                                               "searchlight-dummy"}}
 
         -- 'sl' for 'SearchLight'
-        for index, sl in pairs(searchLights) do
+        for index, sl in pairs(global.searchLights) do
             BoostFriends(sl, surface)
 
             if sl.name == "searchlight" then
@@ -31,33 +77,35 @@ script.on_event(defines.events.on_tick, function(event)
             end
         end
     end
-end)
+end
 
 
 function ConsiderFoes(sl, surface)
     if sl.shooting_target == nil then
-        local pos = real_sl_to_lsp[sl.unit_number]
-        real_sl_to_lsp[sl.unit_number] = nil
-        CreateDummyLight(sl, surface, pos)
+        if BoostTimerComplete(sl) then
+            local pos = global.real_sl_to_lsp[sl.unit_number]
+            global.real_sl_to_lsp[sl.unit_number] = nil
+            CreateDummyLight(sl, surface, pos)
+        end
     else
-        real_sl_to_lsp[sl.unit_number] = sl.shooting_target.position
+        global.real_sl_to_lsp[sl.unit_number] = sl.shooting_target.position
     end
 end
 
 
 function ConsiderTurtles(sl, surface)
-    -- If the worst happened somehow, and our turtle is no more, make a new one
-    if dummy_to_turtle[sl.unit_number] == nil then
-        SpawnTurtle(sl, surface)
-    end
-
-    local turtle = dummy_to_turtle[sl.unit_number]
-
     -- If a foe is close to the turret, auto spot it
     -- (find_nearest_enemy(force=) means "which force's enemies to seek")
     local foe = surface.find_nearest_enemy{position = sl.position,
                                            max_distance = searchlightInnerRange,
                                            force = "player"}
+
+    -- If the worst happened somehow, and our turtle is no more, make a new one
+    if global.dummy_to_turtle[sl.unit_number] == nil then
+        SpawnTurtle(sl, surface)
+    end
+
+    local turtle = global.dummy_to_turtle[sl.unit_number]
 
     if foe ~= nil then
         RushTurtle(turtle, foe.position)
@@ -82,8 +130,8 @@ end
 -- if it was targeting something.
 function SpawnTurtle(sl, surface, location)
     if location == nil then
-        -- Start somewhere close to the turret's base & orientation
-        location = OrientationToPosition(sl.position, sl.orientation, 2)
+        -- Start in front of the turret's base, wrt orientation
+        location = OrientationToPosition(sl.position, sl.orientation, 3)
     end
 
     local turtle = surface.create_entity{name = "searchlight-turtle",
@@ -94,12 +142,14 @@ function SpawnTurtle(sl, surface, location)
 
     turtle.destructible = false
     new_sl.shooting_target = turtle
-    dummy_to_turtle[new_sl.unit_number] = turtle
+    global.dummy_to_turtle[new_sl.unit_number] = turtle
+
 
     local windupWaypoint = OrientationToPosition(sl.position,
                                                  sl.orientation,
-                                                 math.random(searchlightInnerRange/2,
+                                                 math.random(searchlightInnerRange / 2,
                                                              searchlightOuterRange - 2))
+
     WanderTurtle(turtle, sl, windupWaypoint)
 
     return turtle
@@ -113,9 +163,9 @@ function CreateDummyLight(old_sl, surface, last_shooting_position)
                                    fast_replace = true,
                                    create_build_effect_smoke = false}
 
-    SpawnTurtle(new_sl, surface, last_shooting_position)
-
     CopyTurret(old_sl, new_sl)
+
+    SpawnTurtle(new_sl, surface, last_shooting_position)
 
     old_sl.destroy()
 end
@@ -128,14 +178,16 @@ function CreateRealLight(old_sl, surface, foe)
                                    fast_replace = true,
                                    create_build_effect_smoke = false}
 
-    if dummy_to_turtle[old_sl.unit_number] ~= nil then
-        dummy_to_turtle[old_sl.unit_number].destroy()
-        dummy_to_turtle[old_sl.unit_number] = nil
+    if global.dummy_to_turtle[old_sl.unit_number] ~= nil then
+        global.dummy_to_turtle[old_sl.unit_number].destroy()
+        global.dummy_to_turtle[old_sl.unit_number] = nil
     end
 
     CopyTurret(old_sl, new_sl)
 
     old_sl.destroy()
+
+    global.unboost_timers[new_sl.unit_number] = boostDelay
 
     if foe then
         new_sl.shooting_target = foe
@@ -144,21 +196,24 @@ end
 
 
 function WanderTurtle(turtle, sl, waypoint)
-    if turtle_to_waypoint[turtle.unit_number] == nil
-       or len(turtle.position, turtle_to_waypoint[turtle.unit_number])
+    if not turtle.has_command()
+       or global.turtle_to_waypoint[turtle.unit_number] == nil
+       or len(turtle.position, global.turtle_to_waypoint[turtle.unit_number])
           < searchlightSpotRadius then
 
         if waypoint == nil then
             waypoint = MakeWanderWaypoint(sl.position)
         end
 
-        turtle_to_waypoint[turtle.unit_number] = waypoint
+        global.turtle_to_waypoint[turtle.unit_number] = waypoint
         turtle.speed = searchlightWanderSpeed
 
         turtle.set_command({type = defines.command.go_to_location,
                             distraction = defines.distraction.none,
                             destination = waypoint,
-                            pathfind_flags = {low_priority = true},
+                            pathfind_flags = {low_priority = true, cache = true,
+                                              allow_destroy_friendly_entities = true,
+                                              allow_paths_through_own_entities = true},
                             radius = 1
                            })
     end
@@ -166,15 +221,18 @@ end
 
 
 function RushTurtle(turtle, waypoint)
-    if turtle_to_waypoint[turtle.unit_number] == nil
-       or turtle_to_waypoint[turtle.unit_number] ~= waypoint then
+    if global.turtle_to_waypoint[turtle.unit_number] == nil
+       or global.turtle_to_waypoint[turtle.unit_number] ~= waypoint then
 
-        turtle_to_waypoint[turtle.unit_number] = waypoint
+        global.turtle_to_waypoint[turtle.unit_number] = waypoint
         turtle.speed = searchlightTrackSpeed
 
         turtle.set_command({type = defines.command.go_to_location,
                             distraction = defines.distraction.none,
                             destination = waypoint,
+                            pathfind_flags = {prefer_straight_paths = true, no_break = true,
+                                              allow_destroy_friendly_entities = true,
+                                              allow_paths_through_own_entities = true},
                             radius = 1
                            })
     end
@@ -195,8 +253,9 @@ end
 function OrientationToPosition(origin, theta, distance)
     local radTheta = theta * 2 * math.pi
 
+    -- Invert y to fit screen coordinates
     return {x = origin.x + math.sin(radTheta) * distance,
-            y = origin.y + math.cos(radTheta) * distance,}
+            y = origin.y + math.cos(radTheta) * distance * -1,}
 end
 
 
@@ -227,6 +286,10 @@ function UnBoost(oldT, surface)
         return nil
     end
 
+    if not BoostTimerComplete(oldT) then
+        return nil
+    end
+
     local newT = surface.create_entity{name = oldT.name:gsub(boostSuffix, ""),
                                        position = oldT.position,
                                        force = oldT.force,
@@ -247,14 +310,11 @@ function Boost(oldT, surface, foe)
 
     local foeLen = len(foe.position, oldT.position)
 
-    if foeLen <= LookupRange(oldT) and oldT.shooting_target ~= nil then
-        return nil
-    end
-
-    -- Just take a wild guess at minimum range for most turrets,
-    -- since we can't discover this at runtime.
-    -- (It's just as well, foes any closer probably don't merit any boosting)
+    -- Foes any closer probably don't merit any boosting
     if foeLen <= 12 then
+        return nil
+
+    elseif foeLen <= LookupRange(oldT) and oldT.shooting_target ~= nil then
         return nil
 
     elseif oldT.type == "electric-turret" and foeLen >= elecBoost then
@@ -265,9 +325,8 @@ function Boost(oldT, surface, foe)
 
     elseif foeLen >= fluidBoost then
         return nil
-    end
 
-    if not IsPositionWithinTurretArc(foe.position, oldT) then
+    elseif not IsPositionWithinTurretArc(foe.position, oldT) then
         return nil
     end
 
@@ -281,6 +340,8 @@ function Boost(oldT, surface, foe)
     oldT.destroy()
 
     newT.shooting_target = foe
+
+    global.unboost_timers[newT.unit_number] = boostDelay
 
    return newT
 end
@@ -321,7 +382,9 @@ function CopyTurret(oldT, newT)
 end
 
 
--- "Do note that reading from a LuaFluidBox creates a new table and writing will copy the given fields from the table into the engine's own fluid box structure. Therefore, the correct way to update a fluidbox of an entity is to read it first, modify the table, then write the modified table back. Directly accessing the returned table's attributes won't have the desired effect."
+-- "Do note that reading from a LuaFluidBox creates a new table and writing will copy the given fields from the table into the engine's own fluid box structure.
+--  Therefore, the correct way to update a fluidbox of an entity is to read it first, modify the table, then write the modified table back.
+--  Directly accessing the returned table's attributes won't have the desired effect."
 -- https://lua-api.factorio.com/latest/LuaFluidBox.html
 function CopyFluids(oldT, newT)
 
@@ -347,6 +410,22 @@ function CopyItems(oldTinv, newTinv)
         newTinv.insert(newStack)
     end
 
+end
+
+
+-- TODO If multiple searchlights are checking this, then we're going to very rapidly wind down this timer...
+--      So, maybe it's time to bite the bullet and implement oncreated/destroyed(searchlight).
+--      Then, we can build an index for all the turrets in range of any light, and just iterate through that for Boost / UnBoost, etc
+--      (We still need to think about how to figure in for power consumption...)
+-- TODO Also, we should re-increment this number if there's a shooting target. Probably in this function.
+function BoostTimerComplete(turret)
+   if global.unboost_timers[turret.unit_number] and global.unboost_timers[turret.unit_number] > 0 then
+        global.unboost_timers[turret.unit_number] = global.unboost_timers[turret.unit_number] - 1
+        return false
+    else
+        global.unboost_timers[turret.unit_number] = nil
+        return true
+    end
 end
 
 
@@ -388,45 +467,46 @@ end
 
 
 function LookupArc(turret)
-    if firing_arcs[turret.name] then
-        return firing_arcs[turret.name]
+    if global.firing_arcs[turret.name] then
+        return global.firing_arcs[turret.name]
     end
 
     local tPrototype = game.entity_prototypes[turret.name]
 
     if tPrototype.attack_parameters
        and tPrototype.attack_parameters.turn_range then
-        firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
+        global.firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
     else
-        firing_arcs[turret.name] = -1
+        global.firing_arcs[turret.name] = -1
     end
 
-    return firing_arcs[turret.name]
+    return global.firing_arcs[turret.name]
 end
 
 
 function LookupRange(turret)
-    if firing_range[turret.name] then
-        return firing_range[turret.name]
+    if global.firing_range[turret.name] then
+        return global.firing_range[turret.name]
     end
 
     local tPrototype = game.entity_prototypes[turret.name]
 
     if tPrototype.turret_range then
-        firing_range[turret.name] = tPrototype.turret_range
+        global.firing_range[turret.name] = tPrototype.turret_range
     elseif tPrototype.attack_parameters
        and tPrototype.attack_parameters.range then
-        firing_range[turret.name] = tPrototype.attack_parameters.range
+        global.firing_range[turret.name] = tPrototype.attack_parameters.range
     else
-        firing_range[turret.name] = -1
+        global.firing_range[turret.name] = -1
     end
 
-    return firing_range[turret.name]
+    return global.firing_range[turret.name]
 end
 
+
 function InitForces()
-    -- game.create_force(searchlightFoe)
-    -- game.create_force(searchlightFriend)
+    game.create_force(searchlightFoe)
+    game.create_force(searchlightFriend)
 
     for F in pairs(game.forces) do
         game.forces[searchlightFoe].set_cease_fire(F, true)
