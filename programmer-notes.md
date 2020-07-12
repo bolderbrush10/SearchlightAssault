@@ -39,6 +39,8 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 
 -- TODO huge performance problem with ~100 spotlights, even if there are no turtles spawned
+        Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
+        Made a save file in the game to test performace with 150, and a commit here in git.
 
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
