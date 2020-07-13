@@ -64,7 +64,7 @@ end,
 function HandleSearchlights()
     for surfaceName, surface in pairs(game.surfaces) do
         global.searchLights = surface.find_entities_filtered{name = {"searchlight",
-                                                              "searchlight-dummy"}}
+                                                                     "searchlight-dummy"}}
 
         -- 'sl' for 'SearchLight'
         for index, sl in pairs(global.searchLights) do
@@ -196,10 +196,6 @@ end
 
 
 function WanderTurtle(turtle, sl, waypoint)
-    if not turtle.has_command() then
-        game.print("command lack")
-    end
-
     if not turtle.has_command()
        or global.turtle_to_waypoint[turtle.unit_number] == nil
        or len(turtle.position, global.turtle_to_waypoint[turtle.unit_number])

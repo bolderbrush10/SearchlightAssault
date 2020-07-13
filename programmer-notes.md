@@ -42,6 +42,13 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
         Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
         Made a save file in the game to test performace with 150, and a commit here in git.
 
+        Tried doing a version of searchlights no find_entity calls, still dropped 5 ups around 180 searchlights.
+        Doing literally 2000 just entites (no lights) had no performance impact, so there's some real questions to be had.
+
+        Maybe experimenting with only running checks every n ticks is worthwhile?
+
+
+
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
 
