@@ -4,7 +4,7 @@ require "searchlight-entity"
 local icon =
 {
     filename = "__Searchlights__/graphics/terrible2.png",
-    icon_size = 82
+    icon_size = 80
 }
 
 -- Item

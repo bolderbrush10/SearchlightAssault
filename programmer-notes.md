@@ -9,24 +9,6 @@ Action at time:
 Just made like 50 searchlights really close together really quickly.
 
 
-The mod Searchlights caused a non-recoverable error.
-Please report this error to the mod author.
-
-Error while running event Searchlights::on_tick (ID 0)
-LuaEntity API call when LuaEntity was invalid.
-stack traceback:
-  __Searchlights__/control.lua:219: in function 'RushTurtle'
-  __Searchlights__/control.lua:108: in function 'ConsiderTurtles'
-  __Searchlights__/control.lua:73: in function 'HandleSearchlights'
-  __Searchlights__/control.lua:30: in function <__Searchlights__/control.lua:28>
-stack traceback:
-  [C]: in function '__index'
-  __Searchlights__/control.lua:219: in function 'RushTurtle'
-  __Searchlights__/control.lua:108: in function 'ConsiderTurtles'
-  __Searchlights__/control.lua:73: in function 'HandleSearchlights'
-  __Searchlights__/control.lua:30: in function <__Searchlights__/control.lua:28>
-
-
 
 Strings which would be first-class types in a real programming language:
 
@@ -46,6 +28,10 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
         Doing literally 2000 just entites (no lights) had no performance impact, so there's some real questions to be had.
 
         Maybe experimenting with only running checks every n ticks is worthwhile?
+
+
+        !! Maybe what we need to do is divide the world up into grids, group up all the turrets in a grid location,
+           then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
 
 
 
@@ -68,6 +54,9 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
 
 -- TODO Update recipe for searchlight
+
+
+-- TODO Are the on_event filters faster if we just filter on names instead of looking at things by type as well?
 
 
 -- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
