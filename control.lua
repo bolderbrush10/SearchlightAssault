@@ -39,7 +39,7 @@ end)
 script.on_event(defines.events.on_built_entity,
 function(event)
 
-    -- event.created_entity.dosomething
+    global.searchLights[event.created_entity.unit_number] = event.created_entity
 
 end,
 {{filter="type", type = "turret"},
@@ -49,6 +49,8 @@ end,
 -- On Deconstruction
 script.on_event(defines.events.on_pre_player_mined_item,
 function(event)
+
+    global.searchLights[event.entity.unit_number] = nil
 
 end,
 {{filter="type", type = "turret"},
@@ -62,6 +64,8 @@ function(event)
 
     if event.entity.name == "searchlight-turtle" then
         game.print("dead turtle")
+    else
+        global.searchLights[event.entity.unit_number] = nil
     end
 
 end,
@@ -91,19 +95,14 @@ end)
 
 
 function HandleSearchlights()
-    for surfaceName, surface in pairs(game.surfaces) do
-        global.searchLights = surface.find_entities_filtered{name = {"searchlight",
-                                                                     "searchlight-dummy"}}
+    -- 'sl' for 'SearchLight'
+    for index, sl in pairs(global.searchLights) do
+        BoostFriends(sl, sl.surface)
 
-        -- 'sl' for 'SearchLight'
-        for index, sl in pairs(global.searchLights) do
-            BoostFriends(sl, surface)
-
-            if sl.name == "searchlight" then
-                ConsiderFoes(sl, surface)
-            else
-                ConsiderTurtles(sl, surface)
-            end
+        if sl.name == "searchlight" then
+            ConsiderFoes(sl, sl.surface)
+        else
+            ConsiderTurtles(sl, sl.surface)
         end
     end
 end
@@ -196,6 +195,9 @@ function CreateDummyLight(old_sl, surface, last_shooting_position)
 
     SpawnTurtle(new_sl, surface, last_shooting_position)
 
+    global.searchLights[new_sl.unit_number] = new_sl
+    global.searchLights[old_sl.unit_number] = nil
+
     old_sl.destroy()
 end
 
@@ -213,6 +215,9 @@ function CreateRealLight(old_sl, surface, foe)
     end
 
     CopyTurret(old_sl, new_sl)
+
+    global.searchLights[new_sl.unit_number] = new_sl
+    global.searchLights[old_sl.unit_number] = nil
 
     old_sl.destroy()
 

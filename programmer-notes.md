@@ -132,6 +132,8 @@ function makeLightStartLocation(sl)
 
 -- TODO deconstruction planner doesn't affect dummy turrets, but it should
 
+-- TODO check if it's more efficent to just filter by one category (name?) than by type then name, etc
+
 
 -- TODO Make the searchlight effect during the daytime a heat haze glimmer kinda thing
 
