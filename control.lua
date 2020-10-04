@@ -3,10 +3,13 @@ require "searchlight-render"
 
 global.searchLights = {}
 global.real_sl_to_lsp = {} -- lsp == last shooting position
+global.sl_to_boostable = {}
 global.dummy_to_turtle = {}
 global.turtle_to_waypoint = {}
+
 global.firing_arcs = {}
 global.firing_range = {}
+
 global.unboost_timers = {}
 
 -- These we don't need to put in the globals, since it's fine to recalulate them on game load
@@ -39,18 +42,18 @@ end)
 script.on_event(defines.events.on_built_entity,
 function(event)
 
-    global.searchLights[event.created_entity.unit_number] = event.created_entity
+    AddSearchlight(event.created_entity)
 
 end,
 {{filter="type", type = "turret"},
- {filter="name", name = "searchlight"}})
+ {filter="name", name = "searchlight"}}) -- TODO we probably will want to track any turrets at all built within range of our searchlights...
 
 
 -- On Deconstruction
 script.on_event(defines.events.on_pre_player_mined_item,
 function(event)
 
-    global.searchLights[event.entity.unit_number] = nil
+    RemoveSearchlight(event.entity)
 
 end,
 {{filter="type", type = "turret"},
@@ -65,7 +68,7 @@ function(event)
     if event.entity.name == "searchlight-turtle" then
         game.print("dead turtle")
     else
-        global.searchLights[event.entity.unit_number] = nil
+        RemoveSearchlight(event.entity)
     end
 
 end,
@@ -112,7 +115,6 @@ function ConsiderFoes(sl, surface)
     if sl.shooting_target == nil then
         if BoostTimerComplete(sl) then
             local pos = global.real_sl_to_lsp[sl.unit_number]
-            global.real_sl_to_lsp[sl.unit_number] = nil
             CreateDummyLight(sl, surface, pos)
         end
     else
@@ -197,6 +199,8 @@ function CreateDummyLight(old_sl, surface, last_shooting_position)
 
     global.searchLights[new_sl.unit_number] = new_sl
     global.searchLights[old_sl.unit_number] = nil
+
+    global.real_sl_to_lsp[old_sl.unit_number] = nil
 
     old_sl.destroy()
 end
@@ -380,6 +384,23 @@ function Boost(oldT, surface, foe)
    return newT
 end
 
+
+function AddSearchlight(turret)
+
+    global.searchLights[turret.unit_number] = turret
+
+end
+
+function RemoveSearchlight(turret)
+
+    global.searchLights[turret.unit_number] = nil
+
+end
+
+function SwapSearchlight(old, new)
+    -- copy settings
+    -- copy over global entries
+end
 
 function CopyTurret(oldT, newT)
     newT.copy_settings(oldT)
