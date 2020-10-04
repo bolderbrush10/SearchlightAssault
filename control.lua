@@ -45,9 +45,32 @@ function(event)
     AddSearchlight(event.created_entity)
 
 end,
-{{filter="type", type = "turret"},
+{{filter="type", type = "turret"},       -- TODO apparently you can just say "turret" as a filter, no need to specify type
  {filter="name", name = "searchlight"}}) -- TODO we probably will want to track any turrets at all built within range of our searchlights...
 
+-- On Script Construction
+script.on_event(defines.events.script_raised_built,
+function(event)
+
+    AddSearchlight(event.created_entity)
+
+end)
+
+-- On Script Revive
+script.on_event(defines.events.script_raised_revive,
+function(event)
+
+    AddSearchlight(event.created_entity)
+
+end)
+
+-- On Script Destruction
+script.on_event(defines.events.script_raised_destroy,
+function(event)
+
+    RemoveSearchlight(event.created_entity)
+
+end)
 
 -- On Deconstruction
 script.on_event(defines.events.on_pre_player_mined_item,

@@ -130,6 +130,8 @@ function makeLightStartLocation(sl)
 
 -- TODO clean up unused crap across all files
 
+-- TODO Double check to make sure that the boost turret turrets are only boosting turrets of the same force
+
 -- TODO deconstruction planner doesn't affect dummy turrets, but it should
 
 -- TODO check if it's more efficent to just filter by one category (name?) than by type then name, etc
