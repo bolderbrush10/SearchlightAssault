@@ -129,7 +129,7 @@ SearchLightForDummy.attack_parameters =
   rotate_penalty = 10,
   ammo_type =
   {
-    category = "laser-turret",
+    category = "beam",
     action =
     {
       type = "direct",

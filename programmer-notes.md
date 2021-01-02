@@ -20,6 +20,40 @@ etc
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
 
+-- Patch notes to consider:
+
+  https://forums.factorio.com/viewtopic.php?f=3&t=91657
+
+  New item flag "spawnable", every item has to have that flag to be creatable through the shortcuts directly.
+
+  Added direction to SimpleEntityWithOwner and SimpleEntityWithForce.
+
+  Renamed on_put_item to on_pre_build, as it is much more precise name for that event. It fires when anything is used for building: item, blueprint, blueprint record or ghost cursor.
+
+  Added LuaEntity::can_wires_reach().
+
+
+-- Important search function:
+  find_units{area=…, force=…, condition=…} → array of LuaEntity
+
+  Find units (entities with type "unit") of a given force and force condition within a given area.
+
+  Parameters
+  Table with the following fields:
+
+      area :: BoundingBox: Box to find units within.
+      force :: LuaForce or string: Force performing the search.
+      condition :: ForceCondition: Only forces which meet the condition will be included in the search.
+
+  Note: This is more efficient than LuaSurface::find_entities.
+  Example
+  Find friendly units to "player" force
+  local friendly_units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "friend")
+  Example
+  Find units of "player" force
+  local units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "same"})
+
+
 -- TODO huge performance problem with ~100 spotlights, even if there are no turtles spawned
         Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
         Made a save file in the game to test performace with 150, and a commit here in git.
@@ -34,6 +68,11 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
            then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
 
 
+-- TODO what the hell happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
+C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
+
+
+-- TODO What if instead of having a "range" as turrets do, we create a custom "spotting range" property and then make our own graphics.draw() calls to highlight the radius of the spotlight on mouseover / item in hand / on map? (This could be useful for showing ranges of boostable friends, too)
 
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
@@ -43,6 +82,9 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO delay un-boosting boosted turrets until they finish their folding animation
 --      (but also somehow prevent them from using their expanded range in the meanwhile)
+
+
+-- TODO 2-4 second "yellow light" period to allow units to hide from the spotlight before they're fully spotted
 
 
 -- TODO energy cost

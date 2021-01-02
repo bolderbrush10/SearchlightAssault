@@ -4,70 +4,136 @@ require "searchlight-render" -- TODO remove
 require "searchlight-util"
 
 
-global.searchLights = {}
-global.dummyLights = {}
-global.real_sl_to_lsp = {} -- lsp == last shooting position
-global.sl_to_boostable = {}
-global.dummy_to_turtle = {}
-global.turtle_to_waypoint = {}
+function InitTables()
+  -- Map: searchlight unit_number -> Searchlight
+  global.searchLights = {}
 
-global.unboost_timers = {}
+  -- Map: dummylight unit_number -> Dummylight
+  global.dummyLights = {}
 
+  -- Map: searchlight unit_number -> Last shooting position
+  global.real_sl_to_lsp = {}
 
-function CheckForFoesNearSL()
-    -- Iterate through grid locs based on current tick? Or all of them every tick?
-    Grid_UpdateFoeGrids()
+  -- Map: eitherlight unit_number -> List: [Neighbor Turrets]
+  global.sl_to_boostable = {}
 
-    for index, grid in pairs(spotlGrids) do
-        if Grid_CheckForFoes(grid) then
-            for slindex, sl in grid.spotlights do
-                -- Check for foes very close to each spotlight in grid
-                -- Check for foes close to each turtle belonging to spotlight in grid
+  -- Map: dummylight unit_number -> Turtle
+  global.dummy_to_turtle = {}
 
-                -- If foe spotted, boost turrets belonging to spotlight
-            end
-        end
-    end
+  -- Map: Turtle -> Position: [x,y]
+  global.turtle_to_waypoint = {}
+
+  -- Map: turtle unit_number -> Turtle
+  global.tun_to_turtle = {}
+
+  -- Map: searchlight unit_number -> remaining ticks
+  global.unboost_timers = {}
 end
 
-function AddSearchlight(turret)
 
-    global.searchLights[turret.unit_number] = turret
+function AddSearchlight(sl)
 
-    -- TODO initial turtle spawning logic here
+  global.searchLights[sl.unit_number] = sl
+
+  -- search for boostables and add
+  -- TODO
+
+  -- add to grid
+  Grid_AddSpotlight(sl)
+
+  -- TODO initial turtle spawning logic here
 end
 
-function RemoveSearchlight(turret)
 
-    global.searchLights[turret.unit_number] = nil
+function AddTurret(turret)
+
+  -- search for spotlights in vicinity and add self as a boostable
 
 end
+
+
+function RemoveTurret(turret)
+
+  -- search for spotlights in vicinity and remove self as a boostable
+
+end
+
+
+function RemoveSearchlight(sl)
+
+    global.searchLights[sl.unit_number] = nil
+
+    -- remove from grid & foegrid
+    Grid_RemoveSpotlight(sl)
+
+    -- remove boostables
+    -- TODO
+end
+
 
 function SwapSearchlight(old, new)
     -- copy settings
-    -- copy over global entries
+    -- copy over global entries, placement in, boostables, etc
 end
 
 
+function SwapTurret(old, new)
+    -- copy settings
+    -- copy over global entries, placement in, etc
+end
+
+function SetAsBoostable(sl, turret)
+
+  -- add to global list
+
+end
 
 
+function DecrementBoostTimers()
+
+  -- decrement those timers
+
+end
 
 
+-- TODO Grids which can be skipped:
+--  ones with no foes
+--  ones with all spotlights engaged with a foe
+--  ones with foes that don't move (how pathological can this case get though?)
+function CheckForFoesNearSL(tick)
+    Grid_UpdateFoeGrids(tick)
 
 
+    -- for index, grid in pairs(spotlGrids) do
+    --     if grid.foes then
 
 
+          -- Basically what we want to do is check for each foe,
+          -- look up all the neighboring grid tiles and check
+          -- if there's a turret in the Outer / Inner Range and act accordingly
 
 
+            -- for slindex, sl in grid.getNeighbors().spotlights do
 
+            --     -- TODO Lights that can be skipped:
+            --     --  ones already engaged with a foe
 
+            --     if (sl.shooting_target is not nil) do
 
+            --       -- Check for foes very close to each spotlight in grid
+            --       foeList = find_entities_filtered{area=grid.area,
+            --       -- Check for foes close to each turtle belonging to spotlight in grid
 
+            --       -- If foe spotted, boost turrets belonging to spotlight
 
+            --     end
 
+            --end
+        -- end
+    -- end
+end
 
-
-
+-----------------------------------------------------------------------
 
 function HandleSearchlights()
     -- 'sl' for 'SearchLight'
@@ -347,41 +413,6 @@ function Boost(oldT, surface, foe)
 end
 
 
-function CopyTurret(oldT, newT)
-    newT.copy_settings(oldT)
-    newT.kills = oldT.kills
-    newT.health = oldT.health
-    newT.last_user  = oldT.last_user
-    newT.direction = oldT.direction
-    newT.orientation = oldT.orientation
-    newT.damage_dealt = oldT.damage_dealt
-
-    if oldT.energy ~= nil then
-        newT.energy = oldT.energy
-    end
-
-    if oldT.get_output_inventory() ~= nil then
-        CopyItems(oldT.get_output_inventory(), newT.get_output_inventory())
-    end
-
-    if oldT.get_module_inventory() ~= nil then
-        CopyItems(oldT.get_module_inventory(), newT.get_module_inventory())
-    end
-
-    if oldT.get_fuel_inventory() ~= nil then
-        CopyItems(oldT.get_fuel_inventory(), newT.get_fuel_inventory())
-    end
-
-    if oldT.get_burnt_result_inventory() ~= nil then
-        CopyItems(oldT.get_burnt_result_inventory(), newT.get_burnt_result_inventory())
-    end
-
-    if oldT.fluidbox ~= nil then
-        CopyFluids(oldT, newT)
-    end
-end
-
-
 -- TODO If multiple searchlights are checking this, then we're going to very rapidly wind down this timer...
 --      So, maybe it's time to bite the bullet and implement oncreated/destroyed(searchlight).
 --      Then, we can build an index for all the turrets in range of any light, and just iterate through that for Boost / UnBoost, etc
@@ -398,23 +429,35 @@ function BoostTimerComplete(turret)
 end
 
 
+
+
+
+
+-- The idea here is to create two special forces.
+-- The 'foe' force exists to create an imaginary target (The 'Turtle') for the spotlights to 'shoot at' while they scan around for enemy units.
+-- But we don't want the player's normal turrets to shoot at that imaginary target...
+-- ...So we make a 'friend' force, which we'll assign to spotlights while they shoot at the turtle.
 function InitForces()
+
     game.create_force(searchlightFoe)
     game.create_force(searchlightFriend)
 
     for F in pairs(game.forces) do
-        game.forces[searchlightFoe].set_cease_fire(F, true)
-        game.forces[searchlightFriend].set_cease_fire(F, true)
-
-        game.forces[F].set_cease_fire(searchlightFoe, true)
-        game.forces[F].set_cease_fire(searchlightFriend, true)
+      SetCeaseFires(F)
     end
 
-    game.forces[searchlightFriend].set_friend("player", true)
+    game.forces[searchlightFriend].set_friend("player", true) -- TODO Is this appropriate in multiplayer?
     game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
+
 end
 
 
-function InitTables()
+function SetCeaseFires(F)
+
+  game.forces[searchlightFoe].set_cease_fire(F, true)
+  game.forces[searchlightFriend].set_cease_fire(F, true)
+
+  game.forces[F].set_cease_fire(searchlightFoe, true)
+  game.forces[F].set_cease_fire(searchlightFriend, true)
 
 end

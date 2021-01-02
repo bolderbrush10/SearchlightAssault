@@ -142,3 +142,37 @@ function CopyItems(oldTinv, newTinv)
 
 end
 
+
+function CopyTurret(oldT, newT)
+    newT.copy_settings(oldT)
+    newT.kills = oldT.kills
+    newT.health = oldT.health
+    newT.last_user  = oldT.last_user
+    newT.direction = oldT.direction
+    newT.orientation = oldT.orientation
+    newT.damage_dealt = oldT.damage_dealt
+
+    if oldT.energy ~= nil then
+        newT.energy = oldT.energy
+    end
+
+    if oldT.get_output_inventory() ~= nil then
+        CopyItems(oldT.get_output_inventory(), newT.get_output_inventory())
+    end
+
+    if oldT.get_module_inventory() ~= nil then
+        CopyItems(oldT.get_module_inventory(), newT.get_module_inventory())
+    end
+
+    if oldT.get_fuel_inventory() ~= nil then
+        CopyItems(oldT.get_fuel_inventory(), newT.get_fuel_inventory())
+    end
+
+    if oldT.get_burnt_result_inventory() ~= nil then
+        CopyItems(oldT.get_burnt_result_inventory(), newT.get_burnt_result_inventory())
+    end
+
+    if oldT.fluidbox ~= nil then
+        CopyFluids(oldT, newT)
+    end
+end

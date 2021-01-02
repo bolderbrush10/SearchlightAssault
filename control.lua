@@ -1,17 +1,33 @@
 require "searchlight-control"
 
 
--- On Init
-script.on_init(
-function(event)
-    InitForces()
-end)
-
-
 -- On Load
 script.on_load(
 function(event)
+
+    -- TODO Is there anything unsaved we need to recalculate every load here?
+
+end)
+
+
+-- On Init
+script.on_init(
+function(event)
+
+    InitForces()
     InitTables()
+
+end)
+
+
+-- On Force Created
+script.on_event(defines.events.on_force_created,
+function(event)
+
+    if event.force.name ~= searchlightFriend and event.force.name ~= searchlightFoe then
+        SetCeaseFires(event.force)
+    end
+
 end)
 
 
@@ -22,7 +38,7 @@ function(event)
     AddSearchlight(event.created_entity)
 
 end,
-{{filter="type", type = "turret"},       -- TODO apparently you can just say "turret" as a filter, no need to specify type
+{{filter="type", type = "turret"},       -- TODO apparently you can just say "turret" as a filter, no need to specify type (cleanup other funcs too)
  {filter="name", name = "searchlight"}}) -- TODO we probably will want to track any turrets at all built within range of our searchlights...
 
 
@@ -32,7 +48,7 @@ function(event)
 
     AddSearchlight(event.created_entity)
 
-end)
+end) -- TODO filter this & other events
 
 
 -- On Script Revive
@@ -99,6 +115,6 @@ end)
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
-    CheckForFoesNearSL()
+    CheckForFoesNearSL(event.tick)
+    DecrementBoostTimers()
 end)
-

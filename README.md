@@ -1,6 +1,13 @@
 # Searchlights
 
-All the interesting behaviors happen in searchlight-control.lua
+-> All the interesting behaviors happen in searchlight-control.lua
+
+Primary issues inflating SLOC:
+0 My brain has been poisoned by nearly a decade of working nigh-exclusively in C++
+0 No mechanism in the API to modify shooting range during runtime
+0 Unsophisticated technique to "fire" the spotlight effect when
+    no enemies present by creating a dummy entity in a dummy force (turtle)
+    and a dummy spotlight in its own dummy force to shoot at the turtle
 
 
 File Guide:
