@@ -74,6 +74,9 @@ end
 function SwapSearchlight(old, new)
     -- copy settings
     -- copy over global entries, placement in, boostables, etc
+    SwapTurret(old, new)
+
+    -- TODO copy boostables
 end
 
 

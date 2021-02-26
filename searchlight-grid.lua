@@ -2,8 +2,8 @@ require "searchlight-defines"
 
 
 -- Grid: {Force, Surface, Area, Foes, Searchlight Count}
-local gridSize = searchlightOuterRange / 8
--- local gridSize = searchlightOuterRange
+-- local gridSize = searchlightOuterRange / 8
+local gridSize = searchlightOuterRange
 
 -- Force.index -> "x,y" -> Grid
 global.forceToPositionToGrid = {}
