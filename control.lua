@@ -92,9 +92,7 @@ function(event)
     end
 
 end,
-{{filter="type", type = "turret"},
- {filter="type", type = "unit"},
- {filter="name", name = "searchlight"},
+{{filter="name", name = "searchlight"},
  {filter="name", name = "searchlight-dummy"},
  {filter="name", name = "searchlight-turtle"}})
 
@@ -117,4 +115,16 @@ script.on_event(defines.events.on_tick,
 function(event)
     CheckForFoesNearSL(event.tick)
     DecrementBoostTimers()
+end)
+
+
+script.on_event(defines.events.on_console_command,
+function (event)
+    if game.players[1].selected then
+        game.players[1].selected.active = not game.players[1].selected.active
+        game.players[1].selected.destructible = true
+        game.print("toggled active")
+    else
+        game.print("nothing selected")
+    end
 end)

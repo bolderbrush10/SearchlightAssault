@@ -1,3 +1,32 @@
+Current dillema:
+0) On top of all this is the problem of how to have the spotlight shoot at a turtle which regular turrets ignore...
+A) Do we make turrets out of two entities and swap between them like we currently do?
+B) Or can we have the two entities exist at the same time to simplify things?
+ -- Is there a way to disable an entity?
+ -- Sort of; entity.active :: boolean [Read-Write] Deactivating an entity will stop all its operations (car will stop moving, inserters will stop working, etc).
+ -- Entities still show their range (desired)
+ -- But entities stop consuming electricity (undesired)
+ -- Entities show an icon on their info panel stated 'disabled by script' (undesired)
+ -- Entities cannot be destroyed, just set to 0hp (undesired)
+C) Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
+   (like how tanks have different attacks)
+-- entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
+-- Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
+D) Rework the graphics to support the searchlight being effectively made of two entities?
+-- There could be a short-range "radar beacon" piece in the middle that autodetects close foes and the longer-range searchlight on top of it
+-- I don't know if I like that idea... Wouldn't we want the non-dummy entity to still actually attack at that long range?
+E) We drop the whole 'two entites' thing entirely and just have one fully-script controlled turret
+F) Stop automatically detecting close-range foes. Isn't the whole point of 'sneaking past searchlights' supposed to be a thing you can do under the guard's nose?
+
+Sadly, alert_when_attacking is a part of the turret entity prototype, read-only at runtime, and not part of the attack itself.
+I think we can get away with just making alerts a circuit network output...
+
+G) Still two entities, but no swapping between them and only the hidden entity does any work.
+I think we still want the structure of the turret to belong to the player force.. Maybe we have it spawn a hidden entity that does all the actual attacking?
+The hidden entity can inherit the messy forces, and the "real" turret does nothing but suck up electricity.
+
+
+Crash testing:
 Action at time:
 Made a TON of searchlights, some near a biter nest.
 A bunch of biters swarmed, and some worms were spitting at the lights.
@@ -68,11 +97,30 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
            then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
 
 
+-- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
+-- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
+
+
+-- TODO Sounds and audio
+https://wiki.factorio.com/Prototype/Entity#working_sound
+
+-- TODO So the shooting_target [rw] thing didn't work out but apparently you can use
+update_selected_entity(position)
+-- and
+entity.shooting_state = {
+   state = defines.shooting.shooting_enemies,
+   position = position
+}
+-- or something like that
+
 -- TODO what the hell happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
 C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
+-- TODO Use the new decorations thing to spawn in crap around the boostable radius
+-- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
 
--- TODO What if instead of having a "range" as turrets do, we create a custom "spotting range" property and then make our own graphics.draw() calls to highlight the radius of the spotlight on mouseover / item in hand / on map? (This could be useful for showing ranges of boostable friends, too)
+
+-- TODO What if instead of having a "range" as turrets do, we create a custom "spotting range" property and then make our own graphics.draw() calls to highlight the radius of the spotlight on mouseover / item in hand / on map? (This could be useful for showing ranges of boostable friends, too. (And we could use the terrain decoration to show that after construction))
 
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
@@ -104,6 +152,7 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 -- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
 --      When the spotlight is boosting / controlling the turret, it can play a little laser light animation on the turret's link box and also the spotlight's link box thing
 
+-- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
 
 -- TODO Get people to play test the balance
 

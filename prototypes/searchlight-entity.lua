@@ -36,7 +36,6 @@ Light_Layer_SpotLight_NormLight_Less.filename = "__Searchlights__/graphics/spotl
 local Light_Layer_SpotLight_RimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_RimLight.filename = "__Searchlights__/graphics/spotlight-r-rim.png"
 
--- TODO make this a 'heat shimmer' animation, so it looks awesome during the day
 local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
 
@@ -125,6 +124,7 @@ SearchLightForDummy.attack_parameters =
   source_offset = {0, -3.423489 / 4},
   -- I have no idea what are good penalty values here.
   -- These parameters are pretty new, and there's scant documentation.
+  -- A negative health penalty will encourage attacking higher-hp targets.
   health_penalty = -10,
   rotate_penalty = 10,
   ammo_type =
