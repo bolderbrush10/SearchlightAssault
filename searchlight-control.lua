@@ -8,6 +8,9 @@ function InitTables()
   -- Map: searchlight unit_number -> Searchlight
   global.searchLights = {}
 
+  -- Map: searchlight unit_number -> Dummylight
+  global.sl_to_dummy = {}
+
   -- Map: dummylight unit_number -> Dummylight
   global.dummyLights = {}
 
@@ -32,6 +35,9 @@ end
 
 
 function AddSearchlight(sl)
+  newpos = sl.position
+  newpos.y = newpos.y - 2
+  global.sl_to_dummy[sl.unit_number] = sl.surface.create_entity{name="searchlight-dummy", position=newpos, force=searchlightFriend}
 
   global.searchLights[sl.unit_number] = sl
 
@@ -61,13 +67,16 @@ end
 
 function RemoveSearchlight(sl)
 
-    global.searchLights[sl.unit_number] = nil
+  global.sl_to_dummy[sl.unit_number].destroy()
+  global.sl_to_dummy[sl.unit_number] = nil
 
-    -- remove from grid & foegrid
-    Grid_RemoveSpotlight(sl)
+  global.searchLights[sl.unit_number] = nil
 
-    -- remove boostables
-    -- TODO
+  -- remove from grid & foegrid
+  Grid_RemoveSpotlight(sl)
+
+  -- remove boostables
+  -- TODO
 end
 
 

@@ -105,17 +105,35 @@ SpotlightBeamAlarm.ending =
 data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
 
 
--- SearchLightForDummy; the primary entity which uses a lamp like a turret
--- TODO: use radar_range?
-local SearchLightForDummy = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
-SearchLightForDummy.flags = {"hidden"}
-SearchLightForDummy.name = "searchlight-dummy"
-SearchLightForDummy.minable.result = "searchlight"
+
+
+
+local SearchLightBaseEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+SearchLightBaseEntity.name = "searchlight"
+SearchLightBaseEntity.minable.result = "searchlight"
  -- arbitrary high number btween 5 and 500 to be 'instant'
-SearchLightForDummy.rotation_speed = 50
+SearchLightBaseEntity.rotation_speed = 50
 -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
-SearchLightForDummy.energy_source.usage_priority = "secondary-input"
-SearchLightForDummy.attack_parameters =
+SearchLightBaseEntity.energy_source.usage_priority = "secondary-input"
+-- TODO have an electric buffer that feeds the main entity (and passes through electricity directly when buffer's full)
+
+
+-- SearchLightAttackEntity; the primary entity which uses a lamp like a turret
+-- TODO: use radar_range?
+local SearchLightAttackEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+-- TODO remove this commented flag when we're done,
+--      keep it in case we need to remember that we can make things hidden
+-- SearchLightAttackEntity.flags = {"hidden"}
+SearchLightAttackEntity.selectable_in_game = false
+SearchLightAttackEntity.name = "searchlight-dummy"
+ -- arbitrary high number btween 5 and 500 to be 'instant'
+SearchLightAttackEntity.rotation_speed = 50
+-- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
+-- TODO consume electricity by drawing from the base-entity's buffer
+SearchLightAttackEntity.energy_source.usage_priority = "secondary-input"
+-- We don't intend to leave a corpse at all, but if the worst happens...
+corpse = "small-scorchmark"
+SearchLightAttackEntity.attack_parameters =
 {
   type = "beam",
   range = searchlightOuterRange,
@@ -144,11 +162,6 @@ SearchLightForDummy.attack_parameters =
     }
   }
 }
-
-
-local SearchLightForReal = table.deepcopy(SearchLightForDummy)
-SearchLightForReal.name = "searchlight"
-SearchLightForReal.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
 
 -- The dummy seeking spotlight's beam draws where the turtle is
@@ -183,6 +196,7 @@ local Turtle =
   pollution_to_join_attack = 5000,
   distraction_cooldown = 1,
   vision_distance = 1,
+  -- TODO Can we leave out the attack parameters?
   attack_parameters =
   {
     type = "projectile",
@@ -196,4 +210,4 @@ local Turtle =
 
 
 -- Add new definitions to game data
-data:extend{SearchLightForDummy, SearchLightForReal, Turtle}
+data:extend{SearchLightAttackEntity, SearchLightBaseEntity, Turtle}

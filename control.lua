@@ -59,6 +59,7 @@ function(event)
 
 end)
 
+-- TODO filter all this better
 
 -- On Script Destruction
 script.on_event(defines.events.script_raised_destroy,

@@ -25,6 +25,9 @@ G) Still two entities, but no swapping between them and only the hidden entity d
 I think we still want the structure of the turret to belong to the player force.. Maybe we have it spawn a hidden entity that does all the actual attacking?
 The hidden entity can inherit the messy forces, and the "real" turret does nothing but suck up electricity.
 
+-- Q) Why don't we just have the one entity?
+-- A) Because we want to assign the searchlight-base to the player force and the searchlight-attack-entity to be a foe of the turtle's force
+
 
 Crash testing:
 Action at time:
@@ -97,9 +100,28 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
            then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
 
 
+-- TODO Ok, so let's think about the turtle + circuit-programmable spotlight targeting.
+--      Using move-to commands is problematic because there's only a particular radius the turtle will settle for.
+--      We could teleport the turtle around but that's probably not very smooth...
+--      Should we wait until the mod is in a better shape before we worry about this?
+--      Or should we start thinking about using something besides a hidden biter as the turtle?
+--      We could make some branches to test the difference with a biter-turtle vs manually caculating interpolated target-positions...
+--      Well, we're not going to let the circuit network swing the spotlight around to new positions instantly, are we?
+--      So, I think that maybe we'll have the circuit network set a destination for the turtle, and people will have to have the expectation that they don't get pixel-perfect control of the turtle, and that'll be fine.
+
+-- TODO When we're recieving coordinates from the circuit network, remember to disable turtle wandering.
+
 -- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
 -- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
 
+
+-- TODO Electricity consumption
+
+-- TODO are we using 2 spaces to indent or 4? Get it straight. control.lua is the biggest offender so far
+
+
+-- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.
+--      Are we going to be able to (cheaply) replicate that effect?
 
 -- TODO Sounds and audio
 https://wiki.factorio.com/Prototype/Entity#working_sound
@@ -118,9 +140,11 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 -- TODO Use the new decorations thing to spawn in crap around the boostable radius
 -- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
+-- We should probably make it an option in the mod to disable this...
 
 
 -- TODO What if instead of having a "range" as turrets do, we create a custom "spotting range" property and then make our own graphics.draw() calls to highlight the radius of the spotlight on mouseover / item in hand / on map? (This could be useful for showing ranges of boostable friends, too. (And we could use the terrain decoration to show that after construction))
+-- entity/RadiusVisualisationSpecification is the prototype place to define effect radii
 
 -- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
 -- TODO also need to handle construction ghosts for boosted turrets, etc
@@ -244,6 +268,7 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 -- TODO ask on forums about saving / loading events, so we can restore turrets on save, recalculate unimportant tables on load, etc
 
 
+
 -- TODO Break apart into a 'boostable turrets' mod
         Let people use mod settings to control what level the boosting is
 -- TODO How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
@@ -313,4 +338,5 @@ Features:
 
 - Built from 5x lamp + 1x Radar (since it's able to target things)
   - Finally gives an incentive to automate lamp production for non-peaceful players
+
 
