@@ -37,6 +37,16 @@ ammoBoost = searchlightOuterRange - 20
 -- Range boost given to fluid turrets
 fluidBoost = searchlightOuterRange - 40
 
+-- Capacitor size (electric energy buffer) for the searchlight
+-- (The searchlight requires a half-full buffer to start operating, and turns back off when the buffer is below the cutoff)
+-- ((We use this to reduce pathological "flickering" cases when a factory is in low power,
+--   and we'd otherwise need to constantly enable / disable the hidden entities that make the searchlight work))
+searchlightCapacitorSize     = "9500kJ"
+searchlightCapacitorCutoff     = 500000 -- joules
+searchlightCapacitorStartable = 4750000 -- joules
+
+-- How much electricity the searchlight consumes
+searchlightEnergyUsage = "305kW"
 
 -------------------------------------------------
 -- Things that aren't interesting to mess with --
@@ -54,6 +64,9 @@ searchlightTrackSpeed = 1.3
 -- Force names
 searchlightFoe = "hddnSLFoe"
 searchlightFriend = "hddnSLFnd"
+
+-- Trigger Target Mask names
+turtleMaskName = "spotlight-turtle"
 
 -- Identifies range boosted versions of turrets
 boostSuffix = "-sl_boosted"

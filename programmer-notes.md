@@ -1,35 +1,62 @@
-Current dillema:
+##Current task:
+
+We're thinking about rethinking using hidden forces so that we can instead 'inject' attack-mask blacklists into all other existing turrets...
+I'm not sure if we should make the turret a part of the biter force though, so we might still want to keep a "turtle force" around...
+... and also we don't want the player / minefields / combat robots to attack it... Or anything else we don't think of, or something some mod adds...
+It would be much nicer if we could set our attack_mask from the entity instead of from the attacker..
+
+!! So, there's an "intrinsic" type for entities called "common" that turrets have included in their target mask by default..
+If we can override that for the turtle, maybe things won't be able to attack it by default??
+
+SUCCESS!! Begin the overhaul to use trigger_mask immediately!
+
+##~~Current~~ Previous dillema:
+
 0) On top of all this is the problem of how to have the spotlight shoot at a turtle which regular turrets ignore...
+
 A) Do we make turrets out of two entities and swap between them like we currently do?
+
 B) Or can we have the two entities exist at the same time to simplify things?
- -- Is there a way to disable an entity?
- -- Sort of; entity.active :: boolean [Read-Write] Deactivating an entity will stop all its operations (car will stop moving, inserters will stop working, etc).
- -- Entities still show their range (desired)
- -- But entities stop consuming electricity (undesired)
- -- Entities show an icon on their info panel stated 'disabled by script' (undesired)
- -- Entities cannot be destroyed, just set to 0hp (undesired)
+ - Is there a way to disable an entity?
+ - Sort of; entity.active :: boolean [Read-Write] Deactivating an entity will stop all its operations (car will stop moving, inserters will stop working, etc).
+ - Entities still show their range (desired)
+ - But entities stop consuming electricity (undesired)
+ - Entities show an icon on their info panel stated 'disabled by script' (undesired)
+ - Entities cannot be destroyed, just set to 0hp (undesired)
+
 C) Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
    (like how tanks have different attacks)
--- entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
--- Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
+- entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
+- Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
+
 D) Rework the graphics to support the searchlight being effectively made of two entities?
--- There could be a short-range "radar beacon" piece in the middle that autodetects close foes and the longer-range searchlight on top of it
--- I don't know if I like that idea... Wouldn't we want the non-dummy entity to still actually attack at that long range?
+
+- There could be a short-range "radar beacon" piece in the middle that autodetects close foes and the longer-range searchlight on top of it
+- I don't know if I like that idea... Wouldn't we want the non-dummy entity to still actually attack at that long range?
+
 E) We drop the whole 'two entites' thing entirely and just have one fully-script controlled turret
+
 F) Stop automatically detecting close-range foes. Isn't the whole point of 'sneaking past searchlights' supposed to be a thing you can do under the guard's nose?
 
 Sadly, alert_when_attacking is a part of the turret entity prototype, read-only at runtime, and not part of the attack itself.
 I think we can get away with just making alerts a circuit network output...
 
 G) Still two entities, but no swapping between them and only the hidden entity does any work.
+
 I think we still want the structure of the turret to belong to the player force.. Maybe we have it spawn a hidden entity that does all the actual attacking?
 The hidden entity can inherit the messy forces, and the "real" turret does nothing but suck up electricity.
 
--- Q) Why don't we just have the one entity?
--- A) Because we want to assign the searchlight-base to the player force and the searchlight-attack-entity to be a foe of the turtle's force
+- Q) Why don't we just have the one entity?
+- A) Because we want to assign the searchlight-base to the player force and the searchlight-attack-entity to be a foe of the turtle's force
+
+- Qualities of the base entity:
+  - Has health
+  - Has force
+  - Consumes electricty
+  - Has range or effect area
 
 
-Crash testing:
+##Crash testing:
 Action at time:
 Made a TON of searchlights, some near a biter nest.
 A bunch of biters swarmed, and some worms were spitting at the lights.
@@ -42,17 +69,17 @@ Just made like 50 searchlights really close together really quickly.
 
 
 
-Strings which would be first-class types in a real programming language:
+##Strings which would be first-class types in a real programming language:
 
 "small-searchlight"
 etc
 
 
--- Important example
+- Important example
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
 
--- Patch notes to consider:
+- Patch notes to consider:
 
   https://forums.factorio.com/viewtopic.php?f=3&t=91657
 
@@ -65,7 +92,7 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
   Added LuaEntity::can_wires_reach().
 
 
--- Important search function:
+- Important search function:
   find_units{area=…, force=…, condition=…} → array of LuaEntity
 
   Find units (entities with type "unit") of a given force and force condition within a given area.
@@ -87,6 +114,7 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 
 -- TODO huge performance problem with ~100 spotlights, even if there are no turtles spawned
+
         Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
         Made a save file in the game to test performace with 150, and a commit here in git.
 
@@ -240,6 +268,16 @@ function makeLightStartLocation(sl)
     --      also figure out how to deal with the unfolding animation
 
 
+-- TODO We have two different big tables that we, more or less, would ideally check every tick. These tables are:
+--      A global list of searchlights (for checking energy consumption and "feeding" their hidden entities)
+--          (^ Code for this moved to bottom of this notes file)
+--      A global list of "grids" we use to check for foes near our searchlights
+--      In the name of optimizing FPS, we instead chunk those big tables into sub-regions.
+--      Right now, we use two different chunking strategies.
+--      What we need to do:
+--      Think about just using one chunking strategy
+--      Gather experimental data on what chunking strategy & chunk size is best (especially as counts of searchlights get huge)
+
 -- TODO spawn turtle in general direction turret is pointing at
 
 
@@ -278,28 +316,51 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 -- TODO Organize control.lua into a couple more files (like, boostrange.lua), etc
 
 
--- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+-- TODO rename searchlightFriendRadius to searchlightRangeBoostRadius or something
 
+-- TODO Be more meticulous in checking entity.isValid on objects before we use them
+
+-- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
+--      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
+
+
+-- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+--      (Alterntatively, ask for the simple ability to increase turret range during run time)
+
+-- -- TODO Look into whether you can use the migrations files to shuffle turrets back and forth from their boosted versions if someone uninstalls this mod
 
 -- TODO disable when no electricity / reduce range according to electric satisfaction
 
--- Possibly can use this attack type to do cool stuff?
--- https://wiki.factorio.com/Types/TriggerDelivery#target_effects
--- https://wiki.factorio.com/Types/ScriptTriggerEffectItem
+-- TODO would be cool if the spotlight just flickered while it was disabled and still had low power
 
--- STRETCH GOALS
--- Spotlight position & color controlled by circuit signals
--- Spotlight emits detection info to circuit network
--- Spotlight could possibly be set to only wander a 180degree arc around its inital placement?
--- Use the 'TriggerEffect' prototype to play an alert sound if an enemy is detected? Looks like we can set it to play the sound at the 'source' aka the turret itself
-    -- We can also create a sticker or particle, which could be fun for making "!" float above the turret's head or something.
-    -- (Or Maybe cool flares could shoot out and form a '!'?)
+-- TODO Clean up unused graphics / icons
+
+-- TODO See if there's a way to get rid of the 'turret' category in the information panel
+--      It lists stuff that we don't care about like kills & damage done
+
+-- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
+
+-- TODO Possibly can use this attack type to do cool stuff?
+- https://wiki.factorio.com/Types/TriggerDelivery#target_effects
+- https://wiki.factorio.com/Types/ScriptTriggerEffectItem
+
+## STRETCH GOALS
+- Spotlight position & color controlled by circuit signals
+- Spotlight emits detection info to circuit network
+- Spotlight could possibly be set to only wander a 180degree arc around its inital placement?
+- Use the 'TriggerEffect' prototype to play an alert sound if an enemy is detected? Looks like we can set it to play the sound at the 'source' aka the turret itself
+    - We can also create a sticker or particle, which could be fun for making "!" float above the turret's head or something.
+    - (Or Maybe cool flares could shoot out and form a '!'?)
+- Mod ourselves into a couple of main-menu screens
+    - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
+    - Probably want a scene with a jail break that succeeds
+    - Probably wanta  scene with a jail break that fails
 
 
 
 =================
 
-Feature request for spotlights that track enemies
+##Feature request for spotlights that track enemies
 
 
 
@@ -340,3 +401,61 @@ Features:
   - Finally gives an incentive to automate lamp production for non-peaceful players
 
 
+==================
+
+##Scraps to implement
+
+
+```
+-- !! So, since it seems impossible in base lua to iterate over a "chunk" of a dictionary,
+--    we might have to implement something ourselves with just a stock array
+-- TODO Inside the add/remove searchlight functions, increase or decrease sl_bucketSize
+--      in proportion to how many turrets we want to check per tick when we reach milestones
+local function check_turrets_on_tick(event)
+  if not global.sl_onTick_turretIndex then
+    global.sl_onTick_turretIndex = 0
+    global.sl_bucketSize = 100
+  end
+
+  local tableSize = table_size(global.searchLights)
+  local i = global.sl_onTick_turretIndex
+  local max = global.sl_onTick_turretIndex + global.sl_bucketSize
+
+  if max > tableSize then
+    max = tableSize
+  end
+
+  while i < max do
+    doStuff(global.searchLights[i])
+    i = i + 1
+  end
+
+  global.turretIndex = global.turretIndex + global.sl_bucketSize
+  if global.turretIndex >= table_size(global.searchLights)
+    global.turretIndex = 0
+  end
+end
+```
+
+
+```
+-- Klonan's iterator (similar to what we did for the grid-checker)
+local function on_tick(event)
+  for surface_name, surface_position_x in pairs(global.supportive_turrets) do
+    for x, surface_position_y in pairs(surface_position_x) do
+      if (x + game.tick) % 60 == 0 then
+        for y, data in pairs(surface_position_y) do
+          if (x + y + game.tick) % check_period == 0 then
+            if not data.turret.valid then
+              if data.unit.valid then
+                data.unit.destroy()
+              end
+              global.supportive_turrets[surface_name][x][y] = nil
+            end
+          end
+        end
+      end
+    end
+  end
+end
+```

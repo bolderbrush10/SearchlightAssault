@@ -1,5 +1,9 @@
 require "searchlight-control"
 
+--
+-- TODO filter all these events
+--
+
 
 -- On Load
 script.on_load(
@@ -30,8 +34,11 @@ function(event)
 
 end)
 
+--
+-- CONSTRUCTIONS
+--
 
--- On Construction
+-- Via Player
 script.on_event(defines.events.on_built_entity,
 function(event)
 
@@ -42,16 +49,27 @@ end,
  {filter="name", name = "searchlight"}}) -- TODO we probably will want to track any turrets at all built within range of our searchlights...
 
 
--- On Script Construction
+-- Via Robot
+script.on_event(defines.events.on_robot_built_entity,
+function(event)
+
+    AddSearchlight(event.created_entity)
+
+end,
+{{filter="type", type = "turret"},
+ {filter="name", name = "searchlight"}})
+
+
+-- Via Script
 script.on_event(defines.events.script_raised_built,
 function(event)
 
     AddSearchlight(event.created_entity)
 
-end) -- TODO filter this & other events
+end)
 
 
--- On Script Revive
+-- Via Revived by Script
 script.on_event(defines.events.script_raised_revive,
 function(event)
 
@@ -59,18 +77,11 @@ function(event)
 
 end)
 
--- TODO filter all this better
+--
+-- DESTRUCTIONS
+--
 
--- On Script Destruction
-script.on_event(defines.events.script_raised_destroy,
-function(event)
-
-    RemoveSearchlight(event.created_entity)
-
-end)
-
-
--- On Deconstruction
+-- Via Player
 script.on_event(defines.events.on_pre_player_mined_item,
 function(event)
 
@@ -78,25 +89,41 @@ function(event)
 
 end,
 {{filter="type", type = "turret"},
- {filter="name", name = "searchlight"},
- {filter="name", name = "searchlight-dummy"}})
+ {filter="name", name = "searchlight"}})
 
 
--- On Death
+-- Via Robot
+script.on_event(defines.events.on_robot_mined_entity,
+function(event)
+
+    RemoveSearchlight(event.entity)
+
+end,
+{{filter="type", type = "turret"},
+ {filter="name", name = "searchlight"}})
+
+
+-- Via Damage
 script.on_event(defines.events.on_entity_died,
 function(event)
 
-    if event.entity.name == "searchlight-turtle" then
-        game.print("dead turtle")
-    else
-        RemoveSearchlight(event.entity)
-    end
+    RemoveSearchlight(event.entity)
 
 end,
-{{filter="name", name = "searchlight"},
- {filter="name", name = "searchlight-dummy"},
- {filter="name", name = "searchlight-turtle"}})
+{{filter="name", name = "searchlight"}})
 
+
+-- Via Script
+script.on_event(defines.events.script_raised_destroy,
+function(event)
+
+    RemoveSearchlight(event.created_entity)
+
+end)
+
+--
+-- Misc
+--
 
 -- On Command Completed
 script.on_event(defines.events.on_ai_command_completed,
@@ -116,9 +143,12 @@ script.on_event(defines.events.on_tick,
 function(event)
     CheckForFoesNearSL(event.tick)
     DecrementBoostTimers()
+    CheckElectricNeeds()
 end)
 
 
+-- Manual debug tool
+-- TODO remove
 script.on_event(defines.events.on_console_command,
 function (event)
     if game.players[1].selected then

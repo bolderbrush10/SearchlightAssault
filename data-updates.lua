@@ -99,6 +99,7 @@ local function MakeBoost(currTable, newRange)
           boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = newRange
       end
 
+      -- TODO clean this up or what?
       -- if boostCopy.base_picture then
 
       --   -- for index, layer in pairs(boostCopy.base_picture.layers) do

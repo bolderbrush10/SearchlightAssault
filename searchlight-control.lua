@@ -33,11 +33,8 @@ function InitTables()
   global.unboost_timers = {}
 end
 
-
 function AddSearchlight(sl)
-  newpos = sl.position
-  newpos.y = newpos.y - 2
-  global.sl_to_dummy[sl.unit_number] = sl.surface.create_entity{name="searchlight-dummy", position=newpos, force=searchlightFriend}
+  global.sl_to_dummy[sl.unit_number] = sl.surface.create_entity{name="searchlight-dummy", position=sl.position, force=searchlightFriend}
 
   global.searchLights[sl.unit_number] = sl
 
@@ -47,7 +44,15 @@ function AddSearchlight(sl)
   -- add to grid
   Grid_AddSpotlight(sl)
 
+  local newPos = sl.position
+  newPos.x = newPos.x + 5
+
   -- TODO initial turtle spawning logic here
+   sl.surface.create_entity{name = "searchlight-turtle",
+                                         position = newPos,
+                                         force = searchlightFoe,
+                                         fast_replace = true,
+                                         create_build_effect_smoke = true}
 end
 
 
@@ -105,6 +110,24 @@ function DecrementBoostTimers()
 
   -- decrement those timers
 
+end
+
+
+-- We wouldn't need this function if there was a way to transfer electricity between forces
+-- !!! WAAIT A SECOND. They have to be able to share the electric network because the dummy was showing up on my electric network!
+-- But then, on the other hand, we still need to "mirror" the electric usage & buffer between them....
+function CheckElectricNeeds()
+  for unit_num, sl in pairs(global.searchLights) do
+
+    dummylight = global.sl_to_dummy[unit_num]
+
+    if dummylight.active and sl.energy < searchlightCapacitorCutoff then
+      dummylight.active = false
+    elseif not dummylight.active and sl.energy > searchlightCapacitorStartable then
+      dummylight.active = true
+    end
+
+  end
 end
 
 

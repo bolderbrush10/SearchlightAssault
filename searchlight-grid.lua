@@ -2,7 +2,6 @@ require "searchlight-defines"
 
 
 -- Grid: {Force, Surface, Area, Foes, Searchlight Count}
--- local gridSize = searchlightOuterRange / 8
 local gridSize = searchlightOuterRange
 
 -- Force.index -> "x,y" -> Grid
@@ -49,10 +48,10 @@ function Grid_UpdateFoeGrids(tick)
     for forceIndex, positionToGrids in pairs(global.forceToPositionToGrid) do
         index = 0
         for positionIndex, grid in pairs(positionToGrids) do
-            Grid_CheckForFoes(grid)
             index = index + 1
 
             if (tick % ticksBetweenFoeSearches == index % ticksBetweenFoeSearches) then
+                Grid_CheckForFoes(grid)
                 rendering.draw_rectangle{color={r=0.9, g=0.9, b=0, a=0.5},
                                width=6,
                                filled=False,
