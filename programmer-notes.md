@@ -146,9 +146,6 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO Electricity consumption
 
--- TODO are we using 2 spaces to indent or 4? Get it straight. control.lua is the biggest offender so far
-
-
 -- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
 
 

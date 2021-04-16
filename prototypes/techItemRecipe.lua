@@ -3,8 +3,8 @@ require "entities"
 
 local icon =
 {
-    filename = "__Searchlights__/graphics/terrible2.png",
-    icon_size = 80
+  filename = "__Searchlights__/graphics/terrible2.png",
+  icon_size = 80
 }
 
 -- Item
@@ -31,9 +31,9 @@ data:extend{item, recipe}
 
 -- Technology
 table.insert(
-    data.raw["technology"]["optics"].effects,
-    {
-        type = "unlock-recipe",
-        recipe = "searchlight"
-    }
+  data.raw["technology"]["optics"].effects,
+  {
+    type = "unlock-recipe",
+    recipe = "searchlight"
+  }
 )

@@ -20,95 +20,95 @@ DirectionToVector[defines.direction.northeast] = {x =  1, y = -1}
 
 
 function len(a, b)
-    return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
+  return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
 end
 
 -- Calculating the square root is slower than just squaring whatever you compare to
 function lensquared(a, b)
-    return (a.x - b.x)^2 + (a.y - b.y)^2
+  return (a.x - b.x)^2 + (a.y - b.y)^2
 end
 
 function square(a)
-    return a*a
+  return a*a
 end
 
 -- theta given as 0.0 - 1.0, 0/1 is top middle of screen
 function OrientationToPosition(origin, theta, distance)
-    local radTheta = theta * 2 * math.pi
+  local radTheta = theta * 2 * math.pi
 
-    -- Invert y to fit screen coordinates
-    return {x = origin.x + math.sin(radTheta) * distance,
-            y = origin.y + math.cos(radTheta) * distance * -1,}
+  -- Invert y to fit screen coordinates
+  return {x = origin.x + math.sin(radTheta) * distance,
+          y = origin.y + math.cos(radTheta) * distance * -1,}
 end
 
 
 function IsPositionWithinTurretArc(pos, turret)
-    local arc = LookupArc(turret)
+  local arc = LookupArc(turret)
 
-    if arc <= 0 then
-        return true
-    end
+  if arc <= 0 then
+    return true
+  end
 
-    local arcRad = arc * math.pi
+  local arcRad = arc * math.pi
 
-    local vecTurPos = {x = pos.x - turret.position.x,
-                       y = pos.y - turret.position.y}
-    local vecTurDir = DirectionToVector[turret.direction]
+  local vecTurPos = {x = pos.x - turret.position.x,
+                     y = pos.y - turret.position.y}
+  local vecTurDir = DirectionToVector[turret.direction]
 
-    local tanPos = math.atan2(vecTurPos.y, vecTurPos.x)
-    local tanDir = math.atan2(vecTurDir.y, vecTurDir.x)
+  local tanPos = math.atan2(vecTurPos.y, vecTurPos.x)
+  local tanDir = math.atan2(vecTurDir.y, vecTurDir.x)
 
-    local angleL = tanDir - tanPos
-    local angLAdjust = angleL
-    if angLAdjust < 0 then
-        angLAdjust = angLAdjust + (math.pi * 2)
-    end
+  local angleL = tanDir - tanPos
+  local angLAdjust = angleL
+  if angLAdjust < 0 then
+    angLAdjust = angLAdjust + (math.pi * 2)
+  end
 
-    local angleR = tanPos - tanDir
-    local angRAdjust = angleR
-    if angRAdjust < 0 then
-        angRAdjust = angRAdjust + (math.pi * 2)
-    end
+  local angleR = tanPos - tanDir
+  local angRAdjust = angleR
+  if angRAdjust < 0 then
+    angRAdjust = angRAdjust + (math.pi * 2)
+  end
 
-    return angLAdjust < arcRad or angRAdjust < arcRad
+  return angLAdjust < arcRad or angRAdjust < arcRad
 end
 
 
 function LookupArc(turret)
-    if global.firing_arcs[turret.name] then
-        return global.firing_arcs[turret.name]
-    end
-
-    local tPrototype = game.entity_prototypes[turret.name]
-
-    if tPrototype.attack_parameters
-       and tPrototype.attack_parameters.turn_range then
-        global.firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
-    else
-        global.firing_arcs[turret.name] = -1
-    end
-
+  if global.firing_arcs[turret.name] then
     return global.firing_arcs[turret.name]
+  end
+
+  local tPrototype = game.entity_prototypes[turret.name]
+
+  if tPrototype.attack_parameters
+     and tPrototype.attack_parameters.turn_range then
+    global.firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
+  else
+    global.firing_arcs[turret.name] = -1
+  end
+
+  return global.firing_arcs[turret.name]
 end
 
 
 function LookupRange(turret)
-    if global.firing_range[turret.name] then
-        return global.firing_range[turret.name]
-    end
-
-    local tPrototype = game.entity_prototypes[turret.name]
-
-    if tPrototype.turret_range then
-        global.firing_range[turret.name] = tPrototype.turret_range
-    elseif tPrototype.attack_parameters
-       and tPrototype.attack_parameters.range then
-        global.firing_range[turret.name] = tPrototype.attack_parameters.range
-    else
-        global.firing_range[turret.name] = -1
-    end
-
+  if global.firing_range[turret.name] then
     return global.firing_range[turret.name]
+  end
+
+  local tPrototype = game.entity_prototypes[turret.name]
+
+  if tPrototype.turret_range then
+    global.firing_range[turret.name] = tPrototype.turret_range
+  elseif tPrototype.attack_parameters
+     and tPrototype.attack_parameters.range then
+    global.firing_range[turret.name] = tPrototype.attack_parameters.range
+  else
+    global.firing_range[turret.name] = -1
+  end
+
+  return global.firing_range[turret.name]
 end
 
 
@@ -118,61 +118,61 @@ end
 -- https://lua-api.factorio.com/latest/LuaFluidBox.html
 function CopyFluids(oldT, newT)
 
-    -- Must manually index this part, too.
-    for boxindex = 1, #oldT.fluidbox do
-        local oldFluid = oldT.fluidbox[boxindex]
-        local newFluid = newT.fluidbox[boxindex]
+  -- Must manually index this part, too.
+  for boxindex = 1, #oldT.fluidbox do
+    local oldFluid = oldT.fluidbox[boxindex]
+    local newFluid = newT.fluidbox[boxindex]
 
-        newFluid = oldFluid
-        newT.fluidbox[boxindex] = newFluid
-    end
+    newFluid = oldFluid
+    newT.fluidbox[boxindex] = newFluid
+  end
 
 end
 
 
 function CopyItems(oldTinv, newTinv)
 
-    for boxindex = 1, #oldTinv do
-        local oldStack = oldTinv[boxindex]
-        local newStack = newTinv[boxindex]
+  for boxindex = 1, #oldTinv do
+    local oldStack = oldTinv[boxindex]
+    local newStack = newTinv[boxindex]
 
-        newStack = oldStack
-        newTinv.insert(newStack)
-    end
+    newStack = oldStack
+    newTinv.insert(newStack)
+  end
 
 end
 
 
 function CopyTurret(oldT, newT)
-    newT.copy_settings(oldT)
-    newT.kills = oldT.kills
-    newT.health = oldT.health
-    newT.last_user  = oldT.last_user
-    newT.direction = oldT.direction
-    newT.orientation = oldT.orientation
-    newT.damage_dealt = oldT.damage_dealt
+  newT.copy_settings(oldT)
+  newT.kills = oldT.kills
+  newT.health = oldT.health
+  newT.last_user  = oldT.last_user
+  newT.direction = oldT.direction
+  newT.orientation = oldT.orientation
+  newT.damage_dealt = oldT.damage_dealt
 
-    if oldT.energy ~= nil then
-        newT.energy = oldT.energy
-    end
+  if oldT.energy ~= nil then
+    newT.energy = oldT.energy
+  end
 
-    if oldT.get_output_inventory() ~= nil then
-        CopyItems(oldT.get_output_inventory(), newT.get_output_inventory())
-    end
+  if oldT.get_output_inventory() ~= nil then
+    CopyItems(oldT.get_output_inventory(), newT.get_output_inventory())
+  end
 
-    if oldT.get_module_inventory() ~= nil then
-        CopyItems(oldT.get_module_inventory(), newT.get_module_inventory())
-    end
+  if oldT.get_module_inventory() ~= nil then
+    CopyItems(oldT.get_module_inventory(), newT.get_module_inventory())
+  end
 
-    if oldT.get_fuel_inventory() ~= nil then
-        CopyItems(oldT.get_fuel_inventory(), newT.get_fuel_inventory())
-    end
+  if oldT.get_fuel_inventory() ~= nil then
+    CopyItems(oldT.get_fuel_inventory(), newT.get_fuel_inventory())
+  end
 
-    if oldT.get_burnt_result_inventory() ~= nil then
-        CopyItems(oldT.get_burnt_result_inventory(), newT.get_burnt_result_inventory())
-    end
+  if oldT.get_burnt_result_inventory() ~= nil then
+    CopyItems(oldT.get_burnt_result_inventory(), newT.get_burnt_result_inventory())
+  end
 
-    if oldT.fluidbox ~= nil then
-        CopyFluids(oldT, newT)
-    end
+  if oldT.fluidbox ~= nil then
+    CopyFluids(oldT, newT)
+  end
 end
