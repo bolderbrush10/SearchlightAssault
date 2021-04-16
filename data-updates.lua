@@ -3,8 +3,8 @@
 
 require("defines")
 
--- You should declare your functions and vars as local in data*.lua files,
--- because other mods apparently have access to your functions at this step (-_-)
+-- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
+-- because other mods may have inadvertent access to functions at this step.
 
 
 local BoostAnim =

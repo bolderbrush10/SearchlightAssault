@@ -47,4 +47,5 @@ info.json        - information for the mod manager
 Prototypes contain the definitions for a unit's graphics, animations, and base stats (like max health, range, and damage)
 
 prototypes/entities.lua - prototypes for the searchlight and the turtle
+prototypes/graphics.lua - pictures, lights, spirites, and animations
 prototypes/techItemRecipe.lua - details for how to research and craft a searchlight

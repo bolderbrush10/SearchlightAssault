@@ -2,7 +2,7 @@ require "control-common"
 require "defines"
 require "util"
 
--- location is expected to be the real spotlight's last shooting target,
+-- location is expected to be the spotlight's last shooting target,
 -- if it was targeting something.
 function SpawnTurtle(basesl, attacksl, surface, location)
   if location == nil then
@@ -34,15 +34,18 @@ function SpawnTurtle(basesl, attacksl, surface, location)
 end
 
 function WanderTurtle(turtle, origin, waypoint)
+  local tun = turtle.unit_number
+
   if not turtle.has_command()
-     or global.turtle_to_waypoint[turtle.unit_number] == nil
-     or lensquared(turtle.position, global.turtle_to_waypoint[turtle.unit_number])
-        < square(searchlightSpotRadius) then
+     or global.turtle_to_waypoint[tun] == nil
+     or doesPositionMatch(turtle.position,
+                          global.turtle_to_waypoint[tun],
+                          searchlightSpotRadius) then
 
       if waypoint == nil then
         waypoint = MakeWanderWaypoint(origin)
       end
-      global.turtle_to_waypoint[turtle.unit_number] = waypoint
+      global.turtle_to_waypoint[tun] = waypoint
       turtle.speed = searchlightWanderSpeed
 
       turtle.set_command({type = defines.command.go_to_location,

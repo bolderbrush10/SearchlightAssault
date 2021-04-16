@@ -19,11 +19,7 @@ function AddSearchlight(sl)
   -- search for boostables and add
   -- TODO
 
-  -- TODO better initial-position algorithm based on rotated-position of placed spotlight
-  local newPos = sl.position
-  newPos.x = newPos.x + 5
-
-  SpawnTurtle(sl, sl.surface, nil)
+  SpawnTurtle(sl, attackLight, sl.surface, nil)
 end
 
 
@@ -84,16 +80,17 @@ function DecrementBoostTimers()
 end
 
 
--- We wouldn't need this function if there was a way to directly transfer / mirror electricity between units
-function CheckElectricNeeds()
+-- We wouldn't need this function if there was a way
+-- to directly transfer / mirror electricity between units on different forces
+function CheckElectricNeeds(tick)
   for unit_num, sl in pairs(global.base_searchlights) do
 
-    dummylight = global.baseSL_to_attackSL[unit_num]
+    attacklight = global.baseSL_to_attackSL[unit_num]
 
-    if dummylight.active and sl.energy < searchlightCapacitorCutoff then
-      dummylight.active = false
-    elseif not dummylight.active and sl.energy > searchlightCapacitorStartable then
-      dummylight.active = true
+    if attacklight.active and sl.energy < searchlightCapacitorCutoff then
+      attacklight.active = false
+    elseif not attacklight.active and sl.energy > searchlightCapacitorStartable then
+      attacklight.active = true
     end
 
   end

@@ -22,10 +22,10 @@ function InitTables()
   -- Attack-Searchlight  --
   -----------------
 
-  -- Map: dummylight unit_number -> Dummylight
+  -- Map: dummylight unit_number -> Attacklight
   global.attack_searchlights = {}
 
-  -- Map: searchlight unit_number -> Dummylight
+  -- Map: searchlight unit_number -> Attacklight
   global.baseSL_to_attackSL = {}
 
   -----------------

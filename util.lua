@@ -23,14 +23,22 @@ function len(a, b)
   return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
 end
 
--- Calculating the square root is slower than just squaring whatever you compare to
+
+-- Calculating the square root is usually slower than just squaring whatever you compare to
 function lensquared(a, b)
   return (a.x - b.x)^2 + (a.y - b.y)^2
 end
 
+
 function square(a)
   return a*a
 end
+
+
+function doesPositionMatch(posA, posB, acceptable_radius)
+  return lensquared(posA, posB) < square(acceptable_radius)
+end
+
 
 -- theta given as 0.0 - 1.0, 0/1 is top middle of screen
 function OrientationToPosition(origin, theta, distance)

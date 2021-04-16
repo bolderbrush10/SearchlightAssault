@@ -1,4 +1,8 @@
+-- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
+-- because other mods may have inadvertent access to functions at this step.
+
 -- TODO Should I worry about other mods interfering with these non-local vars?
+--      How can I prevent it while letting files share
 
 --------------------------------
 -- Performance-related tweaks --
