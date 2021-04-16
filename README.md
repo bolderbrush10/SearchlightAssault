@@ -6,6 +6,14 @@
 -> The interesting behaviors are in control-searchlight.lua
 ```
 
+### Turtle
+Usage of the term "Turtle" is a reference to the rendering mechanism of some old, beginner-friendly programming languages (such as 'Logo', from 1960's).
+
+The idea is to imagine a turtle with a marker held in its tail, and wherever this turtle goes, it leaves behind a line. You'd write a program specifiying distances & directions for the turtle to follow. And thus, you'd control the turtle to control rendering a picture.
+
+And in this mod, our turtle, instead of drawing a line, will render a spotlight effect.
+
+
 ###Primary issues inflating SLOC:
 0. My brain has been poisoned by nearly a decade of working nigh-exclusively in C++
 0. No mechanism in the API to modify shooting range during runtime
@@ -13,6 +21,7 @@
 0. Unsophisticated technique to "fire" the spotlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
     and a dummy spotlight in its own dummy force to shoot at the turtle
+
 
 ###File Guide:
 
