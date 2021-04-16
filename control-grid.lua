@@ -1,4 +1,4 @@
-require "searchlight-defines"
+require "defines"
 
 
 -- Grid: {Force, Surface, Area, Foes, Searchlight Count}

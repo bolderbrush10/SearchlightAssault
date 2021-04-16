@@ -1,4 +1,4 @@
-require "searchlight-defines"
+require "defines"
 
 -- You should declare your functions and vars as local in data*.lua files,
 -- because other mods apparently have access to your functions at this step (-_-)
@@ -114,7 +114,7 @@ data:extend({
 local SearchLightBaseEntity =
 {
   type = "electric-turret",
-  name = "searchlight",
+  name = searchlightBaseName,
   -- arbitrary high number btween 5 and 500 to be 'instant'
   rotation_speed  = 50,
   -- -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
@@ -128,7 +128,7 @@ local SearchLightBaseEntity =
   minable =
   {
     mining_time = 0.5,
-    result = "searchlight",
+    result = searchlightBaseName,
   },
   energy_source =
   {
@@ -172,20 +172,21 @@ local SearchLightBaseEntity =
 }
 
 
--- SearchLightAttackEntity; the primary entity which uses a lamp like a turret
 -- TODO: use radar_range?
 local SearchLightAttackEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
 -- TODO remove this commented flag when we're done,
 --      keep it in case we need to remember that we can make things hidden
 -- SearchLightAttackEntity.flags = {"hidden"}
 SearchLightAttackEntity.selectable_in_game = false
-SearchLightAttackEntity.name = "searchlight-dummy"
+SearchLightAttackEntity.name = searchlightAttackName
  -- arbitrary high number btween 5 and 500 to be 'instant'
 SearchLightAttackEntity.rotation_speed = 50
 -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
 -- TODO consume electricity by drawing from the base-entity's buffer
 SearchLightAttackEntity.energy_source.usage_priority = "secondary-input"
 -- We don't intend to leave a corpse at all, but if the worst happens...
+-- TODO This is actually a bit more instrusive than you'd think.. find / make an actually-transparent corpse
+--      Likewise for the turtle
 SearchLightAttackEntity.corpse = "small-scorchmark"
 SearchLightAttackEntity.create_ghost_on_death = false
 SearchLightAttackEntity.energy_source =
@@ -198,6 +199,7 @@ SearchLightAttackEntity.attack_parameters =
   type = "beam",
   range = searchlightOuterRange,
   cooldown = 40,
+  -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
   source_direction_count = 64,
   source_offset = {0, -3.423489 / 4},
   -- I have no idea what are good penalty values here.
@@ -242,42 +244,42 @@ local Turtle =
 {
   type = "unit",
   name = "searchlight-turtle",
-  trigger_target_mask = {turtleMaskName}, -- remove from the "common" target-mask list so normal attackers ignore this
-  flags =
-  {
-    "placeable-off-grid",
-    -- "not-on-map",
-    "not-blueprintable",
-    "not-deconstructable",
-    -- "hidden",
-    "not-flammable",
-    "no-copy-paste",
-    "not-selectable-in-game",
-  },
   run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation,
-  collision_mask = {"not-colliding-with-itself"},
-  collision_box = {{0, 0}, {0, 0}}, -- enable noclip
-  selectable_in_game = false,
-  selection_box = {{-0.0, -0.0}, {0.0, 0.0}},
   -- We don't intend to leave a corpse at all, but if the worst happens...
   corpse = "small-scorchmark",
+  selectable_in_game = false,
+  selection_box = {{-0.0, -0.0}, {0.0, 0.0}},
+  collision_box = {{0, 0}, {0, 0}}, -- enable noclip
+  collision_mask = {}, -- enable noclip for pathfinding too
   ai_settings =
   {
     allow_try_return_to_spawner = false,
     destroy_when_commands_fail = false,
   },
+  flags =
+  {
+    "placeable-off-grid",
+    "not-repairable",
+    "not-on-map",
+    "not-blueprintable",
+    "not-deconstructable",
+    "hidden",
+    "not-flammable",
+    "no-copy-paste",
+    "not-selectable-in-game",
+  },
   movement_speed = searchlightTrackSpeed,
   distance_per_frame = 1,
   pollution_to_join_attack = 5000,
   distraction_cooldown = 1,
-  vision_distance = 1,
+  vision_distance = 0,
   -- TODO Can we leave out the attack parameters?
   attack_parameters =
   {
     type = "projectile",
-    range = 1,
+    range = 0,
     cooldown = 100,
-    ammo_type = make_unit_melee_ammo_type(1),
+    ammo_type = make_unit_melee_ammo_type(0),
     animation = Layer_transparent_animation,
   },
   -- run_animation = Layer_transparent_animation,

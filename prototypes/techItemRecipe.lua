@@ -1,5 +1,5 @@
-require "searchlight-defines"
-require "searchlight-entity"
+require "defines"
+require "entities"
 
 local icon =
 {
@@ -12,7 +12,7 @@ local item = table.deepcopy(data.raw["item"]["small-lamp"])
 
 item.name = "searchlight"
 item.order = "a[small-lamp]-a[searchlight]"
-item.place_result = "searchlight"
+item.place_result = searchlightBaseName
 item.icon = icon.filename
 item.icon_size = icon.icon_size
 

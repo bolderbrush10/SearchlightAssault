@@ -61,6 +61,11 @@ searchlightWanderSpeed = 0.2
 -- Speed at which spotlight beam tracks a spotted foe
 searchlightTrackSpeed = 1.3
 
+-- Entity names
+searchlightBaseName = "searchlight-base"
+searchlightAttackName = "searchlight-attack"
+turtleName = "searchlight-turtle"
+
 -- Force names
 searchlightFoe = "hddnSLFoe"
 searchlightFriend = "hddnSLFnd"

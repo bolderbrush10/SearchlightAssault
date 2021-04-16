@@ -2,6 +2,6 @@
 -- because other mods apparently have access to your functions at this step (-_-)
 
 
-require("searchlight-defines")
-require("prototypes.searchlight-techItemRecipe")
-require("prototypes.searchlight-entity")
+require("defines")
+require("prototypes.techItemRecipe")
+require("prototypes.entities")

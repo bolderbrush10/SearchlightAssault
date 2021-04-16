@@ -7,5 +7,5 @@
     "homepage": "",
     "factorio_version": "1.1",
     "dependencies": ["base >= 1.0"],
-    "description": "Add searchlights which track foes and provide bonuses to turrets."
+    "description": "Add searchlights which track foes and provide range bonuses to turrets."
 }

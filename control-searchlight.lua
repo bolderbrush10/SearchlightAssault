@@ -1,58 +1,29 @@
-require "searchlight-defines"
-require "searchlight-grid"
-require "searchlight-render" -- TODO remove
-require "searchlight-util"
+require "control-common"
+require "control-grid"
+require "control-turtle"
+require "defines"
+require "render" -- TODO remove
+require "util"
 
-
-function InitTables()
-  -- Map: searchlight unit_number -> Searchlight
-  global.searchLights = {}
-
-  -- Map: searchlight unit_number -> Dummylight
-  global.sl_to_dummy = {}
-
-  -- Map: dummylight unit_number -> Dummylight
-  global.dummyLights = {}
-
-  -- Map: searchlight unit_number -> Last shooting position
-  global.real_sl_to_lsp = {}
-
-  -- Map: eitherlight unit_number -> List: [Neighbor Turrets]
-  global.sl_to_boostable = {}
-
-  -- Map: dummylight unit_number -> Turtle
-  global.dummy_to_turtle = {}
-
-  -- Map: Turtle -> Position: [x,y]
-  global.turtle_to_waypoint = {}
-
-  -- Map: turtle unit_number -> Turtle
-  global.tun_to_turtle = {}
-
-  -- Map: searchlight unit_number -> remaining ticks
-  global.unboost_timers = {}
-end
 
 function AddSearchlight(sl)
-  global.sl_to_dummy[sl.unit_number] = sl.surface.create_entity{name="searchlight-dummy", position=sl.position, force=searchlightFriend}
+  global.base_searchlights[sl.unit_number] = sl
+  attackLight = sl.surface.create_entity{name=searchlightAttackName,
+                                         position=sl.position,
+                                         force=searchlightFriend}
+  global.baseSL_to_attackSL[sl.unit_number] = attackLight
 
-  global.searchLights[sl.unit_number] = sl
+  Grid_AddSpotlight(sl)
+
 
   -- search for boostables and add
   -- TODO
 
-  -- add to grid
-  Grid_AddSpotlight(sl)
-
+  -- TODO better initial-position algorithm based on rotated-position of placed spotlight
   local newPos = sl.position
   newPos.x = newPos.x + 5
 
-  -- TODO initial turtle spawning logic here
-   sl.surface.create_entity{name = "searchlight-turtle",
-                                         position = newPos,
-                                         force = searchlightFoe,
-                                         fast_replace = true,
-                                         create_build_effect_smoke = true}
+  SpawnTurtle(sl, sl.surface, nil)
 end
 
 
@@ -72,10 +43,10 @@ end
 
 function RemoveSearchlight(sl)
 
-  global.sl_to_dummy[sl.unit_number].destroy()
-  global.sl_to_dummy[sl.unit_number] = nil
+  global.baseSL_to_attackSL[sl.unit_number].destroy()
+  global.baseSL_to_attackSL[sl.unit_number] = nil
 
-  global.searchLights[sl.unit_number] = nil
+  global.base_searchlights[sl.unit_number] = nil
 
   -- remove from grid & foegrid
   Grid_RemoveSpotlight(sl)
@@ -113,13 +84,11 @@ function DecrementBoostTimers()
 end
 
 
--- We wouldn't need this function if there was a way to transfer electricity between forces
--- !!! WAAIT A SECOND. They have to be able to share the electric network because the dummy was showing up on my electric network!
--- But then, on the other hand, we still need to "mirror" the electric usage & buffer between them....
+-- We wouldn't need this function if there was a way to directly transfer / mirror electricity between units
 function CheckElectricNeeds()
-  for unit_num, sl in pairs(global.searchLights) do
+  for unit_num, sl in pairs(global.base_searchlights) do
 
-    dummylight = global.sl_to_dummy[unit_num]
+    dummylight = global.baseSL_to_attackSL[unit_num]
 
     if dummylight.active and sl.energy < searchlightCapacitorCutoff then
       dummylight.active = false
@@ -172,7 +141,7 @@ end
 
 function HandleSearchlights()
     -- 'sl' for 'SearchLight'
-    for index, sl in pairs(global.searchLights) do
+    for index, sl in pairs(global.base_searchlights) do
         BoostFriends(sl, sl.surface)
 
         if sl.name == "searchlight" then
@@ -187,11 +156,11 @@ end
 function ConsiderFoes(sl, surface)
     if sl.shooting_target == nil then
         if BoostTimerComplete(sl) then
-            local pos = global.real_sl_to_lsp[sl.unit_number]
+            local pos = global.baseSL_to_lsp[sl.unit_number]
             CreateDummyLight(sl, surface, pos)
         end
     else
-        global.real_sl_to_lsp[sl.unit_number] = sl.shooting_target.position
+        global.baseSL_to_lsp[sl.unit_number] = sl.shooting_target.position
     end
 end
 
@@ -229,36 +198,6 @@ function ConsiderTurtles(sl, surface)
 end
 
 
--- location is expected to be the real spotlight's last shooting target,
--- if it was targeting something.
-function SpawnTurtle(sl, surface, location)
-    if location == nil then
-        -- Start in front of the turret's base, wrt orientation
-        location = OrientationToPosition(sl.position, sl.orientation, 3)
-    end
-
-    local turtle = surface.create_entity{name = "searchlight-turtle",
-                                         position = location,
-                                         force = searchlightFoe,
-                                         fast_replace = true,
-                                         create_build_effect_smoke = false}
-
-    turtle.destructible = false
-    new_sl.shooting_target = turtle
-    global.dummy_to_turtle[new_sl.unit_number] = turtle
-
-
-    local windupWaypoint = OrientationToPosition(sl.position,
-                                                 sl.orientation,
-                                                 math.random(searchlightInnerRange / 2,
-                                                             searchlightOuterRange - 2))
-
-    WanderTurtle(turtle, sl, windupWaypoint)
-
-    return turtle
-end
-
-
 function CreateDummyLight(old_sl, surface, last_shooting_position)
     new_sl = surface.create_entity{name = "searchlight-dummy",
                                    position = old_sl.position,
@@ -270,10 +209,10 @@ function CreateDummyLight(old_sl, surface, last_shooting_position)
 
     SpawnTurtle(new_sl, surface, last_shooting_position)
 
-    global.searchLights[new_sl.unit_number] = new_sl
-    global.searchLights[old_sl.unit_number] = nil
+    global.base_searchlights[new_sl.unit_number] = new_sl
+    global.base_searchlights[old_sl.unit_number] = nil
 
-    global.real_sl_to_lsp[old_sl.unit_number] = nil
+    global.baseSL_to_lsp[old_sl.unit_number] = nil
 
     old_sl.destroy()
 end
@@ -293,12 +232,12 @@ function CreateRealLight(old_sl, surface, foe)
 
     CopyTurret(old_sl, new_sl)
 
-    global.searchLights[new_sl.unit_number] = new_sl
-    global.searchLights[old_sl.unit_number] = nil
+    global.base_searchlights[new_sl.unit_number] = new_sl
+    global.base_searchlights[old_sl.unit_number] = nil
 
     old_sl.destroy()
 
-    global.unboost_timers[new_sl.unit_number] = boostDelay
+    global.baseSL_to_unboost_timers[new_sl.unit_number] = boostDelay
 
     if foe then
         new_sl.shooting_target = foe
@@ -306,29 +245,7 @@ function CreateRealLight(old_sl, surface, foe)
 end
 
 
-function WanderTurtle(turtle, sl, waypoint)
-    if not turtle.has_command()
-       or global.turtle_to_waypoint[turtle.unit_number] == nil
-       or lensquared(turtle.position, global.turtle_to_waypoint[turtle.unit_number])
-          < square(searchlightSpotRadius) then
 
-        if waypoint == nil then
-            waypoint = MakeWanderWaypoint(sl.position)
-        end
-
-        global.turtle_to_waypoint[turtle.unit_number] = waypoint
-        turtle.speed = searchlightWanderSpeed
-
-        turtle.set_command({type = defines.command.go_to_location,
-                            distraction = defines.distraction.none,
-                            destination = waypoint,
-                            pathfind_flags = {low_priority = true, cache = true,
-                                              allow_destroy_friendly_entities = true,
-                                              allow_paths_through_own_entities = true},
-                            radius = 1
-                           })
-    end
-end
 
 
 function RushTurtle(turtle, waypoint)
@@ -347,16 +264,6 @@ function RushTurtle(turtle, waypoint)
                             radius = 1
                            })
     end
-end
-
-
-function MakeWanderWaypoint(origin)
-    local bufferedRange = searchlightOuterRange - 2
-     -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
-    local angle = math.random()
-    local distance = math.random(searchlightInnerRange/2, bufferedRange)
-
-    return OrientationToPosition(origin, angle, distance)
 end
 
 
@@ -442,7 +349,7 @@ function Boost(oldT, surface, foe)
 
     newT.shooting_target = foe
 
-    global.unboost_timers[newT.unit_number] = boostDelay
+    global.baseSL_to_unboost_timers[newT.unit_number] = boostDelay
 
    return newT
 end
@@ -454,11 +361,11 @@ end
 --      (We still need to think about how to figure in for power consumption...)
 -- TODO Also, we should re-increment this number if there's a shooting target. Probably in this function.
 function BoostTimerComplete(turret)
-   if global.unboost_timers[turret.unit_number] and global.unboost_timers[turret.unit_number] > 0 then
-        global.unboost_timers[turret.unit_number] = global.unboost_timers[turret.unit_number] - 1
+   if global.baseSL_to_unboost_timers[turret.unit_number] and global.baseSL_to_unboost_timers[turret.unit_number] > 0 then
+        global.baseSL_to_unboost_timers[turret.unit_number] = global.baseSL_to_unboost_timers[turret.unit_number] - 1
         return false
     else
-        global.unboost_timers[turret.unit_number] = nil
+        global.baseSL_to_unboost_timers[turret.unit_number] = nil
         return true
     end
 end

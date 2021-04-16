@@ -1,14 +1,11 @@
 ##Current task:
 
-We're thinking about rethinking using hidden forces so that we can instead 'inject' attack-mask blacklists into all other existing turrets...
-I'm not sure if we should make the turret a part of the biter force though, so we might still want to keep a "turtle force" around...
-... and also we don't want the player / minefields / combat robots to attack it... Or anything else we don't think of, or something some mod adds...
-It would be much nicer if we could set our attack_mask from the entity instead of from the attacker..
+Push ahead with:
 
-!! So, there's an "intrinsic" type for entities called "common" that turrets have included in their target mask by default..
-If we can override that for the turtle, maybe things won't be able to attack it by default??
+A) Searchlight turtle friend / foe forces
+B) Searchlight attack-entity and base-entity coexist at the same time forever
 
-SUCCESS!! Begin the overhaul to use trigger_mask immediately!
+Current-current task: Probably should start hooking up the turtle-spawn and setting it as the attackable for specific lights.
 
 ##~~Current~~ Previous dillema:
 
@@ -143,9 +140,19 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
 
 
+-- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
+--      And how it's so damn awkward to set up a blacklist for an entity that you don't want even-just-turrets to attack.
+
+
 -- TODO Electricity consumption
 
 -- TODO are we using 2 spaces to indent or 4? Get it straight. control.lua is the biggest offender so far
+
+
+-- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
+
+
+-- TODO Add emojis / icons to the mod name (Look at how the water gun mod makes them show up in game on the infopanel)
 
 
 -- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.

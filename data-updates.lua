@@ -1,7 +1,7 @@
 -- This file's job is to grab any turrets it can find and create a boosted-range version.
 -- If some other mod put their turret into this data stage (or later), and we don't grab it, then too bad.
 
-require("searchlight-defines")
+require("defines")
 
 -- You should declare your functions and vars as local in data*.lua files,
 -- because other mods apparently have access to your functions at this step (-_-)

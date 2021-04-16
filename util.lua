@@ -1,4 +1,4 @@
-require "searchlight-defines"
+require "defines"
 
 
 -- We don't need to these put in the globals, since it's fine to recalulate them on game load

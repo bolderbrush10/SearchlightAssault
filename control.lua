@@ -1,4 +1,7 @@
-require "searchlight-control"
+require "control-common"
+require "control-grid"
+require "control-searchlight"
+require "control-turtle"
 
 --
 -- TODO filter all these events
@@ -37,6 +40,35 @@ end)
 --
 -- CONSTRUCTIONS
 --
+
+
+-- TODO steal this pattern
+-- (for-loop is needed because filters can't be applied to an
+-- array of events!)
+-- for event_name, e in pairs({
+--   on_built_entity       = defines.events.on_built_entity,
+--   on_robot_built_entity = defines.events.on_robot_built_entity,
+--   script_raised_built   = defines.events.script_raised_built,
+--   script_raised_revive  = defines.events.script_raised_revive
+-- defines.events.on_trigger_created_entity
+-- }) do
+-- --~ log("WT.turret_list: " .. serpent.block(WT.turret_list))
+-- --~ log("event_name: " .. serpent.block(event_name) .. "\te: " .. serpent.block(e))
+--   script.on_event(e, function(event)
+--       WT.dprint("Entered event script for %s.", { event_name })
+--       on_built(event)
+--       WT.dprint("End of event script for %s.", { event_name })
+--     end, {
+--     {filter = "type", type = WT.turret_type},
+--     {filter = "name", name = WT.steam_turret_name, mode = "and"},
+
+--     {filter = "type", type = WT.turret_type, mode = "or"},
+--     {filter = "name", name = WT.water_turret_name, mode = "and"},
+
+--     {filter = "type", type = WT.turret_type, mode = "or"},
+--     {filter = "name", name = WT.extinguisher_turret_name, mode = "and"},
+--   })
+-- end
 
 -- Via Player
 script.on_event(defines.events.on_built_entity,
