@@ -1,5 +1,6 @@
 require "defines"
-require "graphics"
+
+local g = require "graphics"
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
@@ -22,7 +23,7 @@ local sl_b =
   minable =
   {
     mining_time = 0.5,
-    result = searchlightBaseName,
+    result = searchlightItemName,
   },
   energy_source =
   {
@@ -139,7 +140,7 @@ sl_a.attack_parameters =
 local turtle =
 {
   type = "unit",
-  name = "searchlight-turtle",
+  name = turtleName,
   run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation,
   -- We don't intend to leave a corpse at all, but if the worst happens...
   corpse = "small-scorchmark",
@@ -176,7 +177,7 @@ local turtle =
     range = 0,
     cooldown = 100,
     ammo_type = make_unit_melee_ammo_type(0),
-    animation = Layer_transparent_animation,
+    animation = g["Layer_transparent_animation"],
   },
   -- run_animation = Layer_transparent_animation,
 }

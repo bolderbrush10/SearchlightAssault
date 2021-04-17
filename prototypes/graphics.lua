@@ -3,12 +3,19 @@ require "defines"
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
+-- If another file wants things from this file, they can reference exported items like so:
+-- local g = require "graphics"
+-- myEntity.animation = g[someAnimation]
+
+local export = {}
+
 local Layer_transparent_pixel =
 {
   filename = "__Searchlights__/graphics/transparent_pixel.png",
   width = 1,
   height = 1,
 }
+export["Layer_transparent_pixel"] = Layer_transparent_pixel
 
 local Layer_transparent_animation =
 {
@@ -17,6 +24,7 @@ local Layer_transparent_animation =
   height = 8,
   direction_count = 1,
 }
+export["Layer_transparent_animation"] = Layer_transparent_animation
 
 local Light_Layer_SpotLight_NormLight =
 {
@@ -27,6 +35,7 @@ local Light_Layer_SpotLight_NormLight =
   flags = { "light" },
   shift = {0.3, 0},
 }
+export["Light_Layer_SpotLight_NormLight"] = Light_Layer_SpotLight_NormLight
 
 local redTint = {r=1.0, g=0.1, b=0.1, a=1}
 
@@ -103,3 +112,5 @@ SpotlightBeamAlarm.ending =
 }
 
 data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
+
+return export

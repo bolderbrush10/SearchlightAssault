@@ -10,17 +10,18 @@ local icon =
 -- Item
 local item = table.deepcopy(data.raw["item"]["small-lamp"])
 
-item.name = "searchlight"
+item.name = searchlightItemName
 item.order = "a[small-lamp]-a[searchlight]"
 item.place_result = searchlightBaseName
 item.icon = icon.filename
 item.icon_size = icon.icon_size
 
 -- Recipe
+-- TODO Custom recipe, should cost a radar + ~5 lamps + some other crap
 local recipe = table.deepcopy(data.raw.recipe["small-lamp"])
 recipe.enabled = true
-recipe.name = "searchlight"
-recipe.result = "searchlight"
+recipe.name = searchlightRecipeName
+recipe.result = searchlightItemName
 recipe.result_count = 1
 recipe.icon = icon.filename
 recipe.icon_size = icon.icon_size
@@ -34,6 +35,6 @@ table.insert(
   data.raw["technology"]["optics"].effects,
   {
     type = "unlock-recipe",
-    recipe = "searchlight"
+    recipe = searchlightRecipeName
   }
 )

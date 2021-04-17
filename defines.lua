@@ -2,7 +2,8 @@
 -- because other mods may have inadvertent access to functions at this step.
 
 -- TODO Should I worry about other mods interfering with these non-local vars?
---      How can I prevent it while letting files share
+--      How can I prevent it while letting files share..
+--      maybe say "defines = {}" and "return defines"
 
 --------------------------------
 -- Performance-related tweaks --
@@ -65,7 +66,10 @@ searchlightWanderSpeed = 0.2
 -- Speed at which spotlight beam tracks a spotted foe
 searchlightTrackSpeed = 1.3
 
--- Entity names
+-- Entity, item, recipe names
+searchlightItemName = "searchlight"
+searchlightRecipeName = "searchlight"
+
 searchlightBaseName = "searchlight-base"
 searchlightAttackName = "searchlight-attack"
 turtleName = "searchlight-turtle"

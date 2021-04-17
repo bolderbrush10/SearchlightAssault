@@ -30,8 +30,9 @@ defines.lua - miscellaneous static definitions such as turret range, colors, etc
 control.lua - handles event registrations & filtering, calls behavior from the control-*.lua files
 
 control-searchlight.lua - controls foe seeking behavior, turret-boosting behavior, etc
-control-grid.lua        - optimizies searches for foes and spotlights by breaking apart the world into 'grid' units
 control-turtle.lua      - behaviors for the dummy-entity that the spotlight "attacks" to render a light at surface locations
+control-grid.lua        - optimizies searches for foes and spotlights by breaking apart the world into 'grid' units
+control-common          - data structures to be shared across control-* files
 
 render.lua  - details on how to render lights, useful for debugging sometimes TODO remove
 util.lua    - math functions, copying functions, and other miscellaneous functions

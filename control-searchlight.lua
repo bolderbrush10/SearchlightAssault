@@ -8,16 +8,16 @@ require "util"
 
 function AddSearchlight(sl)
   global.base_searchlights[sl.unit_number] = sl
+
   attackLight = sl.surface.create_entity{name=searchlightAttackName,
                                          position=sl.position,
                                          force=searchlightFriend}
+
   global.baseSL_to_attackSL[sl.unit_number] = attackLight
 
   Grid_AddSpotlight(sl)
 
-
-  -- search for boostables and add
-  -- TODO
+  -- TODO search for boostables and add
 
   SpawnTurtle(sl, attackLight, sl.surface, nil)
 end
@@ -25,14 +25,14 @@ end
 
 function AddTurret(turret)
 
-  -- search for spotlights in vicinity and add self as a boostable
+  -- TODO search for spotlights in vicinity and add self as a boostable
 
 end
 
 
 function RemoveTurret(turret)
 
-  -- search for spotlights in vicinity and remove self as a boostable
+  -- TODO search for spotlights in vicinity and remove self as a boostable
 
 end
 

@@ -4,10 +4,10 @@ require "util"
 
 -- location is expected to be the spotlight's last shooting target,
 -- if it was targeting something.
-function SpawnTurtle(basesl, attacksl, surface, location)
+function SpawnTurtle(baseSL, attackSL, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
-    location = OrientationToPosition(basesl.position, basesl.orientation, 3)
+    location = OrientationToPosition(baseSL.position, baseSL.orientation, 3)
   end
 
   local turtle = surface.create_entity{name = turtleName,
@@ -17,18 +17,18 @@ function SpawnTurtle(basesl, attacksl, surface, location)
                                        create_build_effect_smoke = false}
 
   turtle.destructible = false
-  attacksl.shooting_target = turtle
+  attackSL.shooting_target = turtle
 
-  global.dummy_to_turtle[basesl.unit_number] = turtle
+  global.dummy_to_turtle[baseSL.unit_number] = turtle
 
   -- If we set our first waypoint in the same direction, but further away,
   -- it makes a cool 'windup' effect as the searchlight is made
-  local windupWaypoint = OrientationToPosition(basesl.position,
-                                               basesl.orientation,
+  local windupWaypoint = OrientationToPosition(baseSL.position,
+                                               baseSL.orientation,
                                                math.random(searchlightInnerRange / 2,
                                                            searchlightOuterRange - 2))
 
-  WanderTurtle(turtle, basesl.position, windupWaypoint)
+  WanderTurtle(turtle, baseSL.position, windupWaypoint)
 
   return turtle
 end
