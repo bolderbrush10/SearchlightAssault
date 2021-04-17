@@ -23,33 +23,18 @@ local hiddenEntityFlags =
 -- Searchlight Base Entity
 local sl_b =
 {
-  -- type = "electric-turret",
-  -- type = "lamp",
   type = "electric-energy-interface",
   name = searchlightBaseName,
-  -- arbitrary high number btween 5 and 500 to be 'instant'
-  rotation_speed  = 50,
-  folded_animation = table.deepcopy(data.raw["electric-turret"]["laser-turret"].folded_animation),
-  picture = table.deepcopy(data.raw["electric-turret"]["laser-turret"].folded_animation),
-  picture_on = table.deepcopy(data.raw["electric-turret"]["laser-turret"].folded_animation),
-  picture_off = table.deepcopy(data.raw["electric-turret"]["laser-turret"].folded_animation),
-  -- energy_usage = "1J",
-
-    -- circuit_wire_connection_point = circuit_connector_definitions["lamp"].points,
-    -- circuit_connector_sprites = circuit_connector_definitions["lamp"].sprites,
-    -- circuit_wire_max_distance = default_circuit_wire_max_distance,
-
-  -- alert_when_attacking = false,
-  -- call_for_help_radius = 40, -- I don't know what this affects for a turret, but it's mandatory
-  max_health = 200,
-  collision_box = {{ -0.7, -0.7}, {0.7, 0.7}},
-  selection_box = {{ -1, -1}, {1, 1}},
-  flags = {"placeable-player", "placeable-neutral", "placeable-enemy", "player-creation"},
-  minable =
+  -- TODO move into graphics
+  animations =
   {
-    mining_time = 0.5,
-    result = searchlightItemName,
+    north = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
+    south = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
+    east  = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
+    west  = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
   },
+  icon = "__Searchlights__/graphics/terrible.png",
+  icon_size = 80,
   energy_usage = searchlightEnergyUsage,
   energy_source =
   {
@@ -58,19 +43,15 @@ local sl_b =
     buffer_capacity = searchlightCapacitorSize,
     input_flow_limit = "2000kW",
   },
-  attack_parameters =
+  collision_box = {{ -0.7, -0.7}, {0.7, 0.7}},
+  selection_box = {{ -1, -1}, {1, 1}},
+  flags = {"placeable-player", "placeable-neutral", "placeable-enemy", "player-creation"},
+  minable =
   {
-    type = "beam",
-    -- range = searchlightOuterRange,
-    range = 1,
-    cooldown = 60, -- measured in ticks
-    ammo_type =
-    {
-      category = "beam",
-      -- For some reason, the electric buffer won't show on turrets if you don't specify some cost per shot
-      energy_consumption = "1J",
-    },
+    mining_time = 0.5,
+    result = searchlightItemName,
   },
+  -- TODO move into graphics
   radius_visualisation_specification =
   {
     distance = searchlightFriendRadius,
@@ -97,37 +78,22 @@ local sl_b =
       }
     },
   },
-  icon = "__Searchlights__/graphics/terrible.png",
-  icon_size = 80,
-  base_picture =
-  {
-    filename = "__Searchlights__/graphics/terrible.png",
-    width = 80,
-    height = 80,
-  },
 }
 
 
 -- Searchlight Attack Entity
 local sl_a = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+sl_a.type = "turret"
 sl_a.selectable_in_game = false
 sl_a.name = searchlightAttackName
  -- arbitrary high number between 5 and 500 to be 'instant'
 sl_a.rotation_speed = 50
--- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
--- TODO consume electricity by drawing from the base-entity's buffer
-sl_a.energy_source.usage_priority = "secondary-input"
 -- We don't intend to leave a corpse at all, but if the worst happens...
 -- TODO This is actually a bit more instrusive than you'd think.. find / make an actually-transparent corpse
 --      Likewise for the turtle
 sl_a.corpse = "small-scorchmark"
 sl_a.create_ghost_on_death = false
 sl_a.flags = hiddenEntityFlags
-sl_a.energy_source =
-{
-  type = "electric",
-  usage_priority = "secondary-input",
-}
 sl_a.attack_parameters =
 {
   type = "beam",
@@ -151,16 +117,17 @@ sl_a.attack_parameters =
         source_offset = {-1, -1.31439 }
       }
     }
-  }
+  },
 }
 
 
 -- The dummy seeking spotlight's beam draws where the turtle is
 local turtle =
 {
-  type = "unit",
+  type = "unit", -- Only units can recieve commands (otherwise combat-robot could have been simpler)
   name = turtleName,
   run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation,
+  -- run_animation = Layer_transparent_animation,
   -- We don't intend to leave a corpse at all, but if the worst happens...
   corpse = "small-scorchmark",
   selectable_in_game = false,
@@ -173,21 +140,21 @@ local turtle =
   pollution_to_join_attack = 5000,
   distraction_cooldown = 1,
   vision_distance = 0,
+  has_belt_immunity = true,
   ai_settings =
   {
     allow_try_return_to_spawner = false,
     destroy_when_commands_fail = false,
+    do_separation = false,
   },
-  -- TODO Can we leave out the attack parameters?
   attack_parameters =
   {
     type = "projectile",
     range = 0,
-    cooldown = 100,
+    cooldown = 1000000,
     ammo_type = make_unit_melee_ammo_type(0),
     animation = g["Layer_transparent_animation"],
   },
-  -- run_animation = Layer_transparent_animation,
 }
 
 

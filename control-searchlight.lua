@@ -8,18 +8,24 @@ require "util"
 
 function AddSearchlight(sl)
   global.base_searchlights[sl.unit_number] = sl
-  -- local behavior = sl.get_or_create_control_behavior()
-  -- behavior =
 
-  attackLight = sl.surface.create_entity{name=searchlightAttackName,
-                                         position=sl.position,
-                                         force=searchlightFriend}
-
-  global.baseSL_to_attackSL[sl.unit_number] = attackLight
+  SpawnSLHiddenEntities(sl)
 
   Grid_AddSpotlight(sl)
 
   -- TODO search for boostables and add
+
+end
+
+function SpawnSLHiddenEntities(sl)
+  attackLight = sl.surface.create_entity{name=searchlightAttackName,
+                                         position=sl.position,
+                                         direction=sl.direction,
+                                         force=searchlightFriend,
+                                         fast_replace = true,
+                                         create_build_effect_smoke = false}
+
+  global.baseSL_to_attackSL[sl.unit_number] = attackLight
 
   SpawnTurtle(sl, attackLight, sl.surface, nil)
 end
@@ -40,14 +46,20 @@ end
 
 
 function RemoveSearchlight(sl)
+  Grid_RemoveSpotlight(sl)
+
+  global.base_searchlights[sl.unit_number] = nil
+  global.baseSL_to_lsp[sl.unit_number] = nil
 
   global.baseSL_to_attackSL[sl.unit_number].destroy()
   global.baseSL_to_attackSL[sl.unit_number] = nil
 
-  global.base_searchlights[sl.unit_number] = nil
 
-  -- remove from grid & foegrid
-  Grid_RemoveSpotlight(sl)
+  turtle = global.baseSL_to_turtle[sl.unit_number]
+  global.turtle_to_waypoint[turtle.unit_number] = nil
+  global.turtles[sl.unit_number] = nil
+  global.baseSL_to_turtle[sl.unit_number] = nil
+  turtle.destroy()
 
   -- remove boostables
   -- TODO
@@ -89,6 +101,12 @@ function CheckElectricNeeds(tick)
 
     attacklight = global.baseSL_to_attackSL[unit_num]
 
+    -- TODO Could convert to branchless instructions and possibly speed up this
+    --      onTick() function, depending on what's bottlenecked
+    --      Would look something like:
+    --      local activeAsNum = bit32.band(attacklight.active, 1)
+    --      attacklight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
+    --          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
     if attacklight.active and sl.energy < searchlightCapacitorCutoff then
       attacklight.active = false
     elseif not attacklight.active and sl.energy > searchlightCapacitorStartable then

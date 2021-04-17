@@ -30,9 +30,11 @@ end)
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
-  CheckForFoesNearSL(event.tick)
-  DecrementBoostTimers(event.tick)
   CheckElectricNeeds(event.tick)
+
+  CheckForFoesNearSL(event.tick)
+
+  DecrementBoostTimers(event.tick)
 
   DEBUGTOOL(event.tick) -- TODO Remove
 end)
@@ -85,11 +87,13 @@ end)
 script.on_event(defines.events.on_built_entity,
 function(event)
 
-  AddSearchlight(event.created_entity)
+  if event.created_entity.name == searchlightBaseName then
+    AddSearchlight(event.created_entity)
+  end
 
-end,
-{{filter="type", type = "turret"},       -- TODO apparently you can just say "turret" as a filter, no need to specify type (cleanup other funcs too)
- {filter="name", name = "searchlight"}}) -- TODO we probably will want to track any turrets at all built within range of our searchlights...
+  -- TODO other functions for turrets
+
+end)
 
 
 -- Via Robot
@@ -98,9 +102,7 @@ function(event)
 
   AddSearchlight(event.created_entity)
 
-end,
-{{filter="type", type = "turret"},
- {filter="name", name = "searchlight"}})
+end)
 
 
 -- Via Script
@@ -128,11 +130,11 @@ end)
 script.on_event(defines.events.on_pre_player_mined_item,
 function(event)
 
-  RemoveSearchlight(event.entity)
+  if event.entity.name == searchlightBaseName then
+    RemoveSearchlight(event.entity)
+  end
 
-end,
-{{filter="type", type = "turret"},
- {filter="name", name = "searchlight"}})
+end)
 
 
 -- Via Robot
@@ -141,9 +143,7 @@ function(event)
 
   RemoveSearchlight(event.entity)
 
-end,
-{{filter="type", type = "turret"},
- {filter="name", name = "searchlight"}})
+end)
 
 
 -- Via Damage
@@ -152,8 +152,7 @@ function(event)
 
   RemoveSearchlight(event.entity)
 
-end,
-{{filter="name", name = "searchlight"}})
+end)
 
 
 -- Via Script

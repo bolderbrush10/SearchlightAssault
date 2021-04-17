@@ -2,9 +2,9 @@ require "defines"
 require "util"
 
 function InitTables()
-  -----------------
+  ----------------------
   -- Base-Searchlight --
-  -----------------
+  ----------------------
 
   -- Map: searchlight unit_number -> Searchlight
   global.base_searchlights = {}
@@ -18,9 +18,9 @@ function InitTables()
   -- Map: searchlight unit_number -> remaining ticks
   global.baseSL_to_unboost_timers = {}
 
-  -----------------
-  -- Attack-Searchlight  --
-  -----------------
+  ------------------------
+  -- Attack-Searchlight --
+  ------------------------
 
   -- Map: dummylight unit_number -> Attacklight
   global.attack_searchlights = {}
