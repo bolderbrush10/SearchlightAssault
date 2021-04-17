@@ -33,6 +33,8 @@ function(event)
   CheckForFoesNearSL(event.tick)
   DecrementBoostTimers(event.tick)
   CheckElectricNeeds(event.tick)
+
+  DEBUGTOOL(event.tick) -- TODO Remove
 end)
 
 
@@ -162,6 +164,57 @@ function(event)
 
 end)
 
+
+--
+-- Manually render spotlight range on mouseover / held in cursor
+--
+
+-- local renderID = nil
+
+-- script.on_event(defines.events.on_selected_entity_changed,
+-- function(event)
+
+--   local player = game.players[event.player_index]
+--   if player.selected and not renderID then
+--     renderID = renderRange(player, player.selected)
+--     game.print("rendering " .. renderID)
+--   elseif renderID then
+--     game.print("destroying " .. renderID)
+--     rendering.destroy(renderID)
+--     renderID = nil
+--   end
+
+-- end)
+
+-- script.on_event(defines.events.on_player_cursor_stack_changed,
+-- function(event)
+
+--   local player = game.players[event.player_index]
+--   if player.cursor_stack.valid_for_read then
+--     -- and player.cursor_stack.name == searchlightItemName
+
+--     renderRange(game.players[event.player_index], player.cursor_position)
+--   end
+
+-- end)
+
+
+-- -- target can either be a position or an entity
+-- function renderRange(player, target)
+
+--   return rendering.draw_circle{color={0.8, 0.1, 0.1, 0.5},
+--                                radius=5,
+--                                filled=true,
+--                                target=target,
+--                                target_offset={0,0},
+--                                surface=player.surface,
+--                                time_to_live=0,
+--                                players={player},
+--                                draw_on_ground=true}
+
+-- end
+
+
 --
 -- Misc
 --
@@ -179,7 +232,7 @@ function(event)
 end)
 
 
--- Manual debug tool
+-- Manual debug tool, triggered by typing anything into the console
 -- TODO remove
 script.on_event(defines.events.on_console_command,
 function (event)
@@ -191,3 +244,12 @@ function (event)
     game.print("nothing selected")
   end
 end)
+
+
+-- Automatic debug tool, triggered every tick
+-- TODO remove
+function DEBUGTOOL(tick)
+  -- if game.players[1].selected then
+  --   rendering.draw_circle{color={0.8, 0.1, 0.1, 0.5}, radius=5, filled=true, target=game.players[1].selected, target_offset={0,0}, surface=game.players[1].surface, time_to_live=2, players={game.players[1]}, draw_on_ground=true}
+  -- end
+end

@@ -2,8 +2,8 @@
 -- because other mods may have inadvertent access to functions at this step.
 
 -- TODO Should I worry about other mods interfering with these non-local vars?
---      How can I prevent it while letting files share..
---      maybe say "defines = {}" and "return defines"
+--      How can I prevent it while letting files share...
+--      Maybe say "defines = {}" and "return defines"
 
 --------------------------------
 -- Performance-related tweaks --
@@ -21,14 +21,16 @@ ticksBetweenFoeSearches = 60
 -----------------------------
 
 -- Range at which search light turret auto-spots foes
+-- TODO remove
 searchlightInnerRange = 40
 
--- Max range at which search light beam wanders (and possibly spots foes)
+-- Max range at which search light beam wanders
 -- (About the same size as the radar's continuous reveal,
---  which seems fair, since the light's built from a radar)
+--  since the search light is built from a radar)
 searchlightOuterRange = 100
 
 -- Radius at which the spotlight turret boosts the range of friends
+-- TODO rework this to use a range based on a square-grid of tiles
 searchlightFriendRadius = 15
 
 -- Range boost given to electric turrets
@@ -46,9 +48,9 @@ fluidBoost = searchlightOuterRange - 40
 -- (The searchlight requires a half-full buffer to start operating, and turns back off when the buffer is below the cutoff)
 -- ((We use this to reduce pathological "flickering" cases when a factory is in low power,
 --   and we'd otherwise need to constantly enable / disable the hidden entities that make the searchlight work))
-searchlightCapacitorSize     = "9500kJ"
+searchlightCapacitorSize    = "10MJ"
 searchlightCapacitorCutoff     = 500000 -- joules
-searchlightCapacitorStartable = 4750000 -- joules
+searchlightCapacitorStartable = 5000000 -- joules
 
 -- How much electricity the searchlight consumes
 searchlightEnergyUsage = "305kW"
@@ -66,7 +68,16 @@ searchlightWanderSpeed = 0.2
 -- Speed at which spotlight beam tracks a spotted foe
 searchlightTrackSpeed = 1.3
 
+-- Delay in ticks between boosting and unboosting friends
+-- (game runs at 60 ticks per second)
+boostDelay = 3 * 60
+
+-------------------------------------------------
+-- Really boring stuff                         --
+-------------------------------------------------
+
 -- Entity, item, recipe names
+-- (These need to copied manually into the locale files as far as I can tell)
 searchlightItemName = "searchlight"
 searchlightRecipeName = "searchlight"
 
@@ -83,7 +94,3 @@ turtleMaskName = "spotlight-turtle"
 
 -- Identifies range boosted versions of turrets
 boostSuffix = "-sl_boosted"
-
--- Delay in ticks between boosting and unboosting friends
--- (game runs at 60 ticks per second)
-boostDelay = 3 * 60

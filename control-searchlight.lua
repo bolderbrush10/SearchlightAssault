@@ -8,6 +8,8 @@ require "util"
 
 function AddSearchlight(sl)
   global.base_searchlights[sl.unit_number] = sl
+  -- local behavior = sl.get_or_create_control_behavior()
+  -- behavior =
 
   attackLight = sl.surface.create_entity{name=searchlightAttackName,
                                          position=sl.position,

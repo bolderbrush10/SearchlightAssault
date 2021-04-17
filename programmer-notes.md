@@ -1,11 +1,18 @@
 ##Current task:
 
-Push ahead with:
+So, we've figured out how to get the game to display multiple (square) sprites as a radius visualization.
+This means that we don't necessarily have to define our searchlight-base entity as a turret anymore.
+What we're presently trying to figure out:
+  - What kind of entity we should use
 
-A) Searchlight turtle friend / foe forces
-B) Searchlight attack-entity and base-entity coexist at the same time forever
+  - Should we plan to create & pop up our own custom gui for circuit conditions?
+  - What kind of entity has good circuit conditions we can steal / how to rig the connections
+    - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
+    - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
+       Their sprites could still just be a part of the base-searchlight's sprite)
 
-Current-current task: Probably should start hooking up the turtle-spawn and setting it as the attackable for specific lights.
+  - How to designate arbitrary structures as military targets so that biters will "prioritize" attacking the searchlights
+    - Maybe we could create yet-another-dummy entity?
 
 ##~~Current~~ Previous dillema:
 
@@ -320,13 +327,21 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 -- TODO Organize control.lua into a couple more files (like, boostrange.lua), etc
 
 
+-- TODO Ask for a way to specify a sprite layer in radius_visualisation_specification as a big circle (instead of always square)
+--      Or just give us a 'range' parameter on arbitrary entities
+
+
 -- TODO rename searchlightFriendRadius to searchlightRangeBoostRadius or something
 
--- TODO Be more meticulous in checking entity.isValid on objects before we use them
+-- TODO Be more meticulous in checking entity.isValid on objects before we use them (including players, characters, cursors, item stacks, etc)
 
 -- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
 --      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
 
+
+-- TODO use integration_patch when we're tidying up the graphics
+
+-- TODO implement on_entity_settings_pasted event & prototype feature "additional_pastable_entities" to let us know when people copy circuit settings between searchlights
 
 -- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
 --      (Alterntatively, ask for the simple ability to increase turret range during run time)
@@ -338,6 +353,10 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 -- TODO would be cool if the spotlight just flickered while it was disabled and still had low power
 
 -- TODO Clean up unused graphics / icons
+
+-- TODO Sounds!
+
+-- TODO prototype: map_color and enemy_map_color (make sure turtle & hidden SL_attack entity have no color)
 
 -- TODO See if there's a way to get rid of the 'turret' category in the information panel
 --      It lists stuff that we don't care about like kills & damage done
