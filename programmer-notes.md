@@ -1,4 +1,10 @@
-##Current task:
+##Current Task:
+
+We're working on getting the grid system for detecting foes working. But it's a bit unweildy to manage all the grids & neighbor of grids.
+
+So, we've just had a radical idea to stop doing any searches for units ourselves. Instead, we'll just give the turtle a vision & attack radius, and if it starts attacking something, we'll know that we've spotted a foe! It's very possible that this will harness the game's search engine and result in more efficiency than whatever we can dream up in lua.
+
+##Next task:
 
 So, we've figured out how to get the game to display multiple (square) sprites as a radius visualization.
 This means that we don't necessarily have to define our searchlight-base entity as a turret anymore.

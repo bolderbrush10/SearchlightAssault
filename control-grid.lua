@@ -1,11 +1,20 @@
 require "defines"
+require "control-common"
 
 
--- Grid: {Force, Surface, Area, Foes, Searchlight Count}
 local gridSize = searchlightOuterRange
+local gridSize = searchlightOuterRange / 8
 
--- Force.index -> "x,y" -> Grid
-global.forceToPositionToGrid = {}
+
+-- Grid: {Force, Surface, Area, Searchlight Count, Searchlights[], Foes[]}
+function MakeGrid(sl_parent, position)
+  return {force = sl_parent.force,
+          surface = sl_parent.surface,
+          area = GridBaseToGridArea(PositionToGridBase(position)),
+          searchlightCount = 0,
+          searchlights = {},
+          foes = nil}
+end
 
 
 function PosToStr(pos)
@@ -79,15 +88,11 @@ function Grid_CheckForFoes(grid)
   grid.foes = grid.surface.find_units({area = grid.area,
                                        force = grid.force,
                                        condition = "enemy"})
-end
-
-
-function MakeGrid(sl_parent, position)
-  return {force = sl_parent.force,
-          surface = sl_parent.surface,
-          area = GridBaseToGridArea(PositionToGridBase(position)),
-          searchlightCount = 0,
-          foes = nil}
+  if grid.foes then
+    global.gridsWithFoes[grid] = grid
+  else
+    global.gridsWithFoes[grid] = nil
+  end
 end
 
 
@@ -144,6 +149,7 @@ function Grid_AddSpotlight(sl)
 
   slGrid = Grid_LookupGrid(sl, slGridPos)
   slGrid.searchlightCount = slGrid.searchlightCount + 1
+  slGrid.searchlights[sl.unit_number] = sl
 end
 
 
@@ -152,6 +158,7 @@ function Grid_RemoveSpotlight(sl)
   slGridPosStr = PosToStr(slGridPos)
   forceInd = sl.force.index
 
+  Grid_LookupGrid(sl, slGridPos).searchlights[sl.unit_number] = nil
   Grid_LookupGrid(sl, slGridPos).searchlightCount = Grid_LookupGrid(sl, slGridPos).searchlightCount - 1
 
   -- First, check if there are still other searchlights in this grid.
@@ -165,14 +172,16 @@ function Grid_RemoveSpotlight(sl)
   -- For each neighbor-grid of the searchlight being removed
   for index, neighborLoc in pairs(neighbors) do
 
+    neighborGrid = Grid_LookupGrid(sl, neighborLoc)
     -- Skip nil grid neighbors, and then...
-    if Grid_LookupGrid(sl, neighborLoc) then
+    if neighborGrid then
 
       -- Check if any of the neighbor-of-neighbors (2nd order neighbors) still have any searchlights
       nofns = AppendSurroundingPositions(neighborLoc)
 
       -- If no 2nd order neighbors have a searchlight, delete it
       if not doesListHaveSearchLight(nofns, sl) then
+        global.gridsWithFoes[neighborGrid] = nil
         global.forceToPositionToGrid[forceInd][PosToStr(neighborLoc)] = nil
       end
 

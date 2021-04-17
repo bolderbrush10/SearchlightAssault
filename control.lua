@@ -150,8 +150,15 @@ end)
 script.on_event(defines.events.on_entity_died,
 function(event)
 
-  RemoveSearchlight(event.entity)
+  if event.entity.name == searchlightBaseName then
+    RemoveSearchlight(event.entity)
+  end
 
+
+  -- TODO if this was a biter / etc, then we could probably check
+  --      whether relevant boosted turrets are still allowed to be boosted
+  -- On the other hand... turrets probably acquire new shooting targets
+  -- long before their bullets actually reach their final destination...
 end)
 
 

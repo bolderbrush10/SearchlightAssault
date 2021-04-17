@@ -34,6 +34,7 @@ function SpawnTurtle(baseSL, attackSL, surface, location)
   return turtle
 end
 
+
 function WanderTurtle(turtle, origin, waypoint)
   local tun = turtle.unit_number
 

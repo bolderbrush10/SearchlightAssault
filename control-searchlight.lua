@@ -6,6 +6,36 @@ require "render" -- TODO remove
 require "util"
 
 
+-- The idea here is to create two special forces.
+-- The 'foe' force exists to create an imaginary target (The 'Turtle') for the spotlights to 'shoot at' while they scan around for enemy units.
+-- But we don't want the player's normal turrets to shoot at that imaginary target...
+-- ...So we make a 'friend' force, which we'll assign to spotlights while they shoot at the turtle.
+function InitForces()
+
+  game.create_force(searchlightFoe)
+  game.create_force(searchlightFriend)
+
+  for F in pairs(game.forces) do
+    SetCeaseFires(F)
+  end
+
+  game.forces[searchlightFriend].set_friend("player", true) -- TODO Is this appropriate in multiplayer?
+  game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
+
+end
+
+
+function SetCeaseFires(F)
+
+  game.forces[searchlightFoe].set_cease_fire(F, true)
+  game.forces[searchlightFriend].set_cease_fire(F, true)
+
+  game.forces[F].set_cease_fire(searchlightFoe, true)
+  game.forces[F].set_cease_fire(searchlightFriend, true)
+
+end
+
+
 function AddSearchlight(sl)
   global.base_searchlights[sl.unit_number] = sl
 
@@ -16,6 +46,7 @@ function AddSearchlight(sl)
   -- TODO search for boostables and add
 
 end
+
 
 function SpawnSLHiddenEntities(sl)
   attackLight = sl.surface.create_entity{name=searchlightAttackName,
@@ -66,19 +97,13 @@ function RemoveSearchlight(sl)
 end
 
 
-function SwapSearchlight(old, new)
-    -- copy settings
-    -- copy over global entries, placement in, boostables, etc
-    SwapTurret(old, new)
-
-    -- TODO copy boostables
-end
-
-
 function SwapTurret(old, new)
     -- copy settings
+    CopyTurret(old, new)
+
     -- copy over global entries, placement in, etc
 end
+
 
 function SetAsBoostable(sl, turret)
 
@@ -120,38 +145,24 @@ end
 -- TODO Grids which can be skipped:
 --  ones with no foes
 --  ones with all spotlights engaged with a foe
---  ones with foes that don't move (how pathological can this case get though?)
 function CheckForFoesNearSL(tick)
   Grid_UpdateFoeGrids(tick)
 
+  for _, grid in pairs(global.gridsWithFoes) do
 
-  -- for index, grid in pairs(spotlGrids) do
-  --   if grid.foes then
+    -- We want to compile a set of all the turtles from grids / neighbors of grids with foes
+    -- Then we can iterate on those turtles one time and check if they're targeting a foe
+    -- (Skipping the turtles of searchlights that already have a target)
+    -- TODO Would it be worth sorting the list of foes by position and comparing distance from the turtle position?
+    --      Or is it faster to just use the factorio api search on a small area?
 
-
-    -- Basically what we want to do is check for each foe,
-    -- look up all the neighboring grid tiles and check
-    -- if there's a turret in the Outer / Inner Range and act accordingly
-
-
-      -- for slindex, sl in grid.getNeighbors().spotlights do
-
-      --     -- TODO Lights that can be skipped:
-      --     --  ones already engaged with a foe
-
-      --     if (sl.shooting_target is not nil) do
-
-      --       -- Check for foes very close to each spotlight in grid
-      --       foeList = find_entities_filtered{area=grid.area,
-      --       -- Check for foes close to each turtle belonging to spotlight in grid
-
-      --       -- If foe spotted, boost turrets belonging to spotlight
-
-      --     end
-
-      --end
-  -- end
-  -- end
+    slGridPos = PositionToGridBase(sl.position)
+      -- for each neighboring grid + this grid,
+        --  look up each searchlight in that grid,
+        --  and if it has no shooting target already,
+          --  then lookup its turtle
+          --  and do a search to see if there are any foes in its range
+  end
 end
 
 -----------------------------------------------------------------------
@@ -390,33 +401,3 @@ end
 
 
 
-
-
--- The idea here is to create two special forces.
--- The 'foe' force exists to create an imaginary target (The 'Turtle') for the spotlights to 'shoot at' while they scan around for enemy units.
--- But we don't want the player's normal turrets to shoot at that imaginary target...
--- ...So we make a 'friend' force, which we'll assign to spotlights while they shoot at the turtle.
-function InitForces()
-
-  game.create_force(searchlightFoe)
-  game.create_force(searchlightFriend)
-
-  for F in pairs(game.forces) do
-    SetCeaseFires(F)
-  end
-
-  game.forces[searchlightFriend].set_friend("player", true) -- TODO Is this appropriate in multiplayer?
-  game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
-
-end
-
-
-function SetCeaseFires(F)
-
-  game.forces[searchlightFoe].set_cease_fire(F, true)
-  game.forces[searchlightFriend].set_cease_fire(F, true)
-
-  game.forces[F].set_cease_fire(searchlightFoe, true)
-  game.forces[F].set_cease_fire(searchlightFriend, true)
-
-end

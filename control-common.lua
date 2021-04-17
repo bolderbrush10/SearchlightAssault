@@ -40,4 +40,18 @@ function InitTables()
 
   -- Map: Turtle -> Position: [x,y]
   global.turtle_to_waypoint = {}
+
+  -----------------
+  --    Grids    --
+  -----------------
+
+  -- Force.index -> "x,y" -> Grid
+  -- TODO Do we really have to care about other forces?
+  global.forceToPositionToGrid = {}
+
+  -- Grid -> Grid
+  global.gridsWithFoes = {}
+
+  global.gridsWithLights = {}
+
 end
