@@ -4,7 +4,8 @@ require "graphics"
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
-local SearchLightBaseEntity =
+-- Searchlight Base Entity
+local sl_b =
 {
   type = "electric-turret",
   name = searchlightBaseName,
@@ -66,28 +67,29 @@ local SearchLightBaseEntity =
 
 
 -- TODO: use radar_range?
-local SearchLightAttackEntity = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+-- Searchlight Attack Entity
+local sl_a = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
 -- TODO remove this commented flag when we're done,
 --      keep it in case we need to remember that we can make things hidden
--- SearchLightAttackEntity.flags = {"hidden"}
-SearchLightAttackEntity.selectable_in_game = false
-SearchLightAttackEntity.name = searchlightAttackName
- -- arbitrary high number btween 5 and 500 to be 'instant'
-SearchLightAttackEntity.rotation_speed = 50
+-- sl_a.flags = {"hidden"}
+sl_a.selectable_in_game = false
+sl_a.name = searchlightAttackName
+ -- arbitrary high number between 5 and 500 to be 'instant'
+sl_a.rotation_speed = 50
 -- Energy priority: Should be below laser turrets, same as most machines, above lamps & accumulators
 -- TODO consume electricity by drawing from the base-entity's buffer
-SearchLightAttackEntity.energy_source.usage_priority = "secondary-input"
+sl_a.energy_source.usage_priority = "secondary-input"
 -- We don't intend to leave a corpse at all, but if the worst happens...
 -- TODO This is actually a bit more instrusive than you'd think.. find / make an actually-transparent corpse
 --      Likewise for the turtle
-SearchLightAttackEntity.corpse = "small-scorchmark"
-SearchLightAttackEntity.create_ghost_on_death = false
-SearchLightAttackEntity.energy_source =
+sl_a.corpse = "small-scorchmark"
+sl_a.create_ghost_on_death = false
+sl_a.energy_source =
 {
   type = "electric",
   usage_priority = "secondary-input",
 }
-SearchLightAttackEntity.attack_parameters =
+sl_a.attack_parameters =
 {
   type = "beam",
   range = searchlightOuterRange,
@@ -134,7 +136,7 @@ SearchLightAttackEntity.attack_parameters =
 
 
 -- The dummy seeking spotlight's beam draws where the turtle is
-local Turtle =
+local turtle =
 {
   type = "unit",
   name = "searchlight-turtle",
@@ -181,4 +183,4 @@ local Turtle =
 
 
 -- Add new definitions to game data
-data:extend{SearchLightAttackEntity, SearchLightBaseEntity, Turtle}
+data:extend{sl_a, sl_b, turtle}
