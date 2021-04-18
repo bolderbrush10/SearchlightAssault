@@ -7,6 +7,9 @@ require "defines"
 -- local g = require "graphics"
 -- myEntity.animation = g[someAnimation]
 
+-- TODO Lua macros are a lost cause. Figure out how to use C macros
+--      to simply declare local items for export as opposed to the current method
+
 local export = {}
 
 local Layer_transparent_pixel =

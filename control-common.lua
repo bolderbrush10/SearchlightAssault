@@ -35,6 +35,9 @@ function InitTables()
   -- Map: turtle unit_number -> Turtle
   global.turtles = {}
 
+  -- Map: turtle unit_number -> AttackLight
+  global.tun_to_attackSL = {}
+
   -- Map: searchlight unit_number -> Turtle
   global.baseSL_to_turtle = {}
 
@@ -51,7 +54,5 @@ function InitTables()
 
   -- Grid -> Grid
   global.gridsWithFoes = {}
-
-  global.gridsWithLights = {}
 
 end

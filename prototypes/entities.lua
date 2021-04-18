@@ -120,40 +120,79 @@ sl_a.attack_parameters =
   },
 }
 
+-- local spottedFoeTracker =
+-- {
+
+
+-- }
 
 -- The dummy seeking spotlight's beam draws where the turtle is
+-- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 local turtle =
 {
-  type = "unit", -- Only units can recieve commands (otherwise combat-robot could have been simpler)
+  type = "unit",
   name = turtleName,
-  run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation,
+  movement_speed = searchlightWanderSpeed, -- Can update during runtime for wander vs track mode
   -- run_animation = Layer_transparent_animation,
+  run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation,
+  distance_per_frame = 1, -- speed at which the run animation plays, in tiles per frame
   -- We don't intend to leave a corpse at all, but if the worst happens...
   corpse = "small-scorchmark",
+  flags = hiddenEntityFlags,
+  pollution_to_join_attack = 0,
+  has_belt_immunity = true,
+  move_while_shooting = true,
+  distraction_cooldown = 0, -- undocumented, mandatory
+  min_pursue_time = 0,
+  max_pursue_distance = 0,
+  -- Setting vision distance too low can cause turtles to get stuck in their foes
+  vision_distance = searchlightSpotRadius,
   selectable_in_game = false,
   selection_box = {{-0.0, -0.0}, {0.0, 0.0}},
   collision_box = {{0, 0}, {0, 0}}, -- enable noclip
   collision_mask = {}, -- enable noclip for pathfinding too
-  flags = hiddenEntityFlags,
-  movement_speed = searchlightTrackSpeed,
-  distance_per_frame = 1,
-  pollution_to_join_attack = 5000,
-  distraction_cooldown = 1,
-  vision_distance = 0,
-  has_belt_immunity = true,
   ai_settings =
   {
     allow_try_return_to_spawner = false,
     destroy_when_commands_fail = false,
     do_separation = false,
   },
+  -- TODO We could probably make a mod option to filter against
+  --      target masks / entity flags here so flying units, etc aren't spottable
   attack_parameters =
   {
+    -- Any smaller a value for range(1) or min_attack_distance(3) will cause
+    -- the turtle to just wiggle in the center of biter nests.
+    -- Too much higher for min_attack_distance(6) and turtles will
+    -- give up on attacking and walk away more often.
+    range = 1,
+    min_attack_distance = 6,
     type = "projectile",
-    range = 0,
-    cooldown = 1000000,
-    ammo_type = make_unit_melee_ammo_type(0),
+    cooldown = 60, -- measured in ticks
     animation = g["Layer_transparent_animation"],
+    -- range_mode = "bounding-box-to-bounding-box",
+    range_mode = "center-to-center",
+    movement_slow_down_factor = 0,
+    movement_slow_down_cooldown = 0,
+    activation_type = "activate",
+    ammo_type =
+    {
+      category= "melee",
+      target_type = "entity",
+      action =
+      {
+        type = "direct",
+        action_delivery =
+        {
+          type = "instant",
+          target_effects =
+          {
+            type = "script",
+            effect_id = spottedEffectID,
+          }
+        }
+      }
+    },
   },
 }
 

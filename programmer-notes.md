@@ -1,8 +1,38 @@
-##Current Task:
+##Current  Task:
+
+So, huge problems with using the command-goto + distraction scheme to get the turtle to attack things such as spawners.
+Since we have no-clip enabled, there's some kind of bug where the turtle enters the hitbox of the spawner, and is then trapped inside to wiggle around -- unable to attack regardless of its attack's range or other settings.
+
+Otherwise, it works great -- the turtle gets distracted by a foe, attacks it, and the attack raises our script-trigger.
+
+I think our current work around for the "stuck inside for 5-10 seconds" to make use of on_ai_command_completed thing to automatically pop the "spotted" effect when that fires. Then, we'll define our "normal" spotting period kicked off by the attack-script-trigger to be the same amount of time that it takes for distractions to give up.
+
+Experimental data suggests that vision-radius has the biggest effect on keeping turtles from getting stuck inside.
+Other parameters (attack range, movement speed) seemingly don't even begin to have an effect until the vision-radius is at least 5.
+
+##~~Current~~ Most Previous Task:
 
 We're working on getting the grid system for detecting foes working. But it's a bit unweildy to manage all the grids & neighbor of grids.
 
 So, we've just had a radical idea to stop doing any searches for units ourselves. Instead, we'll just give the turtle a vision & attack radius, and if it starts attacking something, we'll know that we've spotted a foe! It's very possible that this will harness the game's search engine and result in more efficiency than whatever we can dream up in lua.
+
+(We could probably still use the grid system to figure out which sets of turtles are worth polling?)
+
+So, I'm looking at the list of entity methods and shooting_target is only for turrets.
+Maybe what we should do is have the turtle's attack create a sticker / trigger event? Then we can just detect when that gets added to an entity
+That might be better overall, even, since we wouldn't have to poll the turtles every tick to see if they've got a shooting target.
+
+Okay, so getting the turtle to trigger a script effect with its attacks works pretty good.
+We get the source & target entity and everything.
+But the problem right now is the 'range' on the turtle attack. If we make it range 0 or 1 it just doesn't work.
+If we make it range 2 it works, but now the turtle is so far from the foe that the spotlight effect is noticably offset.
+
+Maybe what we need to do is, when the script effect fires, set the firing target of the spotlight to the spotted foe?
+(Will it accept that even if the foe is on a different force?)
+
+Maybe what we need to do is, when the biter attacks a foe (or becomes distracted), we change the force for the hidden attack entity.
+Then, we set its shooting_target to whatever the biter was attacking. When the target dies, we switch it back to the hidden force.
+
 
 ##Next task:
 
@@ -164,6 +194,8 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 
 -- TODO Add emojis / icons to the mod name (Look at how the water gun mod makes them show up in game on the infopanel)
 
+
+-- TODO Double check that no stickers of any kind can be applied to the attackentity / turtle
 
 -- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.
 --      Are we going to be able to (cheaply) replicate that effect?

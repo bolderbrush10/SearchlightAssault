@@ -21,6 +21,7 @@ function InitForces()
 
   game.forces[searchlightFriend].set_friend("player", true) -- TODO Is this appropriate in multiplayer?
   game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
+  game.forces[searchlightFoe].set_cease_fire("enemy", false)
 
 end
 
@@ -142,28 +143,11 @@ function CheckElectricNeeds(tick)
 end
 
 
--- TODO Grids which can be skipped:
---  ones with no foes
---  ones with all spotlights engaged with a foe
-function CheckForFoesNearSL(tick)
-  Grid_UpdateFoeGrids(tick)
-
-  for _, grid in pairs(global.gridsWithFoes) do
-
-    -- We want to compile a set of all the turtles from grids / neighbors of grids with foes
-    -- Then we can iterate on those turtles one time and check if they're targeting a foe
-    -- (Skipping the turtles of searchlights that already have a target)
-    -- TODO Would it be worth sorting the list of foes by position and comparing distance from the turtle position?
-    --      Or is it faster to just use the factorio api search on a small area?
-
-    slGridPos = PositionToGridBase(sl.position)
-      -- for each neighboring grid + this grid,
-        --  look up each searchlight in that grid,
-        --  and if it has no shooting target already,
-          --  then lookup its turtle
-          --  and do a search to see if there are any foes in its range
-  end
+function FoeSpotted(turtle, foe)
+  -- TODO start tracking this foe so we can detect when it dies / leaves range / whatever
+  -- global.tun_to_attackSL[turtle.unit_number].shooting_target = foe
 end
+
 
 -----------------------------------------------------------------------
 
