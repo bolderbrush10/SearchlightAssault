@@ -35,14 +35,21 @@ function InitTables()
   -- Map: turtle unit_number -> Turtle
   global.turtles = {}
 
-  -- Map: turtle unit_number -> AttackLight
-  global.tun_to_attackSL = {}
+  -- Map: turtle unit_number -> Searchlight
+  global.tun_to_baseSL = {}
 
   -- Map: searchlight unit_number -> Turtle
   global.baseSL_to_turtle = {}
 
   -- Map: Turtle -> Position: [x,y]
   global.turtle_to_waypoint = {}
+
+  -----------------
+  --     Foe     --
+  -----------------
+
+  -- Map: foe unit_number -> Searchlight
+  global.foe_to_baseSL = {}
 
   -----------------
   --    Grids    --

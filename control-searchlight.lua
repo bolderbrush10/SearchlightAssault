@@ -120,6 +120,65 @@ function DecrementBoostTimers()
 end
 
 
+function FoeSpotted(turtle, foe)
+  -- Start tracking this foe so we can detect when it dies / leaves range / whatever
+  relevantLight = global.tun_to_baseSL[turtle.unit_number]
+
+  -- nb, a foe may be tracked by multiple searchlights at the same time
+  if not global.foe_to_baseSL[foe] then
+    global.foe_to_baseSL[foe] = {}
+  end
+  table.insert(global.foe_to_baseSL[foe], relevantLight)
+
+  -- Move the attack light to the player force so that its alert_when_firing will show up
+  -- and nearby biters will notice and come attack
+  attackLight = global.baseSL_to_attackSL[relevantLight.unit_number]
+  attackLight.force = relevantLight.force
+  attackLight.shooting_target = foe
+
+  turtle.active = false
+end
+
+
+-- Checked every tick, but only while there's a foe spotted,
+-- so not too performance-impacting
+function TrackSpottedFoes(tick)
+  -- skip function if table empty (which should be the case most of the time)
+  if next(global.foe_to_baseSL) == nil then
+    return
+  end
+
+  -- It's very tedious to modify/remove from a lua list while iterating.
+  -- So we'll just iterate on the copy so we can modify the real list hassle free.
+  -- TODO If we wind up still using control-grid, use this iteration pattern over there too.
+  local copyfoe_to_baseSL = global.foe_to_baseSL
+
+  for foe, baseSLs in pairs(copyfoe_to_baseSL) do
+    game.print("iterating on foe " .. foe.name .. ":" .. foe.unit_number)
+    for index, baseSL in pairs(baseSLs) do
+      attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
+
+      if not attacklight.active then
+        -- TODO uhh...
+      elseif attacklight.shooting_target ~= foe then
+        -- TODO uhh...
+      else
+        game.print("still attacking target")
+      end
+
+      -- TODO So, if we start shooting at an actual foe...
+      --      Do we want to just delete our turtle until the foe dies,
+      --      then respawn it at the last shooting position?
+      --      Or maybe we can just set turtle.active = false, and teleport it to the lsp when we turn it back on...
+
+      -- We also need to think about how to handle the turtle running out of the range of the attacklight...
+      -- Maybe we should trim its wander-radius by 10% compared to the attacklight's attack radius
+
+    end
+  end
+end
+
+
 -- We wouldn't need this function if there was a way
 -- to directly transfer / mirror electricity between units on different forces
 function CheckElectricNeeds(tick)
@@ -140,12 +199,6 @@ function CheckElectricNeeds(tick)
     end
 
   end
-end
-
-
-function FoeSpotted(turtle, foe)
-  -- TODO start tracking this foe so we can detect when it dies / leaves range / whatever
-  -- global.tun_to_attackSL[turtle.unit_number].shooting_target = foe
 end
 
 

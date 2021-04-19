@@ -1,37 +1,13 @@
 ##Current  Task:
 
-So, huge problems with using the command-goto + distraction scheme to get the turtle to attack things such as spawners.
-Since we have no-clip enabled, there's some kind of bug where the turtle enters the hitbox of the spawner, and is then trapped inside to wiggle around -- unable to attack regardless of its attack's range or other settings.
-
-Otherwise, it works great -- the turtle gets distracted by a foe, attacks it, and the attack raises our script-trigger.
-
-I think our current work around for the "stuck inside for 5-10 seconds" to make use of on_ai_command_completed thing to automatically pop the "spotted" effect when that fires. Then, we'll define our "normal" spotting period kicked off by the attack-script-trigger to be the same amount of time that it takes for distractions to give up.
-
-Experimental data suggests that vision-radius has the biggest effect on keeping turtles from getting stuck inside.
-Other parameters (attack range, movement speed) seemingly don't even begin to have an effect until the vision-radius is at least 5.
-
-##~~Current~~ Most Previous Task:
-
-We're working on getting the grid system for detecting foes working. But it's a bit unweildy to manage all the grids & neighbor of grids.
-
-So, we've just had a radical idea to stop doing any searches for units ourselves. Instead, we'll just give the turtle a vision & attack radius, and if it starts attacking something, we'll know that we've spotted a foe! It's very possible that this will harness the game's search engine and result in more efficiency than whatever we can dream up in lua.
+When the biter attacks a foe (or becomes distracted), we change the force for the hidden attack entity.
+Then, we set its shooting_target to whatever the biter was attacking. When the target dies, we switch it back to the hidden force.
 
 (We could probably still use the grid system to figure out which sets of turtles are worth polling?)
 
-So, I'm looking at the list of entity methods and shooting_target is only for turrets.
-Maybe what we should do is have the turtle's attack create a sticker / trigger event? Then we can just detect when that gets added to an entity
-That might be better overall, even, since we wouldn't have to poll the turtles every tick to see if they've got a shooting target.
 
-Okay, so getting the turtle to trigger a script effect with its attacks works pretty good.
-We get the source & target entity and everything.
-But the problem right now is the 'range' on the turtle attack. If we make it range 0 or 1 it just doesn't work.
-If we make it range 2 it works, but now the turtle is so far from the foe that the spotlight effect is noticably offset.
 
-Maybe what we need to do is, when the script effect fires, set the firing target of the spotlight to the spotted foe?
-(Will it accept that even if the foe is on a different force?)
-
-Maybe what we need to do is, when the biter attacks a foe (or becomes distracted), we change the force for the hidden attack entity.
-Then, we set its shooting_target to whatever the biter was attacking. When the target dies, we switch it back to the hidden force.
+Right now, we're working inside of TrackSpottedFoes in control-searchlight.lua
 
 
 ##Next task:
@@ -50,70 +26,40 @@ What we're presently trying to figure out:
   - How to designate arbitrary structures as military targets so that biters will "prioritize" attacking the searchlights
     - Maybe we could create yet-another-dummy entity?
 
-##~~Current~~ Previous dillema:
-
-0) On top of all this is the problem of how to have the spotlight shoot at a turtle which regular turrets ignore...
-
-A) Do we make turrets out of two entities and swap between them like we currently do?
-
-B) Or can we have the two entities exist at the same time to simplify things?
- - Is there a way to disable an entity?
- - Sort of; entity.active :: boolean [Read-Write] Deactivating an entity will stop all its operations (car will stop moving, inserters will stop working, etc).
- - Entities still show their range (desired)
- - But entities stop consuming electricity (undesired)
- - Entities show an icon on their info panel stated 'disabled by script' (undesired)
- - Entities cannot be destroyed, just set to 0hp (undesired)
-
-C) Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
+Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
    (like how tanks have different attacks)
 - entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
 - Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
 
-D) Rework the graphics to support the searchlight being effectively made of two entities?
 
-- There could be a short-range "radar beacon" piece in the middle that autodetects close foes and the longer-range searchlight on top of it
-- I don't know if I like that idea... Wouldn't we want the non-dummy entity to still actually attack at that long range?
+##Performance reports:
 
-E) We drop the whole 'two entites' thing entirely and just have one fully-script controlled turret
+A
+```
+Huge performance problem with ~100 spotlights, even if there are no turtles spawned
 
-F) Stop automatically detecting close-range foes. Isn't the whole point of 'sneaking past searchlights' supposed to be a thing you can do under the guard's nose?
+Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
+Made a save file in the game to test performace with 150, and a commit here in git.
 
-Sadly, alert_when_attacking is a part of the turret entity prototype, read-only at runtime, and not part of the attack itself.
-I think we can get away with just making alerts a circuit network output...
+Tried doing a version of searchlights no find_entity calls, still dropped 5 ups around 180 searchlights.
+Doing literally 2000 just entites (no lights) had no performance impact, so there's some real questions to be had.
 
-G) Still two entities, but no swapping between them and only the hidden entity does any work.
+Maybe experimenting with only running checks every n ticks is worthwhile?
 
-I think we still want the structure of the turret to belong to the player force.. Maybe we have it spawn a hidden entity that does all the actual attacking?
-The hidden entity can inherit the messy forces, and the "real" turret does nothing but suck up electricity.
+!! Maybe what we need to do is divide the world up into grids, group up all the turrets in a grid location,
+   then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
+```
 
-- Q) Why don't we just have the one entity?
-- A) Because we want to assign the searchlight-base to the player force and the searchlight-attack-entity to be a foe of the turtle's force
+B
+```
+Just got the framework rewrite in place to give turtles an attack to let us spot foes and it's looking great.
 
-- Qualities of the base entity:
-  - Has health
-  - Has force
-  - Consumes electricty
-  - Has range or effect area
+Only start to notice a drop of about 5fps once we hit ~5k searchlights.
 
+We still need to put in a lot more logic to handle what to do when the foe is actually spotted, and to retask-turtles after they reach initial waypoints, but I'm very happy.
+```
 
-##Crash testing:
-Action at time:
-Made a TON of searchlights, some near a biter nest.
-A bunch of biters swarmed, and some worms were spitting at the lights.
-
-
-Did it again.
-Action at time:
-
-Just made like 50 searchlights really close together really quickly.
-
-
-
-##Strings which would be first-class types in a real programming language:
-
-"small-searchlight"
-etc
-
+## Misc Notes
 
 - Important example
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
@@ -124,12 +70,6 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
   https://forums.factorio.com/viewtopic.php?f=3&t=91657
 
   New item flag "spawnable", every item has to have that flag to be creatable through the shortcuts directly.
-
-  Added direction to SimpleEntityWithOwner and SimpleEntityWithForce.
-
-  Renamed on_put_item to on_pre_build, as it is much more precise name for that event. It fires when anything is used for building: item, blueprint, blueprint record or ghost cursor.
-
-  Added LuaEntity::can_wires_reach().
 
 
 - Important search function:
@@ -152,21 +92,7 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
   Find units of "player" force
   local units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "same"})
 
-
--- TODO huge performance problem with ~100 spotlights, even if there are no turtles spawned
-
-        Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
-        Made a save file in the game to test performace with 150, and a commit here in git.
-
-        Tried doing a version of searchlights no find_entity calls, still dropped 5 ups around 180 searchlights.
-        Doing literally 2000 just entites (no lights) had no performance impact, so there's some real questions to be had.
-
-        Maybe experimenting with only running checks every n ticks is worthwhile?
-
-
-        !! Maybe what we need to do is divide the world up into grids, group up all the turrets in a grid location,
-           then just search the 9 tiles for that turret gride for stuff to consider before we focus on an individual turret.
-
+##TODO's
 
 -- TODO Ok, so let's think about the turtle + circuit-programmable spotlight targeting.
 --      Using move-to commands is problematic because there's only a particular radius the turtle will settle for.
@@ -190,6 +116,12 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
 -- TODO Electricity consumption
 
 -- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
+
+-- TODO So, we decided to make the attacklight destructible and assign it to the player force,
+--      so that way its alert_when_attacking will register for the player, and biter attacks will be triggered.
+--      Since the attacklight has no hit box though, this usually means the surrounding baselight structure
+--      (which only has 1/4th the hp) takes all the hits first and dies before the attacklight does.
+--      But we still should link the HP of the attacklight to the base light & otherwise be prepared for if the attacklight dies first.
 
 
 -- TODO Add emojis / icons to the mod name (Look at how the water gun mod makes them show up in game on the infopanel)
@@ -342,6 +274,32 @@ function makeLightStartLocation(sl)
 -- TODO Make the searchlight effect during the daytime a heat haze glimmer kinda thing
 
 
+-- TODO So, apparently, binding variables and functions to local speeds them up.
+--      We should go through all of our code and make sure that anything which can be made local, is made local.
+
+
+```
+For maximum efficiency you'll want to bind next to a local variable, e.g.,
+
+...
+local next = next
+...
+... if next(...) ...
+
+
+    Good point on the technical correctness; in the particular cases I've been utilizing the original code, false wouldn't be an expected key so the if not worked fine, but I'll probably make a habit of comparing to nil instead in the future, just as a good habit. And yes, I've been binding common utility functions to local vars for speed. Thanks for the input though. – Amber Aug 10 '09 at 1:41
+
+    I find it hard to agree with wrongness when the code works as intended – R.D. Alkire Sep 11 '16 at 16:26
+
+    Why do we gain speed by doing local next? – Moberg Oct 2 '16 at 20:22
+
+    @Moberg This is due to how LUA handles its namespace. The very dumbed down version, is it will first climb up the local tables, so if there is a local next in the current block, it will use that, then climb up to the next block, and repeat. Once out of locals, it will only then use the Global Namespace. This is a dumbed down version of it, but in the end, it definitely means the difference in regards to program speed. – ATaco Nov 29 '16 at 4:45
+
+    @Moberg at run time a global variable requires a hash-table lookup but a local variable requires only an array lookup. – Norman Ramsey Jan 28 '18 at 19:30
+```
+
+
+
 -- TODO Use the on_nth_tick(tick, f) to handle timer checking at a more reasonable, albiet less accurate rate (like, for checking if we should unboost turrets)
 
 on_nth_tick(tick, f)
@@ -421,7 +379,7 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 
 =================
 
-##Feature request for spotlights that track enemies
+## Feature request for spotlights that track enemies
 
 
 

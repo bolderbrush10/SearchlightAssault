@@ -2,8 +2,10 @@ require "defines"
 
 local g = require "graphics"
 
+
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
+
 
 local hiddenEntityFlags =
 {
@@ -15,16 +17,20 @@ local hiddenEntityFlags =
   "not-flammable",
   "not-in-kill-statistics",
   "not-on-map",
+  "not-repairable",
+  "not-rotatable",
   "not-selectable-in-game",
   "not-upgradable",
   "placeable-off-grid",
 }
+
 
 -- Searchlight Base Entity
 local sl_b =
 {
   type = "electric-energy-interface",
   name = searchlightBaseName,
+  max_health = 250,
   -- TODO move into graphics
   animations =
   {
@@ -94,6 +100,9 @@ sl_a.rotation_speed = 50
 sl_a.corpse = "small-scorchmark"
 sl_a.create_ghost_on_death = false
 sl_a.flags = hiddenEntityFlags
+sl_a.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+sl_a.collision_box = {{0, 0}, {0, 0}}
+sl_a.collision_mask = {}
 sl_a.attack_parameters =
 {
   type = "beam",
@@ -120,13 +129,8 @@ sl_a.attack_parameters =
   },
 }
 
--- local spottedFoeTracker =
--- {
 
-
--- }
-
--- The dummy seeking spotlight's beam draws where the turtle is
+-- The Attackspotlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 local turtle =
 {
@@ -170,7 +174,6 @@ local turtle =
     type = "projectile",
     cooldown = 60, -- measured in ticks
     animation = g["Layer_transparent_animation"],
-    -- range_mode = "bounding-box-to-bounding-box",
     range_mode = "center-to-center",
     movement_slow_down_factor = 0,
     movement_slow_down_cooldown = 0,

@@ -3,6 +3,7 @@ require "control-grid"
 require "control-searchlight"
 require "control-turtle"
 
+
 --
 -- TODO filter all these events
 --
@@ -32,24 +33,9 @@ script.on_event(defines.events.on_tick,
 function(event)
   CheckElectricNeeds(event.tick)
 
-  -- CheckForFoesNearSL(event.tick)
+  TrackSpottedFoes(event.tick)
 
   DecrementBoostTimers(event.tick)
-
-  DEBUGTOOL(event.tick) -- TODO Remove
-end)
-
-
-script.on_event(defines.events.on_script_trigger_effect,
-function(event)
-  -- if event.effect_id == spottedEffectID then
-  --   FoeSpotted(event.source_entity, event.target_entity)
-  --   if event.target_entity.unit_number then
-  --     game.print("attacking: " .. event.target_entity.unit_number)
-  --   else
-  --     game.print("attacking something with no unit_number")
-  --   end
-  -- end
 end)
 
 
@@ -62,6 +48,7 @@ function(event)
   end
 
 end)
+
 
 --
 -- CONSTRUCTIONS
@@ -95,6 +82,7 @@ end)
 --     {filter = "name", name = WT.extinguisher_turret_name, mode = "and"},
 --   })
 -- end
+
 
 -- Via Player
 script.on_event(defines.events.on_built_entity,
@@ -135,9 +123,11 @@ function(event)
 
 end)
 
+
 --
 -- DESTRUCTIONS
 --
+
 
 -- Via Player
 script.on_event(defines.events.on_pre_player_mined_item,
@@ -185,135 +175,30 @@ end)
 
 
 --
--- Manually render spotlight range on mouseover / held in cursor
---
-
--- local renderID = nil
-
--- script.on_event(defines.events.on_selected_entity_changed,
--- function(event)
-
---   local player = game.players[event.player_index]
---   if player.selected and not renderID then
---     renderID = renderRange(player, player.selected)
---     game.print("rendering " .. renderID)
---   elseif renderID then
---     game.print("destroying " .. renderID)
---     rendering.destroy(renderID)
---     renderID = nil
---   end
-
--- end)
-
--- script.on_event(defines.events.on_player_cursor_stack_changed,
--- function(event)
-
---   local player = game.players[event.player_index]
---   if player.cursor_stack.valid_for_read then
---     -- and player.cursor_stack.name == searchlightItemName
-
---     renderRange(game.players[event.player_index], player.cursor_position)
---   end
-
--- end)
-
-
--- -- target can either be a position or an entity
--- function renderRange(player, target)
-
---   return rendering.draw_circle{color={0.8, 0.1, 0.1, 0.5},
---                                radius=5,
---                                filled=true,
---                                target=target,
---                                target_offset={0,0},
---                                surface=player.surface,
---                                time_to_live=0,
---                                players={player},
---                                draw_on_ground=true}
-
--- end
-
-
---
 -- Misc
 --
+
+
+-- On script trigger (turtle attack)
+script.on_event(defines.events.on_script_trigger_effect,
+function(event)
+  if event.effect_id == spottedEffectID
+    and event.source_entity and event.target_entity then
+    FoeSpotted(event.source_entity, event.target_entity)
+  end
+end)
 
 
 -- On Command Completed
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  -- game.print("command completed by unit number " .. event.unit_number)
-  -- game.print("was distracted: " .. (event.was_distracted and "true" or "false"))
-  if event.was_distracted then
-    game.print("was distracted: true")
-    game.print("result: " .. event.result)
-  end
+  -- event.unit_number
+  -- event.was_distracted
+  -- event.result
+
+  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
+  --      or figure out what entity it was trying to attack and manually fire the
+  --      attack_trigger event here
 
 end)
-
-
--- Manual debug tool, triggered by typing anything into the console
--- TODO remove
-script.on_event(defines.events.on_console_command,
-function (event)
-  -- p = game.players[1]
-  -- if p.selected then
-  --   entities = p.surface.find_entities_filtered{position=p.selected.position, radius=5}
-  --   if entities then
-  --     game.print("count: " .. #entities)
-  --     for i, e in pairs(entities) do
-  --       if e.type == "unit" and e.spawner then
-  --         game.print("ename: " .. e.name .. " and spawner: " .. e.spawner.name)
-  --       else
-  --         game.print("ename: " .. e.name .. " but no spawner")
-  --       end
-  --     end
-
-  --   else
-  --     game.print("nil")
-  --   end
-  -- else
-  --   game.print("nothing selected")
-  -- end
-end)
-
-local turt = nil
--- Automatic debug tool, triggered every tick
--- TODO remove
-function DEBUGTOOL(tick)
-  -- if not turt then
-  --   p = game.players[1]
-  --   res = p.surface.find_entities_filtered{name=turtleName}
-  --   if res[1] then
-  --     turt = res[1]
-  --   else
-  --     return
-  --   end
-  -- end
-
-  -- if turt.command then
-  --   game.print("turt command: " .. turt.command.type)
-  --   if turt.command.type == defines.command.attack then
-  --     game.print("target: " .. turt.command.target.name)
-  --   end
-  -- else
-  --   game.print("no command")
-  -- end
-  -- if turt.distraction_command then
-  --   game.print("turt distraction: " .. turt.distraction_command.type)
-  --   if turt.distraction_command.type == defines.command.attack then
-  --     game.print("target: " .. turt.distraction_command.target.name)
-  --   end
-  -- else
-  --   game.print("no distraction")
-  -- end
-
-
-
-
-
-  -- if game.players[1].selected then
-  --   rendering.draw_circle{color={0.8, 0.1, 0.1, 0.5}, radius=5, filled=true, target=game.players[1].selected, target_offset={0,0}, surface=game.players[1].surface, time_to_live=2, players={game.players[1]}, draw_on_ground=true}
-  -- end
-end

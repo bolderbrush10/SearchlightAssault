@@ -19,7 +19,7 @@ function SpawnTurtle(baseSL, attackSL, surface, location)
   turtle.destructible = false
   attackSL.shooting_target = turtle
 
-  global.tun_to_attackSL[turtle.unit_number] = attackSL
+  global.tun_to_baseSL[turtle.unit_number] = baseSL
   global.baseSL_to_turtle[baseSL.unit_number] = turtle
 
   -- If we set our first waypoint in the same direction, but further away,
@@ -68,7 +68,9 @@ end
 
 
 function MakeWanderWaypoint(origin)
-  local bufferedRange = searchlightOuterRange - 2
+  -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
+  -- too close to the max range of the spotlight
+  local bufferedRange = searchlightOuterRange - 5
    -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
   local angle = math.random()
   local distance = math.random(searchlightInnerRange/2, bufferedRange)
