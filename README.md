@@ -25,17 +25,18 @@ And in this mod, our turtle, instead of drawing a line, will render a spotlight 
 
 ###File Guide:
 
-defines.lua - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
+sl-defines.lua - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
 
-control.lua - handles event registrations & filtering, calls behavior from the control-*.lua files
+control.lua             - handles event registrations & filtering, calls behavior from the control-*.lua files
 
 control-searchlight.lua - controls foe seeking behavior, turret-boosting behavior, etc
 control-turtle.lua      - behaviors for the dummy-entity that the spotlight "attacks" to render a light at surface locations
 control-grid.lua        - optimizies searches for foes and spotlights by breaking apart the world into 'grid' units
+control-forces          - sets up the forces assigned to hidden entities
 control-common          - data structures to be shared across control-* files
 
 render.lua  - details on how to render lights, useful for debugging sometimes TODO remove
-util.lua    - math functions, copying functions, and other miscellaneous functions
+sl-util.lua - math functions, copying functions, and other miscellaneous functions
 
 data.lua         - information for the mod manager
 data-updates.lua - reads what turrets OTHER MODS have put into the game and generates extended-range versions of their prototypes
@@ -45,8 +46,8 @@ data-updates.lua - reads what turrets OTHER MODS have put into the game and gene
 info.json        - information for the mod manager
 
 
-Prototypes contain the definitions for a unit's graphics, animations, and base stats (like max health, range, and damage)
+Prototypes contain the definitions for a unit's graphics, animations, and stats (like max health, range, and damage)
 
-prototypes/entities.lua - prototypes for the searchlight and the turtle
-prototypes/graphics.lua - pictures, lights, spirites, and animations
-prototypes/techItemRecipe.lua - details for how to research and craft a searchlight
+prototypes/sl-entities.lua       - prototypes for the searchlight and the turtle
+prototypes/sl-graphics.lua       - pictures, lights, spirites, and animations
+prototypes/sl-techItemRecipe.lua - details for how to research and craft a searchlight

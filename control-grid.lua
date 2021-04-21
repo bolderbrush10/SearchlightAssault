@@ -1,10 +1,14 @@
-require "defines"
+require "sl-defines"
 require "control-common"
 
 
 local gridSize = searchlightOuterRange
 local gridSize = searchlightOuterRange / 8
 
+-- TODO Use this iteration pattern over here:
+--      It's very tedious to modify/remove from a lua list while iterating.
+--      So we'll just iterate on the copy so we can modify the real list hassle free.
+-- Copy table to simply removal while iterating
 
 -- Grid: {Force, Surface, Area, Searchlight Count, Searchlights[], Foes[]}
 function MakeGrid(sl_parent, position)

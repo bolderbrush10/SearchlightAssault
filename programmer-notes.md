@@ -6,7 +6,6 @@ Then, we set its shooting_target to whatever the biter was attacking. When the t
 (We could probably still use the grid system to figure out which sets of turtles are worth polling?)
 
 
-
 Right now, we're working inside of TrackSpottedFoes in control-searchlight.lua
 
 
@@ -61,6 +60,9 @@ We still need to put in a lot more logic to handle what to do when the foe is ac
 
 ## Misc Notes
 
+/c game.player.surface.daytime = 0
+/c game.player.surface.daytime = 0.5
+
 - Important example
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
@@ -91,6 +93,28 @@ C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity
   Example
   Find units of "player" force
   local units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "same"})
+
+
+--[[
+Types/RenderLayer
+
+The render layer specifies the order of the sprite when rendering, most of the objects have it hardcoded in the source, but some are configurable.
+
+The value is specified as Types/string
+
+The order of acceptable values from lowest to highest:
+
+    lower-radius-visualization
+    radius-visualization
+    lower-object
+    lower-object-above-shadow
+    object
+    higher-object-under
+    higher-object-above
+    projectile
+    air-object
+    light-effect
+--]]
 
 ##TODO's
 
@@ -165,16 +189,22 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 --      (but also somehow prevent them from using their expanded range in the meanwhile)
 
 
+-- TODO It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
+--      We'll want to make a header / word template featuring a logo for the mod and stuff
+
+
 -- TODO 2-4 second "yellow light" period to allow units to hide from the spotlight before they're fully spotted
 
 
 -- TODO energy cost
 -- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
 
--- TODO gun turrets should get a much smaller boost than electric, and fluid turrets even less so
--- TODO radar integration
+-- TODO radar integration at point-of-light
 
 -- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
+--      So, there's not really a way to tell when this happens. And it doesn't look like the migration files will help either.
+--      I think the best thing we can do is add a function that the player can call via command that 'disables' the mod so they can save & uninstall
+--      And then we'll make a FAQ / User Manual to explain that if they don't want random turrets to disappear, here's the steps they need to follow
 
 -- TODO Update recipe for searchlight
 
@@ -230,7 +260,9 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 -- TODO can probably make smarter use of forces throughout control.lua
 
--- TODO Need to make a ghost for the searchlight.
+-- TODO make function names & variables conform to lua style
+
+-- TODO Need to make & test a ghost for the searchlight.
 --      And also double check that everything works properly with construction robots in the on_event functions.
 --      Right now, if a real searchlight is destroyed, it puts up a ghost. But not the dummy light. And a bunch of other issues.
 

@@ -2,6 +2,6 @@
 -- because other mods may have inadvertent access to functions at this step.
 
 
-require("defines")
-require("prototypes.techItemRecipe")
-require("prototypes.entities")
+require("sl-defines")
+require("prototypes.sl-entities")
+require("prototypes.sl-techItemRecipe")

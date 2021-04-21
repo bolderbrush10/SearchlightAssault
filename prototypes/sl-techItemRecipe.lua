@@ -1,5 +1,5 @@
-require "defines"
-require "entities"
+require "sl-defines"
+require "sl-entities"
 
 local icon =
 {

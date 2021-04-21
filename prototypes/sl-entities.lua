@@ -1,6 +1,6 @@
-require "defines"
+require "sl-defines"
 
-local g = require "graphics"
+local g = require "sl-graphics"
 
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
@@ -148,7 +148,7 @@ local turtle =
   move_while_shooting = true,
   distraction_cooldown = 0, -- undocumented, mandatory
   min_pursue_time = 0,
-  max_pursue_distance = 0,
+  max_pursue_distance = 2,
   -- Setting vision distance too low can cause turtles to get stuck in their foes
   vision_distance = searchlightSpotRadius,
   selectable_in_game = false,

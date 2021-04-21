@@ -1,7 +1,7 @@
 -- This file's job is to grab any turrets it can find and create a boosted-range version.
 -- If some other mod put their turret into this data stage (or later), and we don't grab it, then too bad.
 
-require("defines")
+require("sl-defines")
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.

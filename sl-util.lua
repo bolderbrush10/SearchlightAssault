@@ -1,4 +1,4 @@
-require "defines"
+require "sl-defines"
 
 
 -- We don't need to these put in the globals, since it's fine to recalulate them on game load

@@ -1,4 +1,5 @@
 require "control-common"
+require "control-forces"
 require "control-grid"
 require "control-searchlight"
 require "control-turtle"
@@ -50,6 +51,35 @@ function(event)
 end)
 
 
+-- On Script Trigger (turtle attack)
+script.on_event(defines.events.on_script_trigger_effect,
+function(event)
+  if event.effect_id == spottedEffectID
+    and event.source_entity and event.target_entity then
+    FoeSpotted(event.source_entity, event.target_entity)
+  end
+end)
+
+
+-- On Command Completed
+script.on_event(defines.events.on_ai_command_completed,
+function(event)
+
+  if not event.was_distracted then
+    TurtleWaypointReached(event.unit_number)
+  end
+
+  -- event.unit_number
+  -- event.was_distracted
+  -- event.result
+
+  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
+  --      or figure out what entity it was trying to attack and manually fire the
+  --      attack_trigger event here
+
+end)
+
+
 --
 -- CONSTRUCTIONS
 --
@@ -89,7 +119,7 @@ script.on_event(defines.events.on_built_entity,
 function(event)
 
   if event.created_entity.name == searchlightBaseName then
-    AddSearchlight(event.created_entity)
+    SearchlightAdded(event.created_entity)
   end
 
   -- TODO other functions for turrets
@@ -101,7 +131,7 @@ end)
 script.on_event(defines.events.on_robot_built_entity,
 function(event)
 
-  AddSearchlight(event.created_entity)
+  SearchlightAdded(event.created_entity)
 
 end)
 
@@ -110,7 +140,7 @@ end)
 script.on_event(defines.events.script_raised_built,
 function(event)
 
-  AddSearchlight(event.created_entity)
+  SearchlightAdded(event.created_entity)
 
 end)
 
@@ -119,7 +149,7 @@ end)
 script.on_event(defines.events.script_raised_revive,
 function(event)
 
-  AddSearchlight(event.created_entity)
+  SearchlightAdded(event.created_entity)
 
 end)
 
@@ -134,7 +164,7 @@ script.on_event(defines.events.on_pre_player_mined_item,
 function(event)
 
   if event.entity.name == searchlightBaseName then
-    RemoveSearchlight(event.entity)
+    SearchlightRemoved(event.entity)
   end
 
 end)
@@ -144,7 +174,7 @@ end)
 script.on_event(defines.events.on_robot_mined_entity,
 function(event)
 
-  RemoveSearchlight(event.entity)
+  SearchlightRemoved(event.entity)
 
 end)
 
@@ -154,7 +184,7 @@ script.on_event(defines.events.on_entity_died,
 function(event)
 
   if event.entity.name == searchlightBaseName then
-    RemoveSearchlight(event.entity)
+    SearchlightRemoved(event.entity)
   end
 
 
@@ -169,36 +199,6 @@ end)
 script.on_event(defines.events.script_raised_destroy,
 function(event)
 
-  RemoveSearchlight(event.created_entity)
-
-end)
-
-
---
--- Misc
---
-
-
--- On script trigger (turtle attack)
-script.on_event(defines.events.on_script_trigger_effect,
-function(event)
-  if event.effect_id == spottedEffectID
-    and event.source_entity and event.target_entity then
-    FoeSpotted(event.source_entity, event.target_entity)
-  end
-end)
-
-
--- On Command Completed
-script.on_event(defines.events.on_ai_command_completed,
-function(event)
-
-  -- event.unit_number
-  -- event.was_distracted
-  -- event.result
-
-  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
-  --      or figure out what entity it was trying to attack and manually fire the
-  --      attack_trigger event here
+  SearchlightRemoved(event.created_entity)
 
 end)

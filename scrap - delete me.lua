@@ -133,21 +133,30 @@ end
 
 
 
-rotate_penalty
 
-Type: Types/float
+function RushTurtle(turtle, waypoint)
+  if global.turtle_to_waypoint[turtle.unit_number] == nil
+     or global.turtle_to_waypoint[turtle.unit_number] ~= waypoint then
 
-Default: 0
+      global.turtle_to_waypoint[turtle.unit_number] = waypoint
+      turtle.speed = searchlightTrackSpeed
 
-A higher penalty will discourage turrets from targeting units that would take longer to turn to face.
-health_penalty
+      turtle.set_command({type = defines.command.go_to_location,
+                          distraction = defines.distraction.none,
+                          destination = waypoint,
+                          pathfind_flags = {prefer_straight_paths = true, no_break = true,
+                                            allow_destroy_friendly_entities = true,
+                                            allow_paths_through_own_entities = true},
+                          radius = 1
+                         })
+  end
+end
 
-Type: Types/float
 
-Default: 0
-
-A higher penalty will discourage turrets from targeting units with higher health. A negative penalty will encourage turrets to target units with higher health.
-
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 
 
 function UpdateUnitsCommands(player_index)
@@ -317,6 +326,12 @@ game.onevent(defines.events.onpreplayermineditem, function(event) OnEntityDestro
 game.onevent(defines.events.onrobotpremined, function(event) OnEntityDestroy(event.entity) end)
 game.onevent(defines.events.onplayercreated, function(event) OnPlayerCreated(event.playerindex) end)
 game.onevent(defines.events.ontick, OnTick)
+
+
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------
 
 
 blank = {

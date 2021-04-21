@@ -1,52 +1,156 @@
 require "control-common"
 require "control-grid"
 require "control-turtle"
-require "defines"
-require "render" -- TODO remove
+require "sl-defines"
+require "sl-util"
+
 require "util"
 
 
--- The idea here is to create two special forces.
--- The 'foe' force exists to create an imaginary target (The 'Turtle') for the spotlights to 'shoot at' while they scan around for enemy units.
--- But we don't want the player's normal turrets to shoot at that imaginary target...
--- ...So we make a 'friend' force, which we'll assign to spotlights while they shoot at the turtle.
-function InitForces()
-
-  game.create_force(searchlightFoe)
-  game.create_force(searchlightFriend)
-
-  for F in pairs(game.forces) do
-    SetCeaseFires(F)
-  end
-
-  game.forces[searchlightFriend].set_friend("player", true) -- TODO Is this appropriate in multiplayer?
-  game.forces[searchlightFriend].set_cease_fire(searchlightFoe, false)
-  game.forces[searchlightFoe].set_cease_fire("enemy", false)
-
-end
+------------------------
+--  Aperiodic Events  --
+------------------------
 
 
-function SetCeaseFires(F)
+function SearchlightAdded(sl)
+  attacklight, turtle = SpawnSLHiddenEntities(sl)
+  maps_addSearchlight(sl, attacklight, turtle)
 
-  game.forces[searchlightFoe].set_cease_fire(F, true)
-  game.forces[searchlightFriend].set_cease_fire(F, true)
-
-  game.forces[F].set_cease_fire(searchlightFoe, true)
-  game.forces[F].set_cease_fire(searchlightFriend, true)
-
-end
-
-
-function AddSearchlight(sl)
-  global.base_searchlights[sl.unit_number] = sl
-
-  SpawnSLHiddenEntities(sl)
+  -- We'll check the power state and let it enable next tick,
+  -- just in case someone builds a spotlight right on top of
+  -- a bunch of enemies where there's no power
+  AttacklightDisabled(attackLight)
 
   Grid_AddSpotlight(sl)
 
   -- TODO search for boostables and add
 
 end
+
+
+function SearchlightRemoved(sl)
+  Grid_RemoveSpotlight(sl)
+  maps_removeSearchlight(sl)
+end
+
+
+function TurretAdded(turret)
+
+  -- TODO search for spotlights in vicinity and add self as a boostable
+
+end
+
+
+function TurretRemoved(turret)
+
+  -- TODO search for spotlights in vicinity and remove self as a boostable
+
+end
+
+
+function FoeSpotted(turtle, foe)
+  baseSL = global.turtle_to_baseSL[turtle.unit_number]
+
+  -- Move the attack light to the player force so that its alert_when_firing will show up
+  -- and nearby biters will notice and come attack
+  attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
+  attackLight.force = baseSL.force
+  attackLight.shooting_target = foe
+
+  -- Start tracking this foe so we can detect when it dies / leaves range
+  maps_addFoeSL(foe, attackLight)
+
+  -- Turn off the turtle. We'll turn it back it on after the foe is gone
+  turtle.active = false
+end
+
+
+function FoeDied(foe)
+  for index, attackLight in pairs(global.foe_to_attackSL[foe]) do
+    ResumeTargetingTurtle(foe.position, attackLight)
+  end
+
+  maps_removeFoe(foe)
+end
+
+
+----------------------
+--  On Tick Events  --
+----------------------
+
+
+-- TODO We could probably reorganize what maps we maintain and use in here...
+-- Checked every tick, but only while there's a foe spotted,
+-- so not too performance-impacting
+function TrackSpottedFoes(tick)
+  -- skip function if table empty (which should be the case most of the time)
+  -- TODO would it be faster to maintain a table size variable?
+  if next(global.foe_to_attackSL) == nil then
+    return
+  end
+
+  -- TODO How expensive is doing a deep copy every tick?
+  --      Would it be better to just flatout maintain two copies?
+  --      On the other hand, it's not like this list will usually be long...
+  -- Copy table to simplify removal while iterating
+  local copyfoe_to_baseSL = table.deepcopy(global.foe_to_attackSL)
+
+  for foe, slList in pairs(copyfoe_to_baseSL) do
+
+    for index, attackLight in pairs(slList) do
+
+      if attacklight.shooting_target ~= foe then
+        --  This should trigger infrequently,
+        --  so it's ok to be a little slow inside this branch
+        ResumeTargetingTurtle(foe.position, attackLight)
+        table.remove(global.foe_to_attackSL[foe], index)
+      end
+
+    end
+
+    if next(global.foe_to_attackSL[foe]) == nil then
+      maps_removeFoe(foe)
+    end
+
+  end
+end
+
+
+-- TODO This onTick() function is a good candidate to convert to branchless instructions.
+--      Could speed up execution a minor amount, depending on what's bottlenecked.
+--      (Embedding some C code directly into lua could also help, see:
+--       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
+--      Would look something like:
+--      local activeAsNum = bit32.band(attacklight.active, 1)
+--      attacklight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
+--          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
+-- We wouldn't need this function if there was a way
+-- to directly transfer / mirror electricity between units on different forces
+function CheckElectricNeeds(tick)
+  for unit_num, sl in pairs(global.base_searchlights) do
+
+    attackLight = global.baseSL_to_attackSL[unit_num]
+
+    if attackLight.active and sl.energy < searchlightCapacitorCutoff then
+      AttacklightDisabled(attackLight)
+    elseif not attackLight.active and sl.energy > searchlightCapacitorStartable then
+      AttacklightEnabled(attackLight)
+    end
+
+  end
+end
+
+
+function DecrementBoostTimers(tick)
+
+  -- decrement those timers
+
+end
+
+
+--------------------
+--  Helper Funcs  --
+--------------------
 
 
 function SpawnSLHiddenEntities(sl)
@@ -57,44 +161,9 @@ function SpawnSLHiddenEntities(sl)
                                          fast_replace = true,
                                          create_build_effect_smoke = false}
 
-  global.baseSL_to_attackSL[sl.unit_number] = attackLight
+  turtle = SpawnTurtle(sl, attackLight, sl.surface, nil)
 
-  SpawnTurtle(sl, attackLight, sl.surface, nil)
-end
-
-
-function AddTurret(turret)
-
-  -- TODO search for spotlights in vicinity and add self as a boostable
-
-end
-
-
-function RemoveTurret(turret)
-
-  -- TODO search for spotlights in vicinity and remove self as a boostable
-
-end
-
-
-function RemoveSearchlight(sl)
-  Grid_RemoveSpotlight(sl)
-
-  global.base_searchlights[sl.unit_number] = nil
-  global.baseSL_to_lsp[sl.unit_number] = nil
-
-  global.baseSL_to_attackSL[sl.unit_number].destroy()
-  global.baseSL_to_attackSL[sl.unit_number] = nil
-
-
-  turtle = global.baseSL_to_turtle[sl.unit_number]
-  global.turtle_to_waypoint[turtle.unit_number] = nil
-  global.turtles[sl.unit_number] = nil
-  global.baseSL_to_turtle[sl.unit_number] = nil
-  turtle.destroy()
-
-  -- remove boostables
-  -- TODO
+  return attackLight, turtle
 end
 
 
@@ -103,234 +172,38 @@ function SwapTurret(old, new)
     CopyTurret(old, new)
 
     -- copy over global entries, placement in, etc
+    -- TODO
 end
 
 
-function SetAsBoostable(sl, turret)
-
-  -- add to global list
-
+function AttacklightEnabled(attackLight)
+  -- TODO re-boost any friends
+  attackLight.active = true
+  global.attackSL_to_turtle[attackLight.unit_number].active = true
 end
 
 
-function DecrementBoostTimers()
-
-  -- decrement those timers
-
+function AttacklightDisabled(attackLight)
+  -- TODO un-boost any friends
+  attackLight.active = false
+  global.attackSL_to_turtle[attackLight.unit_number].active = false
 end
 
 
-function FoeSpotted(turtle, foe)
-  -- Start tracking this foe so we can detect when it dies / leaves range / whatever
-  relevantLight = global.tun_to_baseSL[turtle.unit_number]
+function ResumeTargetingTurtle(foePosition, attackLight)
+  local turtle = global.attackSL_to_turtle[attackLight.unit_number]
+  turtle.active = true
+  Turtleport(turtle, foePosition, attackLight.position)
+  WanderTurtle(turtle, attackLight.position)
 
-  -- nb, a foe may be tracked by multiple searchlights at the same time
-  if not global.foe_to_baseSL[foe] then
-    global.foe_to_baseSL[foe] = {}
-  end
-  table.insert(global.foe_to_baseSL[foe], relevantLight)
-
-  -- Move the attack light to the player force so that its alert_when_firing will show up
-  -- and nearby biters will notice and come attack
-  attackLight = global.baseSL_to_attackSL[relevantLight.unit_number]
-  attackLight.force = relevantLight.force
-  attackLight.shooting_target = foe
-
-  turtle.active = false
-end
-
-
--- Checked every tick, but only while there's a foe spotted,
--- so not too performance-impacting
-function TrackSpottedFoes(tick)
-  -- skip function if table empty (which should be the case most of the time)
-  if next(global.foe_to_baseSL) == nil then
-    return
-  end
-
-  -- It's very tedious to modify/remove from a lua list while iterating.
-  -- So we'll just iterate on the copy so we can modify the real list hassle free.
-  -- TODO If we wind up still using control-grid, use this iteration pattern over there too.
-  local copyfoe_to_baseSL = global.foe_to_baseSL
-
-  for foe, baseSLs in pairs(copyfoe_to_baseSL) do
-    game.print("iterating on foe " .. foe.name .. ":" .. foe.unit_number)
-    for index, baseSL in pairs(baseSLs) do
-      attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
-
-      if not attacklight.active then
-        -- TODO uhh...
-      elseif attacklight.shooting_target ~= foe then
-        -- TODO uhh...
-      else
-        game.print("still attacking target")
-      end
-
-      -- TODO So, if we start shooting at an actual foe...
-      --      Do we want to just delete our turtle until the foe dies,
-      --      then respawn it at the last shooting position?
-      --      Or maybe we can just set turtle.active = false, and teleport it to the lsp when we turn it back on...
-
-      -- We also need to think about how to handle the turtle running out of the range of the attacklight...
-      -- Maybe we should trim its wander-radius by 10% compared to the attacklight's attack radius
-
-    end
-  end
-end
-
-
--- We wouldn't need this function if there was a way
--- to directly transfer / mirror electricity between units on different forces
-function CheckElectricNeeds(tick)
-  for unit_num, sl in pairs(global.base_searchlights) do
-
-    attacklight = global.baseSL_to_attackSL[unit_num]
-
-    -- TODO Could convert to branchless instructions and possibly speed up this
-    --      onTick() function, depending on what's bottlenecked
-    --      Would look something like:
-    --      local activeAsNum = bit32.band(attacklight.active, 1)
-    --      attacklight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
-    --          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
-    if attacklight.active and sl.energy < searchlightCapacitorCutoff then
-      attacklight.active = false
-    elseif not attacklight.active and sl.energy > searchlightCapacitorStartable then
-      attacklight.active = true
-    end
-
-  end
+  attackLight.force = searchlightFriend
+  attackLight.shooting_target = turtle
 end
 
 
 -----------------------------------------------------------------------
-
-function HandleSearchlights()
-  -- 'sl' for 'SearchLight'
-  for index, sl in pairs(global.base_searchlights) do
-    BoostFriends(sl, sl.surface)
-
-    if sl.name == "searchlight" then
-      ConsiderFoes(sl, sl.surface)
-    else
-      ConsiderTurtles(sl, sl.surface)
-    end
-  end
-end
-
-
-function ConsiderFoes(sl, surface)
-  if sl.shooting_target == nil then
-    if BoostTimerComplete(sl) then
-      local pos = global.baseSL_to_lsp[sl.unit_number]
-      CreateDummyLight(sl, surface, pos)
-    end
-  else
-    global.baseSL_to_lsp[sl.unit_number] = sl.shooting_target.position
-  end
-end
-
-
-function ConsiderTurtles(sl, surface)
-  -- If a foe is close to the turret, auto spot it
-  -- (find_nearest_enemy(force=) means "which force's enemies to seek")
-  local foe = surface.find_nearest_enemy{position = sl.position,
-                                         max_distance = searchlightInnerRange,
-                                         force = "player"}
-
-  -- If the worst happened somehow, and our turtle is no more, make a new one
-  if global.dummy_to_turtle[sl.unit_number] == nil then
-    SpawnTurtle(sl, surface)
-  end
-
-  local turtle = global.dummy_to_turtle[sl.unit_number]
-
-  if foe ~= nil then
-    RushTurtle(turtle, foe.position)
-  end
-
-  -- If a foe is within the radius of the beam, spot it
-  foe = surface.find_nearest_enemy{position = turtle.position,
-                                   max_distance = searchlightSpotRadius,
-                                   force = "player"}
-
-  if foe ~= nil then
-    CreateRealLight(sl, surface, foe)
-    return
-  end
-
-  -- If nothing needs done with foes, we're free to fully contemplate our turtle
-  WanderTurtle(turtle, sl)
-end
-
-
-function CreateDummyLight(old_sl, surface, last_shooting_position)
-  new_sl = surface.create_entity{name = "searchlight-dummy",
-                                 position = old_sl.position,
-                                 force = searchlightFriend,
-                                 fast_replace = true,
-                                 create_build_effect_smoke = false}
-
-  CopyTurret(old_sl, new_sl)
-
-  SpawnTurtle(new_sl, surface, last_shooting_position)
-
-  global.base_searchlights[new_sl.unit_number] = new_sl
-  global.base_searchlights[old_sl.unit_number] = nil
-
-  global.baseSL_to_lsp[old_sl.unit_number] = nil
-
-  old_sl.destroy()
-end
-
-
-function CreateRealLight(old_sl, surface, foe)
-  new_sl = surface.create_entity{name = "searchlight",
-                                 position = old_sl.position,
-                                 force = "player",
-                                 fast_replace = true,
-                                 create_build_effect_smoke = false}
-
-  if global.dummy_to_turtle[old_sl.unit_number] ~= nil then
-    global.dummy_to_turtle[old_sl.unit_number].destroy()
-    global.dummy_to_turtle[old_sl.unit_number] = nil
-  end
-
-  CopyTurret(old_sl, new_sl)
-
-  global.base_searchlights[new_sl.unit_number] = new_sl
-  global.base_searchlights[old_sl.unit_number] = nil
-
-  old_sl.destroy()
-
-  global.baseSL_to_unboost_timers[new_sl.unit_number] = boostDelay
-
-  if foe then
-    new_sl.shooting_target = foe
-  end
-end
-
-
-
-
-
-function RushTurtle(turtle, waypoint)
-  if global.turtle_to_waypoint[turtle.unit_number] == nil
-     or global.turtle_to_waypoint[turtle.unit_number] ~= waypoint then
-
-      global.turtle_to_waypoint[turtle.unit_number] = waypoint
-      turtle.speed = searchlightTrackSpeed
-
-      turtle.set_command({type = defines.command.go_to_location,
-                          distraction = defines.distraction.none,
-                          destination = waypoint,
-                          pathfind_flags = {prefer_straight_paths = true, no_break = true,
-                                            allow_destroy_friendly_entities = true,
-                                            allow_paths_through_own_entities = true},
-                          radius = 1
-                         })
-  end
-end
-
+-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 
 function BoostFriends(sl, surface, foe)
   local friends = surface.find_entities_filtered{position = sl.position,

@@ -1,13 +1,19 @@
 require "control-common"
-require "defines"
-require "util"
+require "sl-defines"
+require "sl-util"
+
+
+function TurtleWaypointReached(unit_number)
+    WanderTurtle(global.turtles[unit_number], global.turtle_to_baseSL[unit_number].position)
+end
+
 
 -- location is expected to be the spotlight's last shooting target,
 -- if it was targeting something.
 function SpawnTurtle(baseSL, attackSL, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
-    location = OrientationToPosition(baseSL.position, baseSL.orientation, 1)
+    location = OrientationToPosition(baseSL.position, baseSL.orientation, 3)
   end
 
   local turtle = surface.create_entity{name = turtleName,
@@ -19,13 +25,9 @@ function SpawnTurtle(baseSL, attackSL, surface, location)
   turtle.destructible = false
   attackSL.shooting_target = turtle
 
-  global.tun_to_baseSL[turtle.unit_number] = baseSL
-  global.baseSL_to_turtle[baseSL.unit_number] = turtle
 
   -- If we set our first waypoint in the same direction, but further away,
   -- it makes a cool 'windup' effect as the searchlight is made
-  -- TODO Somehow pause the turtle before it leaves / sync it with the searchlight capacitor filling up
-  -- use defines.command.compound to chain commands, along with defines.command.wander + ticks_to_wait + radius
   local windupWaypoint = OrientationToPosition(baseSL.position,
                                                baseSL.orientation,
                                                math.random(searchlightOuterRange / 8,
@@ -41,10 +43,10 @@ function WanderTurtle(turtle, origin, waypoint)
   local tun = turtle.unit_number
 
   if not turtle.has_command()
-     or global.turtle_to_waypoint[tun] == nil
-     or doesPositionMatch(turtle.position,
-                          global.turtle_to_waypoint[tun],
-                          searchlightSpotRadius) then
+     or global.turtle_to_waypoint[tun] == nil then
+     -- or doesPositionMatch(turtle.position,
+     --                      global.turtle_to_waypoint[tun],
+     --                      searchlightSpotRadius) then
 
       if waypoint == nil then
         waypoint = MakeWanderWaypoint(origin)
@@ -73,7 +75,18 @@ function MakeWanderWaypoint(origin)
   local bufferedRange = searchlightOuterRange - 5
    -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
   local angle = math.random()
-  local distance = math.random(searchlightInnerRange/2, bufferedRange)
+  local distance = math.random(searchlightOuterRange/8, bufferedRange)
 
   return OrientationToPosition(origin, angle, distance)
+end
+
+
+function Turtleport(turtle, position, origin)
+  -- TODO If position is too far from the origin for the searchlight to attack it,
+  --      calculate a slightly-closer position with the same angle and use that
+
+  if not turtle.teleport(position) then
+    -- TODO The teleport failed for some reason, so respawn a fresh turtle and update maps
+    game.print("Teleport failed")
+  end
 end
