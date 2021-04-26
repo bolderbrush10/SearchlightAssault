@@ -14,50 +14,12 @@ json_to_table(json) → Any
 
 
 
-if v.type=="unit" then v.setcommand{type=defines.command.wander, distraction=defines.distraction.byenemy} end
-
- defines.command.wander
- -- Chill.
-
- defines.command.go_to_location
- -- Go to a specific position.
-
- defines.distraction.none
- -- Perform command even if someone attacks the unit.
-
-defines.command.go_to_location
-
-    destination :: Position (optional)
-    destination_entity :: LuaEntity (optional)
-    distraction :: defines.distraction (optional): Defaults to defines.distraction.by_enemy.
-    pathfind_flags :: PathFindFlags (optional): Flags to affect the pathfinder.
-    radius :: double (optional): Distance from the exact target that the unit will consider itself "arrived" at. Default is 3.
-
-defines.command.wander
-
-    distraction :: defines.distraction (optional): Defaults to defines.distraction.by_enemy.
-    radius :: double (optional): Defaults to 10. Does not apply when wander_in_group is true.
-    wander_in_group :: boolean (optional): When commanding a group, defines how the group will wander. When true, the units in the group will wander around inside the group's radius, just like gathering biters. When false, the units will wander as a group, ie they will all walk together in the same random direction. Default is true for groups. Passing true for a single unit is an error.
-    ticks_to_wait :: uint (optional): Ticks to wander before successfully completing the command. Default is max uint, which means wander forever.
+script.on_event(defines.events.on_console_command,
+function(event)
+  DEBUGTOOL()
+end)
 
 
-PathFindFlags
-
-A table with one or more of the following values.
-
-Members:
-
-    allow_destroy_friendly_entities :: boolean (optional)
-    allow_paths_through_own_entities :: boolean (optional)
-    cache :: boolean (optional)
-    prefer_straight_paths :: boolean (optional)
-    low_priority :: boolean (optional)
-    no_break :: boolean (optional)
-
-
-LuaEntity
-speed :: float [Read-Write]
--- The current speed of the car or rolling stock or projectile, or current max speed of the unit. Only the speed of units, cars, and projectiles are writable.
 
 
 local piOverSix       = (math.pi / 6)

@@ -46,7 +46,7 @@ sl_b.energy_source =
   type = "electric",
   usage_priority = "secondary-input",
   buffer_capacity = searchlightCapacitorSize,
-  input_flow_limit = "2000kW",
+  input_flow_limit = "6000kW",
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}

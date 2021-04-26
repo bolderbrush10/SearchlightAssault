@@ -1,4 +1,4 @@
-##Current  Task:
+## Current  Task:
 
 
 - Should we plan to create & pop up our own custom gui for circuit conditions?
@@ -13,7 +13,7 @@ Can we make a turret use multiple attack types so we can swap searchlight colors
 - Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
 
 
-##Performance reports:
+## Performance reports:
 
 A
 ```
@@ -48,10 +48,21 @@ No drop noticable until almost 3k searchlights deep.
 Seems pretty good to me.
 ```
 
+
+## Bugs:
+
+The 'wiggle bug' where a turtle gets stuck inside a larger entity still happens occasionally.
+Not sure how to prevent this...
+I think the best we can do is detect when a turtle finishes a command via distraction,
+and then we manually check for foes within its spot-radius and retarget the attacklight if appropriate.
+
+
 ## Misc Notes
 
 /c game.player.surface.daytime = 0
 /c game.player.surface.daytime = 0.5
+
+/c game.player.create_character()
 
 - Important example
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
@@ -106,7 +117,7 @@ The order of acceptable values from lowest to highest:
     light-effect
 --]]
 
-##TODO's
+## TODO's
 
 -- TODO Ok, so let's think about the turtle + circuit-programmable spotlight targeting.
 --      Using move-to commands is problematic because there's only a particular radius the turtle will settle for.
@@ -451,7 +462,7 @@ Features:
 
 ==================
 
-##Scraps to implement
+## Scraps to implement
 
 
 ```

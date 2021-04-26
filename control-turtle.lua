@@ -74,11 +74,29 @@ end
 
 
 function Turtleport(turtle, position, origin)
-  -- TODO If position is too far from the origin for the searchlight to attack it,
-  --      calculate a slightly-closer position with the same angle and use that
+  local bufferedRange = searchlightOuterRange - 2
+
+  -- If position is too far from the origin for the searchlight to attack it,
+  -- calculate a slightly-closer position with the same angle and use that
+  if not withinRadius(position, origin, bufferedRange) then
+    local vecOriginPos = {x = pos.x - origin.x,
+                          y = pos.y - origin.y}
+
+    local theta = math.atan2(vecOriginPos.y, vecOriginPos.x)
+    position = ScreenOrientationToPosition(origin, theta, bufferedRange)
+  end
 
   if not turtle.teleport(position) then
-    -- TODO The teleport failed for some reason, so respawn a fresh turtle and update maps
-    game.print("Teleport failed")
+    -- The teleport failed for some reason, so respawn a fresh turtle and update maps
+    log("[Searchlights Mod] Teleport of hidden entity failed. Unit Number: " ..
+        turtle.unit_number .. "; target position: " .. position.x .. ", " .. position.y)
+
+    baseSL = global.turtle_to_baseSL[turtle.unit_number]
+    attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
+    newTurtle = SpawnTurtle(baseSL, attackLight, baseSL.surface)
+
+    maps_updateTurtle(turtle, newTurtle)
+
+    turtle.destroy()
   end
 end

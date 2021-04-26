@@ -6,7 +6,13 @@ require "control-turtle"
 
 
 --
--- TODO filter all these events
+-- TODO We need to think about what happens when a searchlight/turret of the opposing force is added / removed
+--
+
+
+--
+-- In the case where multiple event defines could ostensibly handle the same entity being created or destroyed,
+-- we'll register for the event definition which happens 'soonest'
 --
 
 
@@ -85,71 +91,38 @@ end)
 --
 
 
--- TODO steal this pattern
--- (for-loop is needed because filters can't be applied to an
--- array of events!)
--- for event_name, e in pairs({
---   on_built_entity       = defines.events.on_built_entity,
---   on_robot_built_entity = defines.events.on_robot_built_entity,
---   script_raised_built   = defines.events.script_raised_built,
---   script_raised_revive  = defines.events.script_raised_revive
--- defines.events.on_trigger_created_entity
--- }) do
--- --~ log("WT.turret_list: " .. serpent.block(WT.turret_list))
--- --~ log("event_name: " .. serpent.block(event_name) .. "\te: " .. serpent.block(e))
---   script.on_event(e, function(event)
---       WT.dprint("Entered event script for %s.", { event_name })
---       on_built(event)
---       WT.dprint("End of event script for %s.", { event_name })
---     end, {
---     {filter = "type", type = WT.turret_type},
---     {filter = "name", name = WT.steam_turret_name, mode = "and"},
+for index, e in pairs
+({
+  defines.events.on_built_entity,
+  defines.events.on_robot_built_entity,
+  defines.events.script_raised_built,
+  defines.events.script_raised_revive,
+}) do
+  script.on_event(e,
+  function(event)
 
---     {filter = "type", type = WT.turret_type, mode = "or"},
---     {filter = "name", name = WT.water_turret_name, mode = "and"},
+    if event.created_entity.name == searchlightBaseName then
+      SearchlightAdded(event.created_entity)
+    else
+      TurretAdded(event.created_entity)
+    end
 
---     {filter = "type", type = WT.turret_type, mode = "or"},
---     {filter = "name", name = WT.extinguisher_turret_name, mode = "and"},
---   })
--- end
+  end, {
+    {filter = "name", name = searchlightBaseName},
+    {filter = "turret", mode = "or"}
+  })
+end
 
 
--- Via Player
-script.on_event(defines.events.on_built_entity,
+-- Doesn't support filters, so it's on its own here
+script.on_event(defines.events.on_trigger_created_entity,
 function(event)
 
   if event.created_entity.name == searchlightBaseName then
     SearchlightAdded(event.created_entity)
+  elseif event.created_entity.type == "turret" then
+    TurretAdded(event.created_entity)
   end
-
-  -- TODO other functions for turrets
-
-end)
-
-
--- Via Robot
-script.on_event(defines.events.on_robot_built_entity,
-function(event)
-
-  SearchlightAdded(event.created_entity)
-
-end)
-
-
--- Via Script
-script.on_event(defines.events.script_raised_built,
-function(event)
-
-  SearchlightAdded(event.created_entity)
-
-end)
-
-
--- Via Revived by Script
-script.on_event(defines.events.script_raised_revive,
-function(event)
-
-  SearchlightAdded(event.created_entity)
 
 end)
 
@@ -159,47 +132,42 @@ end)
 --
 
 
--- Via Player
-script.on_event(defines.events.on_pre_player_mined_item,
-function(event)
+for index, e in pairs
+({
+  defines.events.on_pre_player_mined_item,
+  defines.events.on_robot_pre_mined,
+}) do
+  script.on_event(e,
+  function(event)
 
-  if event.entity.name == searchlightBaseName then
-    SearchlightRemoved(event.entity)
-  end
+    if event.entity.name == searchlightBaseName then
+      SearchlightRemoved(event.entity)
+    else
+      TurretRemoved(event.entity)
+    end
 
-end)
-
-
--- Via Robot
-script.on_event(defines.events.on_robot_mined_entity,
-function(event)
-
-  SearchlightRemoved(event.entity)
-
-end)
-
-
--- Via Damage
-script.on_event(defines.events.on_entity_died,
-function(event)
-
-  if event.entity.name == searchlightBaseName then
-    SearchlightRemoved(event.entity)
-  elseif event.entity.unit_number then
-    FoeDied(event.entity)
-  end
-
-  -- TODO if this was a biter / etc, then we could probably check
-  --      whether relevant boosted turrets are still allowed to be boosted
-  -- On the other hand... turrets probably acquire new shooting targets
-  -- long before their bullets actually reach their final destination...
-end)
+  end, {
+    {filter = "name", name = searchlightBaseName},
+    {filter = "turret", mode = "or"}
+  })
+end
 
 
--- Via Script
-script.on_event(defines.events.script_raised_destroy,
-function(event)
+for index, e in pairs
+({
+  defines.events.on_entity_died,
+  defines.events.script_raised_destroy,
+}) do
+  script.on_event(e,
+  function(event)
 
-  SearchlightRemoved(event.created_entity)
+    if event.entity.name == searchlightBaseName then
+      SearchlightRemoved(event.entity)
+    elseif event.type == "turret" then
+      TurretRemoved(event.entity)
+    elseif event.entity.unit_number then
+      FoeDied(event.entity)
+    end
 
-end)
+  end)
+end

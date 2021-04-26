@@ -38,6 +38,8 @@ function TurretAdded(turret)
 
   -- TODO search for spotlights in vicinity and add self as a boostable
 
+  game.print("turret added!")
+
 end
 
 
@@ -45,6 +47,7 @@ function TurretRemoved(turret)
 
   -- TODO search for spotlights in vicinity and remove self as a boostable
 
+  game.print("turret removed!")
 end
 
 
@@ -52,7 +55,6 @@ function FoeSpotted(turtle, foe)
   baseSL = global.turtle_to_baseSL[turtle.unit_number]
 
   -- Move the attack light to the player force so that its alert_when_firing will show up
-  -- and nearby biters will notice and come attack
   attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
   attackLight.force = baseSL.force
   attackLight.shooting_target = foe
@@ -83,11 +85,10 @@ end
 ----------------------
 
 
--- TODO We could probably reorganize what maps we maintain and use in here...
 -- Checked every tick, but only while there's a foe spotted,
 -- so not too performance-impacting
 function TrackSpottedFoes(tick)
-  -- skip function if table empty (which should be the case most of the time)
+  -- Skip function if table empty (which should be the case most of the time)
   -- TODO would it be faster to maintain a table size variable?
   if next(global.foe_to_attackSL) == nil then
     return
@@ -313,7 +314,3 @@ function BoostTimerComplete(turret)
     return true
   end
 end
-
-
-
-

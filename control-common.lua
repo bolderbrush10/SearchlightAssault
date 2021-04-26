@@ -106,6 +106,21 @@ function maps_removeSearchlight(sl)
 end
 
 
+function maps_updateTurtle(old, new)
+  sl = global.turtle_to_baseSL[old.unit_number]
+  attackLight = global.baseSL_to_attackSL[sl.unit_number]
+
+  global.baseSL_to_turtle[sl.unit_number] = new
+  global.attackSL_to_turtle[attackLight.unit_number] = new
+
+  global.turtles[old.unit_number] = nil
+  global.turtle_to_baseSL[old.unit_number] = nil
+
+  global.turtles[new.unit_number] = new
+  global.turtle_to_baseSL[new.unit_number] = sl
+end
+
+
 function maps_removeFoeByUnitNum(foe_unit_number)
 
   global.foes[foe_unit_number] = nil

@@ -35,7 +35,7 @@ function square(a)
 end
 
 
-function doesPositionMatch(posA, posB, acceptable_radius)
+function withinRadius(posA, posB, acceptable_radius)
   return lensquared(posA, posB) < square(acceptable_radius)
 end
 
@@ -47,6 +47,13 @@ function OrientationToPosition(origin, theta, distance)
   -- Invert y to fit screen coordinates
   return {x = origin.x + math.sin(radTheta) * distance,
           y = origin.y + math.cos(radTheta) * distance * -1,}
+end
+
+
+-- theta given as radians, assumes screen-coordiantes already in use
+function ScreenOrientationToPosition(origin, radTheta, distance)
+  return {x = origin.x + math.cos(radTheta) * distance,
+          y = origin.y + math.sin(radTheta) * distance,}
 end
 
 
