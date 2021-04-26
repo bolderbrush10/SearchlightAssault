@@ -1,6 +1,9 @@
 ## Current  Task:
 
+- Implement range-boosting for friendly turrets
 
+
+## Next Tasks:
 - Should we plan to create & pop up our own custom gui for circuit conditions?
 - What kind of entity has good circuit conditions we can steal / how to rig the connections
   - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
@@ -12,6 +15,7 @@ Can we make a turret use multiple attack types so we can swap searchlight colors
 - entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
 - Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
 
+- Test multiplayer
 
 ## Performance reports:
 
@@ -49,7 +53,7 @@ Seems pretty good to me.
 ```
 
 
-## Bugs:
+## Known Bugs:
 
 The 'wiggle bug' where a turtle gets stuck inside a larger entity still happens occasionally.
 Not sure how to prevent this...
@@ -117,115 +121,8 @@ The order of acceptable values from lowest to highest:
     light-effect
 --]]
 
-## TODO's
 
--- TODO Ok, so let's think about the turtle + circuit-programmable spotlight targeting.
---      Using move-to commands is problematic because there's only a particular radius the turtle will settle for.
---      We could teleport the turtle around but that's probably not very smooth...
---      Should we wait until the mod is in a better shape before we worry about this?
---      Or should we start thinking about using something besides a hidden biter as the turtle?
---      We could make some branches to test the difference with a biter-turtle vs manually caculating interpolated target-positions...
---      Well, we're not going to let the circuit network swing the spotlight around to new positions instantly, are we?
---      So, I think that maybe we'll have the circuit network set a destination for the turtle, and people will have to have the expectation that they don't get pixel-perfect control of the turtle, and that'll be fine.
-
--- TODO When we're recieving coordinates from the circuit network, remember to disable turtle wandering.
-
--- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
--- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
-
-
--- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
---      And how it's so damn awkward to set up a blacklist for an entity that you don't want even-just-turrets to attack.
-
-
--- TODO Electricity consumption
-
--- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
-
--- TODO So, we decided to make the attacklight destructible and assign it to the player force,
---      so that way its alert_when_attacking will register for the player, and biter attacks will be triggered.
---      Since the attacklight has no hit box though, this usually means the surrounding baselight structure
---      (which only has 1/4th the hp) takes all the hits first and dies before the attacklight does.
---      But we still should link the HP of the attacklight to the base light & otherwise be prepared for if the attacklight dies first.
-
-
--- TODO Add emojis / icons to the mod name (Look at how the water gun mod makes them show up in game on the infopanel)
-
-
--- TODO Double check that no stickers of any kind can be applied to the attackentity / turtle
-
--- TODO detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time
-
--- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.
---      Are we going to be able to (cheaply) replicate that effect?
-
--- TODO Sounds and audio
-https://wiki.factorio.com/Prototype/Entity#working_sound
-
--- TODO So the shooting_target [rw] thing didn't work out but apparently you can use
-update_selected_entity(position)
--- and
-entity.shooting_state = {
-   state = defines.shooting.shooting_enemies,
-   position = position
-}
--- or something like that
-
--- TODO what the hell happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
-C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
-
--- TODO Use the new decorations thing to spawn in crap around the boostable radius
--- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
--- We should probably make it an option in the mod to disable this...
-
-
--- TODO What if instead of having a "range" as turrets do, we create a custom "spotting range" property and then make our own graphics.draw() calls to highlight the radius of the spotlight on mouseover / item in hand / on map? (This could be useful for showing ranges of boostable friends, too. (And we could use the terrain decoration to show that after construction))
--- entity/RadiusVisualisationSpecification is the prototype place to define effect radii
-
--- TODO dead dummy seeking searchlights need to leave ghosts for real searchlights
--- TODO also need to handle construction ghosts for boosted turrets, etc
-
--- TODO Attach some kind of neat little graphical sticker to turrets that are in boosting range
-
-
--- TODO delay un-boosting boosted turrets until they finish their folding animation
---      (but also somehow prevent them from using their expanded range in the meanwhile)
-
-
--- TODO It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
---      We'll want to make a header / word template featuring a logo for the mod and stuff
-
-
--- TODO 2-4 second "yellow light" period to allow units to hide from the spotlight before they're fully spotted
-
-
--- TODO energy cost
--- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
-
--- TODO radar integration at point-of-light
-
--- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
---      So, there's not really a way to tell when this happens. And it doesn't look like the migration files will help either.
---      I think the best thing we can do is add a function that the player can call via command that 'disables' the mod so they can save & uninstall
---      And then we'll make a FAQ / User Manual to explain that if they don't want random turrets to disappear, here's the steps they need to follow
-
--- TODO Update recipe for searchlight
-
-
--- TODO Are the on_event filters faster if we just filter on names instead of looking at things by type as well?
-
-
--- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
---      When the spotlight is boosting / controlling the turret, it can play a little laser light animation on the turret's link box and also the spotlight's link box thing
-
--- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
-
--- TODO Get people to play test the balance
-
--- TODO Test blueprints construction / mass deconstruction
-
--- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
---      (Don't forget to mention this in the item description texts)
+## Design Decisions & Discussion
 
 -- So, obviously the balance of this mod is always going to be whack. Any meaningful amount of +Range is ridiculously powerful, no matter where we put it in the tech tree.
 -- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted?
@@ -239,84 +136,132 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 -- Nah. Honestly, imagine what the actual game devs would do. There'd just be ONE version of a turret. So don't be like this.
 
 
-
--- TODO add a layer of animated glowing lines to boosted turrets?
--- TODO Recipe should probably require something power related (an accumulator?) regardless of if we with the seperate-recipe using a beacon idea
+## TODO's
 
 
--- TODO Can we copy current animation frame when boosting?
+### Priority Fix: Visuals & Sprite Errors
 
--- TODO Maintain a map of all searchlights instead of polling for them every tick
--- (And update it w/ onEvent(building built, etc) + rebuild it on startup or use engine to save/load it)
+-- TODO what the hell happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
+C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
--- TODO preserve mining progress somehow when things are boosted unboosted
 
--- TODO when a spot light dies, make sure to unboost all nearby friends
+### Feature: Range Boosting
+-- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
+
+-- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
+
+-- TODO delay un-boosting boosted turrets until they finish their folding animation
+--      (but also somehow prevent them from using their expanded range in the meanwhile)
+
+-- TODO preserve mining progress somehow when things are boosted / unboosted
 
 -- TODO Are there non-energy, non-ammo, non-fluid type turrets? Should we try to fix this mod for them?
+
+
+### Feature: Decorate Boostable Radius / Terrain
+
+-- TODO Use the new decorations thing to spawn in crap around the boostable radius
+-- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
+-- We should probably make it an option in the mod to disable this...
+
+-- TODO add a layer of animated glowing lines to boosted turrets?
+-- TODO Attach some kind of neat little graphical sticker to turrets that are in boosting range
+
+-- TODO Some kind of low-key graphical animation over boosted turrets
+
+-- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
+--      When the spotlight is boosting / controlling the turret, it can play a little laser light animation on the turret's link box and also the spotlight's link box thing
+
+
+### Feature: More complicated range boosting
+
+-- TODO Make range-boosting require users to hook up wires to the turrets that are in range
+--      (Not sure if this is actually fun or not.. It'd also be hard to make a tutorial for,
+--       I'm not sure if we really want one more thing to have to explain to the player...)
+
+-- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
+--      (Don't forget to mention this in the item description texts)
+
+-- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
+--      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
+
+
+## Feature: Change spotlight colors when foes are spotted
 
 -- TODO When a spotlight spots a foe, there's a moment where there's no light at all.
 --      Maybe we could manually render some kind of 'alert flash' at the enemy location while the transition is happening
 
--- Might want to figure out how to use the 'alert_when_attacking' characteristic such that we alert when real foes are present, and not imaginary ones
--- also look into:
---  allow_turning_when_starting_attack
---  attack_from_start_frame
+-- TODO 2-4 second "yellow light" period to allow units to hide from the spotlight before they're fully spotted
 
--- TODO can probably make smarter use of forces throughout control.lua
 
--- TODO make function names & variables conform to lua style
+### Feature: Circuit Network Integration
+-- TODO Ok, so let's think about the turtle + circuit-programmable spotlight targeting.
+--      Using move-to commands is problematic because there's only a particular radius the turtle will settle for.
+--      We could teleport the turtle around but that's probably not very smooth...
+--      Should we wait until the mod is in a better shape before we worry about this?
+--      Or should we start thinking about using something besides a hidden biter as the turtle?
+--      We could make some branches to test the difference with a biter-turtle vs manually caculating interpolated target-positions...
+--      Well, we're not going to let the circuit network swing the spotlight around to new positions instantly, are we?
+--      So, I think that maybe we'll have the circuit network set a destination for the turtle, and people will have to have the expectation that they don't get pixel-perfect control of the turtle, and that'll be fine.
 
--- TODO Need to make & test a ghost for the searchlight.
---      And also double check that everything works properly with construction robots in the on_event functions.
---      Right now, if a real searchlight is destroyed, it puts up a ghost. But not the dummy light. And a bunch of other issues.
+-- TODO When we're recieving coordinates from the circuit network, remember to disable turtle wandering.
 
+
+### Feature: Rotate searchlight to rotate turtle waypoint
+
+-- TODO Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time
+
+
+### Feature: Searchlight aggro's biters
+
+-- TODO So, we decided to make the attacklight destructible and assign it to the player force,
+--      so that way its alert_when_attacking will register for the player, and biter attacks will be triggered.
+--      Since the attacklight has no hit box though, this usually means the surrounding baselight structure
+--      (which only has 1/4th the hp) takes all the hits first and dies before the attacklight does.
+--      But we still should link the HP of the attacklight to the base light & otherwise be prepared for if the attacklight dies first.
+
+
+### Feature: Sounds & Audio
+
+-- TODO Sounds and audio
+https://wiki.factorio.com/Prototype/Entity#working_sound
+
+- Maybe we want kind of an audible hum, like a bass-boosted flouresent light...
+- And some quiet background morse-code kinda sounds...
+
+
+### Feature: Radar Integration
+
+-- TODO radar integration at point-of-light
+
+
+### Feature: Graphics Polish
+
+-- TODO Can we copy current animation frame when boosting?
+
+-- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
+
+-- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
+
+-- TODO mipmaps for the searchlight item & technology icons
 
 -- TODO Make use of graphics_variation for whatever effect we do use for the searchlight boost
 
-
 -- TODO figure out how to get the attack-glow animation to stop when attackLight.active = false
 
+-- TODO use integration_patch when we're tidying up the graphics
 
--- TODO enemies are stutter-stepping toward the turrets
---      (because the turrets keep getting destroyed and created by control.lua)
---      fix this
---      (possibly by having a time out between boosting and unboosting turrets
---       and swapping between the real and dummy spotlights)
+-- TODO would be cool if the spotlight just flickered while it was disabled and still had low power
 
-function makeLightStartLocation(sl)
-    -- TODO get the orientation of the light and stick this slightly in front
-    --      also figure out how to deal with the unfolding animation
+-- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
 
 
--- TODO We have two different big tables that we, more or less, would ideally check every tick. These tables are:
---      A global list of searchlights (for checking energy consumption and "feeding" their hidden entities)
---          (^ Code for this moved to bottom of this notes file)
---      A global list of "grids" we use to check for foes near our searchlights
---      In the name of optimizing FPS, we instead chunk those big tables into sub-regions.
---      Right now, we use two different chunking strategies.
---      What we need to do:
---      Think about just using one chunking strategy
---      Gather experimental data on what chunking strategy & chunk size is best (especially as counts of searchlights get huge)
+### Feature: Professionalism Polish
 
--- TODO spawn turtle in general direction turret is pointing at
-
-
--- TODO clean up unused crap across all files
-
--- TODO Double check to make sure that the boost turret turrets are only boosting turrets of the same force
-
--- TODO deconstruction planner doesn't affect dummy turrets, but it should
-
--- TODO check if it's more efficent to just filter by one category (name?) than by type then name, etc
-
-
--- TODO Make the searchlight effect during the daytime a heat haze glimmer kinda thing
-
+-- TODO clean up unused junk across all files
 
 -- TODO So, apparently, binding variables and functions to local speeds them up.
 --      We should go through all of our code and make sure that anything which can be made local, is made local.
-
 
 ```
 For maximum efficiency you'll want to bind next to a local variable, e.g.,
@@ -338,70 +283,90 @@ local next = next
     @Moberg at run time a global variable requires a hash-table lookup but a local variable requires only an array lookup. – Norman Ramsey Jan 28 '18 at 19:30
 ```
 
+-- TODO Add emojis / icons to the mod name (Look at how the water gun mod makes them show up in game on the infopanel)
 
+-- TODO It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
+--      We'll want to make a header / word template featuring a logo for the mod and stuff
 
--- TODO Use the on_nth_tick(tick, f) to handle timer checking at a more reasonable, albiet less accurate rate (like, for checking if we should unboost turrets)
+-- TODO Mod portal page's description should mention our motivations and intended gameplay effects.
+--      We can mention that the searchlight is intended to 'solve' the turret-creep strategy for early/mid-game expansion.
+--      We can explain that the recipe is designed to incentive players to research & automate production
+--      of items they might otherwise ignore (such as lamps and combinators)
 
-on_nth_tick(tick, f)
+-- TODO Polish the design decisions section in this file
 
-Register a handler to run every nth tick(s). When the game is on tick 0 it will trigger all registered handlers.
+-- TODO Clean up unused graphics / icons
 
-Parameters
-tick :: uint or array of uint: The nth-tick(s) to invoke the handler on. Passing nil as the only parameter will unregister all nth-tick handlers.
-f :: function(NthTickEvent): The handler to run. Passing nil will unregister the handler for the provided ticks.
-
--- TODO ask on forums about saving / loading events, so we can restore turrets on save, recalculate unimportant tables on load, etc
-
-
+-- TODO make function names & variables conform to lua style
 
 -- TODO Break apart into a 'boostable turrets' mod
         Let people use mod settings to control what level the boosting is
 -- TODO How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
 -- TODO Or just make a stand-alone version of the mod and a non-standalone version?
 
+-- TODO rename searchlightFriendRadius to searchlightRangeBoostRadius or something
 
--- TODO Organize control.lua into a couple more files (like, boostrange.lua), etc
+-- TODO Be more meticulous in checking entity.isValid on objects before we use them (including players, characters, cursors, item stacks, etc)
 
+-- TODO prototype: map_color and enemy_map_color (make sure turtle & hidden SL_attack entity have no color)
+
+-- TODO implement on_entity_settings_pasted event & prototype feature "additional_pastable_entities" to let us know when people copy circuit settings between searchlights
+
+
+### Feature: Mod-Uninstall Command
+
+-- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
+--      So, there's not really a way to tell when this happens. And it doesn't look like the migration files will help either.
+--      I think the best thing we can do is add a function that the player can call via command that 'disables' the mod so they can save & uninstall
+--      And then we'll make a FAQ / User Manual to explain that if they don't want random turrets to disappear, here's the steps they need to follow
+
+
+### Bugs to Report / Features to Request
+
+-- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
+--      And how it's so damn awkward to set up a blacklist for an entity that you don't want even-just-turrets to attack.
+
+-- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+--      (Alterntatively, ask for the simple ability to increase turret range during run time)
 
 -- TODO Ask for a way to specify a sprite layer in radius_visualisation_specification as a big circle (instead of always square)
 --      Or just give us a 'range' parameter on arbitrary entities
 
 
--- TODO rename searchlightFriendRadius to searchlightRangeBoostRadius or something
+### Map modes / play
 
--- TODO Be more meticulous in checking entity.isValid on objects before we use them (including players, characters, cursors, item stacks, etc)
+-- TODO Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling spotlights,
+--      and ~100 other players are convicts.
+--      Convicts try to gather resources and escape, wardens unlock more spotlights as they recapture convicts
+--      (Captured convicts can play a minigame of some kind to re-escape from their cells)
+--      We'll figure out the win / lose conditions later.
+--      Maybe prisoners break into the warden's office and steal underpants or something.
 
--- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
---      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
+
+### Advertising
+
+-- TODO Submit mod to Xterminator, other big modded factorio youtubers / names
 
 
--- TODO use integration_patch when we're tidying up the graphics
+### Testing
+-- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
+-- TODO Double check that no stickers of any kind can be applied to the attackentity / turtle
 
--- TODO implement on_entity_settings_pasted event & prototype feature "additional_pastable_entities" to let us know when people copy circuit settings between searchlights
+-- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.
+--      Are we going to be able to (cheaply) replicate that effect?
 
--- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
---      (Alterntatively, ask for the simple ability to increase turret range during run time)
+-- TODO Get people to play test the balance
 
--- -- TODO Look into whether you can use the migrations files to shuffle turrets back and forth from their boosted versions if someone uninstalls this mod
+-- TODO Test blueprints construction / mass deconstruction
 
--- TODO disable when no electricity / reduce range according to electric satisfaction
+-- TODO enemies are stutter-stepping toward the turrets
+--      (because the turrets keep getting destroyed and created by control.lua)
+--      fix this
+--      (possibly by having a time out between boosting and unboosting turrets
+--       and swapping between the real and dummy spotlights)
 
--- TODO would be cool if the spotlight just flickered while it was disabled and still had low power
+-- TODO Double check to make sure that the boost turret turrets are only boosting turrets of the same force
 
--- TODO Clean up unused graphics / icons
-
--- TODO Sounds!
-
--- TODO prototype: map_color and enemy_map_color (make sure turtle & hidden SL_attack entity have no color)
-
--- TODO See if there's a way to get rid of the 'turret' category in the information panel
---      It lists stuff that we don't care about like kills & damage done
-
--- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
-
--- TODO Possibly can use this attack type to do cool stuff?
-- https://wiki.factorio.com/Types/TriggerDelivery#target_effects
-- https://wiki.factorio.com/Types/ScriptTriggerEffectItem
 
 ## STRETCH GOALS
 - Spotlight position & color controlled by circuit signals
@@ -421,13 +386,10 @@ f :: function(NthTickEvent): The handler to run. Passing nil will unregister the
 
 ## Feature request for spotlights that track enemies
 
-
-
 Or just write a mod to do it, yourself
 
 - Steal code from this other mod? [MOD 0.10.x] Advanced Illumination - 0.2.0 [BETA]
   https://forums.factorio.com/viewtopic.php?f=14&t=4872
-
 
 Features:
 
@@ -458,63 +420,3 @@ Features:
 
 - Built from 5x lamp + 1x Radar (since it's able to target things)
   - Finally gives an incentive to automate lamp production for non-peaceful players
-
-
-==================
-
-## Scraps to implement
-
-
-```
--- !! So, since it seems impossible in base lua to iterate over a "chunk" of a dictionary,
---    we might have to implement something ourselves with just a stock array
--- TODO Inside the add/remove searchlight functions, increase or decrease sl_bucketSize
---      in proportion to how many turrets we want to check per tick when we reach milestones
-local function check_turrets_on_tick(event)
-  if not global.sl_onTick_turretIndex then
-    global.sl_onTick_turretIndex = 0
-    global.sl_bucketSize = 100
-  end
-
-  local tableSize = table_size(global.searchLights)
-  local i = global.sl_onTick_turretIndex
-  local max = global.sl_onTick_turretIndex + global.sl_bucketSize
-
-  if max > tableSize then
-    max = tableSize
-  end
-
-  while i < max do
-    doStuff(global.searchLights[i])
-    i = i + 1
-  end
-
-  global.turretIndex = global.turretIndex + global.sl_bucketSize
-  if global.turretIndex >= table_size(global.searchLights)
-    global.turretIndex = 0
-  end
-end
-```
-
-
-```
--- Klonan's iterator (similar to what we did for the grid-checker)
-local function on_tick(event)
-  for surface_name, surface_position_x in pairs(global.supportive_turrets) do
-    for x, surface_position_y in pairs(surface_position_x) do
-      if (x + game.tick) % 60 == 0 then
-        for y, data in pairs(surface_position_y) do
-          if (x + y + game.tick) % check_period == 0 then
-            if not data.turret.valid then
-              if data.unit.valid then
-                data.unit.destroy()
-              end
-              global.supportive_turrets[surface_name][x][y] = nil
-            end
-          end
-        end
-      end
-    end
-  end
-end
-```

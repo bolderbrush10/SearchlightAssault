@@ -50,7 +50,8 @@ searchlightCapacitorCutoff     = 250000 -- joules
 searchlightCapacitorStartable = 2500000 -- joules
 
 -- How much electricity the searchlight consumes
-searchlightEnergyUsage = "305kW"
+-- (I think it's cute to have its usage be the sum of its parts)
+searchlightEnergyUsage = "327kW"
 
 -------------------------------------------------
 -- Things that aren't interesting to mess with --
@@ -87,6 +88,7 @@ boostDelay = 3 * 60
 -- (These need to copied manually into the locale files as far as I can tell)
 searchlightItemName = "searchlight"
 searchlightRecipeName = "searchlight"
+searchlightTechnologyName = "searchlight"
 
 searchlightBaseName = "searchlight-base"
 searchlightAttackName = "searchlight-attack"

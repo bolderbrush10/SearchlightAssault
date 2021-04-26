@@ -21,6 +21,77 @@ end)
 
 
 
+-- Use the on_nth_tick(tick, f) to handle timer checking at a more reasonable, albiet less accurate rate (like, for checking if we should unboost turrets)
+
+on_nth_tick(tick, f)
+
+Register a handler to run every nth tick(s). When the game is on tick 0 it will trigger all registered handlers.
+
+Parameters
+tick :: uint or array of uint: The nth-tick(s) to invoke the handler on. Passing nil as the only parameter will unregister all nth-tick handlers.
+f :: function(NthTickEvent): The handler to run. Passing nil will unregister the handler for the provided ticks.
+
+
+==================
+
+## Scraps to implement
+
+
+```
+-- !! So, since it seems impossible in base lua to iterate over a "chunk" of a dictionary,
+--    we might have to implement something ourselves with just a stock array
+-- TODO Inside the add/remove searchlight functions, increase or decrease sl_bucketSize
+--      in proportion to how many turrets we want to check per tick when we reach milestones
+local function check_turrets_on_tick(event)
+  if not global.sl_onTick_turretIndex then
+    global.sl_onTick_turretIndex = 0
+    global.sl_bucketSize = 100
+  end
+
+  local tableSize = table_size(global.searchLights)
+  local i = global.sl_onTick_turretIndex
+  local max = global.sl_onTick_turretIndex + global.sl_bucketSize
+
+  if max > tableSize then
+    max = tableSize
+  end
+
+  while i < max do
+    doStuff(global.searchLights[i])
+    i = i + 1
+  end
+
+  global.turretIndex = global.turretIndex + global.sl_bucketSize
+  if global.turretIndex >= table_size(global.searchLights)
+    global.turretIndex = 0
+  end
+end
+```
+
+
+```
+-- Klonan's iterator (similar to what we did for the grid-checker)
+local function on_tick(event)
+  for surface_name, surface_position_x in pairs(global.supportive_turrets) do
+    for x, surface_position_y in pairs(surface_position_x) do
+      if (x + game.tick) % 60 == 0 then
+        for y, data in pairs(surface_position_y) do
+          if (x + y + game.tick) % check_period == 0 then
+            if not data.turret.valid then
+              if data.unit.valid then
+                data.unit.destroy()
+              end
+              global.supportive_turrets[surface_name][x][y] = nil
+            end
+          end
+        end
+      end
+    end
+  end
+end
+```
+
+
 
 local piOverSix       = (math.pi / 6)
 local piOverThree     = (math.pi / 3)
