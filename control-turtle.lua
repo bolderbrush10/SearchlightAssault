@@ -10,7 +10,7 @@ end
 
 -- location is expected to be the spotlight's last shooting target,
 -- if it was targeting something.
-function SpawnTurtle(baseSL, attackSL, surface, location)
+function SpawnTurtle(baseSL, attackLight, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
     location = OrientationToPosition(baseSL.position, baseSL.orientation, 3)
@@ -23,7 +23,7 @@ function SpawnTurtle(baseSL, attackSL, surface, location)
                                        create_build_effect_smoke = false}
 
   turtle.destructible = false
-  attackSL.shooting_target = turtle
+  attackLight.shooting_target = turtle
 
 
   -- If we set our first waypoint in the same direction, but further away,
@@ -42,30 +42,22 @@ end
 function WanderTurtle(turtle, origin, waypoint)
   local tun = turtle.unit_number
 
-  if not turtle.has_command()
-     or global.turtle_to_waypoint[tun] == nil then
-     -- or doesPositionMatch(turtle.position,
-     --                      global.turtle_to_waypoint[tun],
-     --                      searchlightSpotRadius) then
-
-      if waypoint == nil then
-        waypoint = MakeWanderWaypoint(origin)
-      end
-      global.turtle_to_waypoint[tun] = waypoint
-      turtle.speed = 0.1
-
-      turtle.set_command({type = defines.command.go_to_location,
-                          -- TODO Do we want to make it an option to allow spotting non-military foe-built structures?
-                          distraction = defines.distraction.by_enemy,
-                          destination = waypoint,
-                          pathfind_flags = {low_priority = true,
-                                            cache = false,
-                                            -- prefer_straight_paths = true, -- TODO Report as bug? Does the opposite of what it says
-                                            allow_destroy_friendly_entities = true,
-                                            allow_paths_through_own_entities = true},
-                          radius = 1
-                         })
+  if waypoint == nil then
+    waypoint = MakeWanderWaypoint(origin)
   end
+  turtle.speed = 0.1
+
+  turtle.set_command({type = defines.command.go_to_location,
+                      -- TODO Do we want to make it an option to allow spotting non-military foe-built structures?
+                      distraction = defines.distraction.by_enemy,
+                      destination = waypoint,
+                      pathfind_flags = {low_priority = true,
+                                        cache = false,
+                                        -- prefer_straight_paths = true, -- TODO Report as bug? Does the opposite of what it says
+                                        allow_destroy_friendly_entities = true,
+                                        allow_paths_through_own_entities = true},
+                      radius = 1
+                     })
 end
 
 

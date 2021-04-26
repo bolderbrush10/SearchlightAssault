@@ -28,7 +28,7 @@ function InitTables()
   -- Attack-Searchlight --
   ------------------------
 
-  -- Map: attacklight unit_number -> Turtle
+  -- Map: attackLight unit_number -> Turtle
   global.attackSL_to_turtle = {}
 
   -----------------
@@ -41,15 +41,14 @@ function InitTables()
   -- Map: turtle unit_number -> Searchlight
   global.turtle_to_baseSL = {}
 
-  -- Map: turtle -> Position: [x,y]
-  -- TODO Do I need this?
-  global.turtle_to_waypoint = {}
-
   -----------------
   --     Foe     --
   -----------------
 
-  -- Map: foe -> Attacklight
+  -- Map: foe unit_number -> foe
+  global.foes = {}
+
+  -- Map: foe unit_number -> Attacklight
   global.foe_to_attackSL = {}
 
   -----------------
@@ -66,53 +65,82 @@ function InitTables()
 end
 
 
--- TODO missing a bunch of stuff
 function maps_addSearchlight(sl, attackLight, turtle)
   global.base_searchlights[sl.unit_number] = sl
   global.baseSL_to_attackSL[sl.unit_number] = attackLight
   global.baseSL_to_turtle[sl.unit_number] = turtle
 
+
   global.attackSL_to_turtle[attackLight.unit_number] = turtle
+
 
   global.turtles[turtle.unit_number] = turtle
   global.turtle_to_baseSL[turtle.unit_number] = sl
+
+
+  -- TODO boostables
 end
 
 
--- TODO missing a bunch of stuff
 function maps_removeSearchlight(sl)
   global.base_searchlights[sl.unit_number] = nil
-  global.baseSL_to_attackSL[sl.unit_number].destroy()
+
+  attackLight = global.baseSL_to_attackSL[sl.unit_number]
   global.baseSL_to_attackSL[sl.unit_number] = nil
+
   turtle = global.baseSL_to_turtle[sl.unit_number]
   global.baseSL_to_turtle[sl.unit_number] = nil
 
 
+  global.attackSL_to_turtle[attackLight.unit_number] = nil
+  maps_removeFoeSL(attackLight)
+  attackLight.destroy()
+
+
   global.turtles[turtle.unit_number] = nil
-  global.turtle_to_waypoint[turtle.unit_number] = nil
+  global.turtle_to_baseSL[turtle.unit_number] = nil
   turtle.destroy()
+
 
   -- TODO remove boostables
 end
 
 
-function maps_removeFoe(foe)
+function maps_removeFoeByUnitNum(foe_unit_number)
 
-  global.foe_to_attackSL[foe] = nil
+  global.foes[foe_unit_number] = nil
+  global.foe_to_attackSL[foe_unit_number] = nil
+  -- garbage collector should clear out the sub-table
 
 end
 
 
 function maps_addFoeSL(foe, base_sl)
 
+  global.foes[foe.unit_number] = foe
+
   -- nb, a foe may be tracked by multiple searchlights at the same time
-  if not global.foe_to_attackSL[foe] then
-    global.foe_to_attackSL[foe] = {}
+  if not global.foe_to_attackSL[foe.unit_number] then
+    global.foe_to_attackSL[foe.unit_number] = {}
   end
-  table.insert(global.foe_to_attackSL[foe], base_sl)
+  table.insert(global.foe_to_attackSL[foe.unit_number], base_sl)
 
 end
 
 
--- not implemented since performance-critical logic lives in control-searchlight:TrackSpottedFoes
--- function maps_removeFoeSL(foe, sl_index)
+-- semi-duplicated in control-searchlight:TrackSpottedFoes for performance reasons
+function maps_removeFoeSL(attackLight)
+  local copyfoe_to_baseSL = global.foe_to_attackSL
+
+  for foe_unit_number, slList in pairs(copyfoe_to_baseSL) do
+    for index, light in pairs(slList) do
+      if light.unit_number == attackLight.unit_number then
+        table.remove(global.foe_to_attackSL[foe_unit_number], index)
+      end
+    end
+
+    if next(global.foe_to_attackSL[foe_unit_number]) == nil then
+      maps_removeFoeByUnitNum(foe_unit_number)
+    end
+  end
+end

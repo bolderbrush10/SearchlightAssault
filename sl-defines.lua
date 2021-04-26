@@ -45,9 +45,9 @@ fluidBoost = searchlightOuterRange - 40
 -- (The searchlight requires a half-full buffer to start operating, and turns back off when the buffer is below the cutoff)
 -- ((We use this to reduce pathological "flickering" cases when a factory is in low power,
 --   and we'd otherwise need to constantly enable / disable the hidden entities that make the searchlight work))
-searchlightCapacitorSize    = "10MJ"
-searchlightCapacitorCutoff     = 500000 -- joules
-searchlightCapacitorStartable = 5000000 -- joules
+searchlightCapacitorSize    =  "5MJ"
+searchlightCapacitorCutoff     = 250000 -- joules
+searchlightCapacitorStartable = 2500000 -- joules
 
 -- How much electricity the searchlight consumes
 searchlightEnergyUsage = "305kW"

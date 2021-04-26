@@ -1,29 +1,11 @@
 ##Current  Task:
 
-When the biter attacks a foe (or becomes distracted), we change the force for the hidden attack entity.
-Then, we set its shooting_target to whatever the biter was attacking. When the target dies, we switch it back to the hidden force.
 
-(We could probably still use the grid system to figure out which sets of turtles are worth polling?)
-
-
-Right now, we're working inside of TrackSpottedFoes in control-searchlight.lua
-
-
-##Next task:
-
-So, we've figured out how to get the game to display multiple (square) sprites as a radius visualization.
-This means that we don't necessarily have to define our searchlight-base entity as a turret anymore.
-What we're presently trying to figure out:
-  - What kind of entity we should use
-
-  - Should we plan to create & pop up our own custom gui for circuit conditions?
-  - What kind of entity has good circuit conditions we can steal / how to rig the connections
-    - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
-    - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
-       Their sprites could still just be a part of the base-searchlight's sprite)
-
-  - How to designate arbitrary structures as military targets so that biters will "prioritize" attacking the searchlights
-    - Maybe we could create yet-another-dummy entity?
+- Should we plan to create & pop up our own custom gui for circuit conditions?
+- What kind of entity has good circuit conditions we can steal / how to rig the connections
+  - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
+  - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
+     Their sprites could still just be a part of the base-searchlight's sprite)
 
 Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
    (like how tanks have different attacks)
@@ -56,6 +38,14 @@ Just got the framework rewrite in place to give turtles an attack to let us spot
 Only start to notice a drop of about 5fps once we hit ~5k searchlights.
 
 We still need to put in a lot more logic to handle what to do when the foe is actually spotted, and to retask-turtles after they reach initial waypoints, but I'm very happy.
+```
+
+C
+```
+Done with the full enemy detection & retasking logic rework.
+At 4.5k searchlights, we're seeing an average of 36 fps (while running youtube and a bunch of other background processes)
+No drop noticable until almost 3k searchlights deep.
+Seems pretty good to me.
 ```
 
 ## Misc Notes
@@ -153,6 +143,8 @@ The order of acceptable values from lowest to highest:
 
 -- TODO Double check that no stickers of any kind can be applied to the attackentity / turtle
 
+-- TODO detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time
+
 -- TODO So, the normal turrets infobox reflects whatever light effects (from shooting) that the turret produces.
 --      Are we going to be able to (cheaply) replicate that effect?
 
@@ -219,6 +211,8 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 -- TODO Get people to play test the balance
 
+-- TODO Test blueprints construction / mass deconstruction
+
 -- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
 --      (Don't forget to mention this in the item description texts)
 
@@ -268,6 +262,9 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 
 -- TODO Make use of graphics_variation for whatever effect we do use for the searchlight boost
+
+
+-- TODO figure out how to get the attack-glow animation to stop when attackLight.active = false
 
 
 -- TODO enemies are stutter-stepping toward the turrets

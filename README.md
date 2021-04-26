@@ -29,7 +29,7 @@ sl-defines.lua - miscellaneous static definitions such as turret range, colors, 
 
 control.lua             - handles event registrations & filtering, calls behavior from the control-*.lua files
 
-control-searchlight.lua - controls foe seeking behavior, turret-boosting behavior, etc
+control-searchlight.lua - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-* files.
 control-turtle.lua      - behaviors for the dummy-entity that the spotlight "attacks" to render a light at surface locations
 control-grid.lua        - optimizies searches for foes and spotlights by breaking apart the world into 'grid' units
 control-forces          - sets up the forces assigned to hidden entities

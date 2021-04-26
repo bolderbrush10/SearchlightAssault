@@ -55,7 +55,7 @@ end)
 script.on_event(defines.events.on_script_trigger_effect,
 function(event)
   if event.effect_id == spottedEffectID
-    and event.source_entity and event.target_entity then
+  and event.source_entity and event.target_entity then
     FoeSpotted(event.source_entity, event.target_entity)
   end
 end)
@@ -65,7 +65,7 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  if not event.was_distracted then
+  if not event.was_distracted and global.turtles[event.unit_number] then
     TurtleWaypointReached(event.unit_number)
   end
 
@@ -185,8 +185,9 @@ function(event)
 
   if event.entity.name == searchlightBaseName then
     SearchlightRemoved(event.entity)
+  elseif event.entity.unit_number then
+    FoeDied(event.entity)
   end
-
 
   -- TODO if this was a biter / etc, then we could probably check
   --      whether relevant boosted turrets are still allowed to be boosted

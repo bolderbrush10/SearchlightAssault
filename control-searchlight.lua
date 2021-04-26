@@ -13,8 +13,8 @@ require "util"
 
 
 function SearchlightAdded(sl)
-  attacklight, turtle = SpawnSLHiddenEntities(sl)
-  maps_addSearchlight(sl, attacklight, turtle)
+  attackLight, turtle = SpawnSLHiddenEntities(sl)
+  maps_addSearchlight(sl, attackLight, turtle)
 
   -- We'll check the power state and let it enable next tick,
   -- just in case someone builds a spotlight right on top of
@@ -66,11 +66,15 @@ end
 
 
 function FoeDied(foe)
-  for index, attackLight in pairs(global.foe_to_attackSL[foe]) do
+  if not global.foes[foe.unit_number] then
+    return
+  end
+
+  for index, attackLight in pairs(global.foe_to_attackSL[foe.unit_number]) do
     ResumeTargetingTurtle(foe.position, attackLight)
   end
 
-  maps_removeFoe(foe)
+  maps_removeFoeByUnitNum(foe.unit_number)
 end
 
 
@@ -95,21 +99,22 @@ function TrackSpottedFoes(tick)
   -- Copy table to simplify removal while iterating
   local copyfoe_to_baseSL = table.deepcopy(global.foe_to_attackSL)
 
-  for foe, slList in pairs(copyfoe_to_baseSL) do
+  for foe_unit_number, slList in pairs(copyfoe_to_baseSL) do
 
+    local foe = global.foes[foe_unit_number]
     for index, attackLight in pairs(slList) do
 
-      if attacklight.shooting_target ~= foe then
+      if attackLight.shooting_target ~= foe then
         --  This should trigger infrequently,
         --  so it's ok to be a little slow inside this branch
         ResumeTargetingTurtle(foe.position, attackLight)
-        table.remove(global.foe_to_attackSL[foe], index)
+        table.remove(global.foe_to_attackSL[foe.unit_number], index)
       end
 
     end
 
-    if next(global.foe_to_attackSL[foe]) == nil then
-      maps_removeFoe(foe)
+    if next(global.foe_to_attackSL[foe.unit_number]) == nil then
+      maps_removeFoeByUnitNum(foe.unit_number)
     end
 
   end
@@ -121,8 +126,8 @@ end
 --      (Embedding some C code directly into lua could also help, see:
 --       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
 --      Would look something like:
---      local activeAsNum = bit32.band(attacklight.active, 1)
---      attacklight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
+--      local activeAsNum = bit32.band(attackLight.active, 1)
+--      attackLight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
 --          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
 -- We wouldn't need this function if there was a way
 -- to directly transfer / mirror electricity between units on different forces
@@ -160,6 +165,7 @@ function SpawnSLHiddenEntities(sl)
                                          force=searchlightFriend,
                                          fast_replace = true,
                                          create_build_effect_smoke = false}
+  attackLight.destructible = false
 
   turtle = SpawnTurtle(sl, attackLight, sl.surface, nil)
 
