@@ -1,6 +1,9 @@
 ## Current  Task:
 
-- Implement range-boosting for friendly turrets
+- We also want to think about teleporting or somehow... hiding the entities we're replacing. It's been a while since we thought about that. It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
+
+
+- Still need to think about gameplay / balance for boosting effect...
 
 
 ## Next Tasks:
@@ -16,6 +19,7 @@ Can we make a turret use multiple attack types so we can swap searchlight colors
 - Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
 
 - Test multiplayer
+
 
 ## Performance reports:
 
@@ -136,6 +140,13 @@ The order of acceptable values from lowest to highest:
 -- Nah. Honestly, imagine what the actual game devs would do. There'd just be ONE version of a turret. So don't be like this.
 
 
+-- Use the new decorations thing to spawn in crap around the boostable radius
+-- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
+-- We should probably make it an option in the mod to disable this...
+-- Considering that the spawned_decorations are basically permanent (unless we clean them up ourselves on turret death?)
+-- it's probably more sensible to not do this.
+
+
 ## TODO's
 
 
@@ -158,11 +169,21 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 -- TODO Are there non-energy, non-ammo, non-fluid type turrets? Should we try to fix this mod for them?
 
 
-### Feature: Decorate Boostable Radius / Terrain
+### Feature: More complicated range boosting
 
--- TODO Use the new decorations thing to spawn in crap around the boostable radius
--- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
--- We should probably make it an option in the mod to disable this...
+-- TODO Make range-boosting require users to hook up wires to the turrets that are in range
+--      (Not sure if this is actually fun or not.. It'd also be hard to make a tutorial for,
+--       I'm not sure if we really want one more thing to have to explain to the player...)
+
+-- TODO Dynamic power cost for searchlight / turrets that increases exponentially per boosted turret?
+--      (Don't forget to mention this in the item description texts)
+
+-- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
+--      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
+--      Or maybe put turrets on a cooldown after switching shooting target?
+
+
+### Feature: Decorate Boostable Radius / Terrain
 
 -- TODO add a layer of animated glowing lines to boosted turrets?
 -- TODO Attach some kind of neat little graphical sticker to turrets that are in boosting range
@@ -172,18 +193,8 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 -- TODO Maybe instead of the boost animation thing, we create a small 'link box' entity on boosted turrets.
 --      When the spotlight is boosting / controlling the turret, it can play a little laser light animation on the turret's link box and also the spotlight's link box thing
 
-
-### Feature: More complicated range boosting
-
--- TODO Make range-boosting require users to hook up wires to the turrets that are in range
---      (Not sure if this is actually fun or not.. It'd also be hard to make a tutorial for,
---       I'm not sure if we really want one more thing to have to explain to the player...)
-
--- TODO Dynamic power cost for searchlight that increases exponentially per boosted turret?
---      (Don't forget to mention this in the item description texts)
-
--- TODO We should drastically reduce the fire rate of boosted turrets while firing on foes outside their original range
---      Or maybe only boost one turret per searchlight (Maybe a repeatable tech can boost the count of boostables per SL up to like 20?)
+-- TODO When mousing over a turret that's boostable by a searchlight, it should highlight all the nearby searchlights
+--      (Like how the game highlights powerpoles for the entities that draw power from them)
 
 
 ## Feature: Change spotlight colors when foes are spotted
@@ -234,6 +245,13 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO radar integration at point-of-light
 
+
+### Feature: Mod Compatability
+
+-- TODO Maybe instead of creating & destroying range-boosted versions of turrets,
+        we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
+
+-- TODO Maybe we SHOULD fire those script___created/destroyed events...
 
 ### Feature: Graphics Polish
 
@@ -331,6 +349,8 @@ local next = next
 
 -- TODO Ask for a way to specify a sprite layer in radius_visualisation_specification as a big circle (instead of always square)
 --      Or just give us a 'range' parameter on arbitrary entities
+
+-- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
 
 ### Map modes / play

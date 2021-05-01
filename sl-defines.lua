@@ -23,31 +23,26 @@ ticksBetweenFoeSearches = 60
 -- Max range at which search light beam wanders
 -- (About the same size as the radar's continuous reveal,
 --  since the search light is built from a radar)
--- TODO rename to just 'searchlightRange'
-searchlightOuterRange = 100
+searchlightRange = 100
 
--- Radius at which the spotlight boosts the range of same-force turrets
--- TODO rework this to use a range based on a square-grid of tiles
-searchlightFriendRadius = 15
+-- Max distance at which the spotlight boosts the range of same-force turrets (using a square grid)
+searchlightBoostEffectRange = 4
 
--- Range boost given to electric turrets
--- TODO Consider making all the boosts at the max range
---      so that it makes sense to be spotted and then get shot at
-elecBoost = searchlightOuterRange
-
--- Range boost given to ammo turrets
-ammoBoost = searchlightOuterRange - 20
-
--- Range boost given to fluid turrets
-fluidBoost = searchlightOuterRange - 40
+-- Range boost effect provided to friendly turrets so they can attack the distant foe the searchlight spotted
+-- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.
+--  Since the maximum distance a boostable friend can be might not be a whole number, thanks to trigonometry,
+--  we'll just double that factor to keep it simple. (If we care, we can use something like:
+--   math.ceil(squareroot(square(searchlightBoostEffectRange) + square(searchlightBoostEffectRange)))
+--  to get a more accurate figure)
+rangeBoostAmount = searchlightRange + searchlightBoostEffectRange*2
 
 -- Capacitor size (electric energy buffer) for the searchlight
 -- (The searchlight requires a half-full buffer to start operating, and turns back off when the buffer is below the cutoff)
 -- ((We use this to reduce pathological "flickering" cases when a factory is in low power,
 --   and we'd otherwise need to constantly enable / disable the hidden entities that make the searchlight work))
-searchlightCapacitorSize    =  "5MJ"
-searchlightCapacitorCutoff     = 250000 -- joules
-searchlightCapacitorStartable = 2500000 -- joules
+searchlightCapacitorSize      = "5MJ"
+searchlightCapacitorCutoff    =   250000 -- joules
+searchlightCapacitorStartable =  2500000 -- joules
 
 -- How much electricity the searchlight consumes
 -- (I think it's cute to have its usage be the sum of its parts)

@@ -104,7 +104,7 @@ sl_a.collision_mask = {}
 sl_a.attack_parameters =
 {
   type = "beam",
-  range = searchlightOuterRange,
+  range = searchlightRange,
   cooldown = 40,
   -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
   source_direction_count = 64,
@@ -119,7 +119,7 @@ sl_a.attack_parameters =
       {
         type = "beam",
         beam = "spotlight-beam-passive",
-        max_length = searchlightOuterRange,
+        max_length = searchlightRange,
         duration = 40,
         source_offset = {-1, -1.31439 }
       }

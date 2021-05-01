@@ -447,7 +447,7 @@ lightEntity.picture_on = blank
 turretEntity.attack_parameters = {
     type = "beam",
     cooldown = 100,
-    range = searchlightOuterRange,
+    range = searchlightRange,
     use_shooter_direction = true,
     ammo_type = table.deepcopy(data.raw["electric-turret"]["laser-turret"]["attack_parameters"]["ammo_type"])
     ammo_type =
@@ -526,7 +526,7 @@ end
 function LightUpFoes(sl, surface)
     -- Instantly find foes within the inner range
     local nearestFoe = surface.find_nearest_enemy{position = sl.position,
-                                                  max_distance = searchlightOuterRange}
+                                                  max_distance = searchlightRange}
 
     if nearestFoe ~= nil then
         local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
@@ -607,8 +607,8 @@ end
 
 function makeWanderWaypoint(origin)
     -- make it easier to find the light for now
-    -- x = origin.x + math.random(-searchlightOuterRange, searchlightOuterRange)
-    -- y = origin.y + math.random(-searchlightOuterRange, searchlightOuterRange)
+    -- x = origin.x + math.random(-searchlightRange, searchlightRange)
+    -- y = origin.y + math.random(-searchlightRange, searchlightRange)
 
     local waypoint = {x = origin.x + math.random(-searchlightInnerRange, searchlightInnerRange),
                       y = origin.y + math.random(-searchlightInnerRange, searchlightInnerRange)}
@@ -978,7 +978,7 @@ data:extend(
 
 turretEntity.attack_parameters = {
     type = "beam",
-    range = searchlightOuterRange,
+    range = searchlightRange,
     cooldown = 40,
     source_direction_count = 64,
     source_offset = {0, -3.423489 / 4},
@@ -1565,6 +1565,41 @@ local Turtle =
 
 
 ==============================================================
+==============================================================
+==============================================================
+==============================================================
+
+
+
+function Boost(oldT, surface, foe)
+  if game.entity_prototypes[oldT.name .. boostSuffix] == nil then
+    return nil
+  end
+
+  local foeLenSq = lensquared(foe.position, oldT.position)
+
+  -- Foes any closer probably don't merit any boosting
+  if foeLenSq <= square(12) then
+    return nil
+
+  elseif foeLenSq <= square(LookupRange(oldT)) and oldT.shooting_target ~= nil then
+    return nil
+
+  elseif oldT.type == "electric-turret" and foeLenSq >= square(elecBoost) then
+    return nil
+
+  elseif oldT.type == "ammo-turret" and foeLenSq >= square(ammoBoost) then
+    return nil
+
+  elseif foeLenSq >= square(fluidBoost) then
+    return nil
+
+  elseif not IsPositionWithinTurretArc(foe.position, oldT) then
+    return nil
+  end
+
+
+end
 
 
 --

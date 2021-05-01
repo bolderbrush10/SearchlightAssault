@@ -1,161 +1,288 @@
 require "sl-defines"
 require "sl-util"
 
+require "util" -- for table.deepcopy
 
--- TODO Should more of these maps be indexed by unit number
---      instead of entity-reference?
+
 function InitTables()
-  ----------------------
-  -- Base-Searchlight --
-  ----------------------
+  -------------------------
+  -- Searchlight Gestalt --
+  -------------------------
+  --[[ Gestalt:
+  {
+    gID = int (gID),
+    base = BaseSearchlight,
+    al = AttackLight,
+    turtle = Turtle,
+    tunions = Map: tuID -> true
+  }
+  ]]--
 
-  -- Map: searchlight unit_number -> Searchlight
-  global.base_searchlights = {}
+  global.gID = 0
 
-  -- Map: searchlight unit_number -> Attacklight
-  global.baseSL_to_attackSL = {}
+  -- Map: gestalt ID -> Gestalt
+  global.gestalts = {}
 
-  -- Map: searchlight unit_number -> Turtle
-  global.baseSL_to_turtle = {}
+  -- Map: unit_number -> gID
+  -- Currently tracking: baselight, attack light, turtle -> gID
+  global.unum_to_gID = {}
 
-  -- Map: eitherlight unit_number -> List: [Neighbor Turrets]
-  global.baseSL_to_boostable = {}
+  ------------------
+  -- Turret Union --
+  ------------------
+  --[[ TUnion:
+  {
+    tuID = int (tuID),
+    turret = base / boosted,
+    boosted = true / false,
+    lights = Map: gID -> true
+  }
+  ]]--
 
-  -- Map: searchlight unit_number -> remaining ticks
-  global.baseSL_to_unboost_timers = {}
+  global.tuID = 0
 
-  ------------------------
-  -- Attack-Searchlight --
-  ------------------------
+  -- Map: turret union ID -> TUnion
+  global.tunions = {}
 
-  -- Map: attackLight unit_number -> Turtle
-  global.attackSL_to_turtle = {}
+  -- Map: turret unit_number -> tID
+  global.tun_to_tID = {}
 
-  -----------------
-  --   Turtle    --
-  -----------------
-
-  -- Map: turtle unit_number -> Turtle
-  global.turtles = {}
-
-  -- Map: turtle unit_number -> Searchlight
-  global.turtle_to_baseSL = {}
+  -- Map: boosted turret unit_number -> tID
+  global.boosted_to_tuID = {}
 
   -----------------
   --     Foe     --
   -----------------
 
-  -- Map: foe unit_number -> foe
+  -- Map: foe unit_number -> foe entity
   global.foes = {}
 
-  -- Map: foe unit_number -> Attacklight
-  global.foe_to_attackSL = {}
+  -- Map: foe unit_number -> Map: gID -> true
+  global.fun_to_gIDs = {}
 
-  -----------------
-  --    Grids    --
-  -----------------
-
-  -- Force.index -> "x,y" -> Grid
-  -- TODO Do we have to care about other forces, or does the engine hide that for us?
-  global.forceToPositionToGrid = {}
-
-  -- Grid -> Grid
-  global.gridsWithFoes = {}
+  -- TODO What if the only searchlight gets destroyed before a foe dies?
+  --      We'd want to clear the foe map's entry
 
 end
 
+-------------------------------------------------------------------------------
+-- Private
+-------------------------------------------------------------------------------
 
-function maps_addSearchlight(sl, attackLight, turtle)
-  global.base_searchlights[sl.unit_number] = sl
-  global.baseSL_to_attackSL[sl.unit_number] = attackLight
-  global.baseSL_to_turtle[sl.unit_number] = turtle
-
-
-  global.attackSL_to_turtle[attackLight.unit_number] = turtle
-
-
-  global.turtles[turtle.unit_number] = turtle
-  global.turtle_to_baseSL[turtle.unit_number] = sl
-
-
-  -- TODO boostables
+local function newTUID()
+  global.tuID = global.tuID + 1
+  return global.tuID
 end
 
 
-function maps_removeSearchlight(sl)
-  global.base_searchlights[sl.unit_number] = nil
-
-  attackLight = global.baseSL_to_attackSL[sl.unit_number]
-  global.baseSL_to_attackSL[sl.unit_number] = nil
-
-  turtle = global.baseSL_to_turtle[sl.unit_number]
-  global.baseSL_to_turtle[sl.unit_number] = nil
+local function newGID()
+  global.gID = global.gID + 1
+  return global.gID
+end
 
 
-  global.attackSL_to_turtle[attackLight.unit_number] = nil
-  maps_removeFoeSL(attackLight)
-  attackLight.destroy()
+local function makeGestalt(sl, attackLight, turtle)
+  return {gID = newGID(), base = sl, al = attackLight, turtle = turtle, tunions = {}}
+end
 
 
-  global.turtles[turtle.unit_number] = nil
-  global.turtle_to_baseSL[turtle.unit_number] = nil
-  turtle.destroy()
+-- Memoize; don't need to track this in global, save memory by recalculating across save/loads
+local boostInfo = {}
+
+local function boostTruth(turret)
+  local info = boostInfo[turret]
+  if info then
+    if info == "nil" then
+      return nil
+    else
+      return info
+    end
+  end
+
+  if game.entity_prototypes[turret.name .. boostSuffix] then
+    boostInfo[turret] = false
+    return false
+  -- A neat trick to see if a string ends with a given suffix
+  elseif turret.name:sub(-#boostSuffix) == boostSuffix then
+    boostInfo[turret] = true
+    return true
+  else
+    boostInfo[turret] = "nil"
+    return nil -- Not a boostable / boosted turret, ignore it
+  end
+end
 
 
-  -- TODO remove boostables
+local function updateTUnionSL(tunion, gIDs)
+  if not gIDs then
+    return
+  end
+
+  for i, gID in pairs(gIDs) do
+    tunion.lights[gID] = true
+    global.gestalts[gID].tunions[tunion.tuID] = true
+  end
+end
+
+
+-- May return nil if turret is not boosted / boostable
+local function makeTUnionFromTurret(turret, gIDs)
+  local boosted = boostTruth(turret)
+
+  if boosted == nil then
+    return nil
+  end
+
+  tunion = {tuID = newTUID(), turret = turret, boosted = boosted, lights = {}}
+
+  global.tunions[tunion.tuID] = tunion
+  global.tun_to_tID[turret.unit_number] = tunion
+
+  updateTUnionSL(tunion, gIDs)
+
+  return tunion
+end
+
+
+local function removeGestaltfromTUnions(gID)
+  for tuID, tunion in pairs(global.tunions) do
+    tunion.lights[gID] = nil
+  end
+end
+
+
+local function removeGestaltfromFoes(gID)
+  for foe_unit_number, gMap in pairs(global.fun_to_gIDs) do
+    gMap[gID] = nil
+  end
+end
+
+-------------------------------------------------------------------------------
+-- Public
+-------------------------------------------------------------------------------
+
+function maps_addGestalt(sl, attackLight, turtle, turretList)
+  local g = makeGestalt(sl, attackLight, turtle)
+
+  global.gestalts[g.gID] = g
+  global.unum_to_gID[sl.unit_number] = g
+  global.unum_to_gID[turtle.unit_number] = g
+  global.unum_to_gID[attackLight.unit_number] = g
+
+  for i, t in pairs(turretList) do
+    maps_getTUnion(t, {g.gID}) -- creates TUnions if necessary and updates our lights member
+  end
+
+  return g
+end
+
+
+function maps_getGestalt(unit)
+  return global.unum_to_gID[unit.unit_number]
+end
+
+
+function maps_removeGestaltAndDestroyHiddenEnts(g)
+  removeGestaltfromFoes(g.gID)
+  removeGestaltfromTUnions(g.gID)
+
+  global.gestalts[g.gID] = nil
+  global.unum_to_gID[g.al.unit_number] = nil
+  global.unum_to_gID[g.base.unit_number] = nil
+  global.unum_to_gID[g.turtle.unit_number] = nil
+
+  g.al.destroy()
+  g.turtle.destroy()
 end
 
 
 function maps_updateTurtle(old, new)
-  sl = global.turtle_to_baseSL[old.unit_number]
-  attackLight = global.baseSL_to_attackSL[sl.unit_number]
+  global.unum_to_gID[old.unit_number].turtle = new
+  global.unum_to_gID[new.unit_number] = global.unum_to_gID[old.unit_number]
+  global.unum_to_gID[old.unit_number] = nil
+end
 
-  global.baseSL_to_turtle[sl.unit_number] = new
-  global.attackSL_to_turtle[attackLight.unit_number] = new
 
-  global.turtles[old.unit_number] = nil
-  global.turtle_to_baseSL[old.unit_number] = nil
+function maps_addTUnion(turret, searchlights)
+  if #searchlights == 0 then
+    return -- No point in tracking turrets without a searchlight
+  end
 
-  global.turtles[new.unit_number] = new
-  global.turtle_to_baseSL[new.unit_number] = sl
+  if boostTruth(turret) == nil then
+    return -- No point in tracking turrets we can't boost
+  end
+
+  local gIDs = {}
+
+  for i, sl in pairs(searchlights) do
+    table.insert(gIDs, global.unum_to_gID[sl.unit_number].gID)
+  end
+
+  makeTUnionFromTurret(turret, gIDs)
+end
+
+
+-- May pass in nil for gIDs
+-- May return nil if turret is not boosted / boostable
+function maps_getTUnion(turret, gIDs)
+  if not global.tun_to_tID[turret.unit_number] then
+    makeTUnionFromTurret(turret, gIDs)
+  end
+
+  return global.tun_to_tID[turret.unit_number]
+end
+
+
+function maps_removeTUnion(turret)
+  local tu = global.tun_to_tID[turret.unit_number]
+  if tu == nil then
+    return
+  end
+
+  for gID, gIDval in pairs(tu.lights) do
+    global.gestalts[gID].tunions[tu.tuID] = nil
+  end
+
+  global.tunions[tu.tuID] = nil
+  global.tun_to_tID[turret.unit_number] = nil
+end
+
+
+function maps_boostTurret(base, boosted)
+  local tu = global.tun_to_tID[base.unit_number]
+  global.tun_to_tID[base.unit_number] = nil
+  global.tun_to_tID[boosted.unit_number] = tu
+  global.boosted_to_tuID[boosted.unit_number] = tu.tuID
+
+  tu.turret = boosted
+  tu.boosted = true
+end
+
+
+function maps_unboostTurret(base, boosted)
+  local tu = global.tun_to_tID[boosted.unit_number]
+  global.tun_to_tID[boosted.unit_number] = nil
+  global.tun_to_tID[base.unit_number] = tu
+  global.boosted_to_tuID[boosted.unit_number] = nil
+
+  tu.turret = base
+  tu.boosted = false
+end
+
+
+function maps_addFoe(foe, gestalt)
+  global.foes[foe.unit_number] = foe
+
+  if not global.fun_to_gIDs[foe.unit_number] then
+    global.fun_to_gIDs[foe.unit_number] = {}
+  end
+
+  global.fun_to_gIDs[foe.unit_number][gestalt.gID] = true
 end
 
 
 function maps_removeFoeByUnitNum(foe_unit_number)
-
   global.foes[foe_unit_number] = nil
-  global.foe_to_attackSL[foe_unit_number] = nil
+  global.fun_to_gIDs[foe_unit_number] = nil
   -- garbage collector should clear out the sub-table
-
-end
-
-
-function maps_addFoeSL(foe, base_sl)
-
-  global.foes[foe.unit_number] = foe
-
-  -- nb, a foe may be tracked by multiple searchlights at the same time
-  if not global.foe_to_attackSL[foe.unit_number] then
-    global.foe_to_attackSL[foe.unit_number] = {}
-  end
-  table.insert(global.foe_to_attackSL[foe.unit_number], base_sl)
-
-end
-
-
--- semi-duplicated in control-searchlight:TrackSpottedFoes for performance reasons
-function maps_removeFoeSL(attackLight)
-  local copyfoe_to_baseSL = global.foe_to_attackSL
-
-  for foe_unit_number, slList in pairs(copyfoe_to_baseSL) do
-    for index, light in pairs(slList) do
-      if light.unit_number == attackLight.unit_number then
-        table.remove(global.foe_to_attackSL[foe_unit_number], index)
-      end
-    end
-
-    if next(global.foe_to_attackSL[foe_unit_number]) == nil then
-      maps_removeFoeByUnitNum(foe_unit_number)
-    end
-  end
 end

@@ -151,10 +151,10 @@ end
 
 local currTable
 currTable = data.raw["electric-turret"]
-MakeBoost(currTable, elecBoost)
+MakeBoost(currTable, rangeBoostAmount)
 
 currTable = data.raw["ammo-turret"]
-MakeBoost(currTable, ammoBoost)
+MakeBoost(currTable, rangeBoostAmount)
 
 currTable = data.raw["fluid-turret"]
-MakeBoost(currTable, fluidBoost)
+MakeBoost(currTable, rangeBoostAmount)

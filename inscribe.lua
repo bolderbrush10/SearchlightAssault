@@ -2,9 +2,9 @@ require "searchlight-defines"
 
 local lightEntities = {} -- not actual entites but roll with it
 
-function InscribeStatanicPentagram(sl, surface) -- 'sl' for 'SearchLight'    
+function InscribeStatanicPentagram(sl, surface) -- 'sl' for 'SearchLight'
     -- Instantly find foes within the inner range
-    local nearestFoe = surface.find_nearest_enemy{position = sl.position, 
+    local nearestFoe = surface.find_nearest_enemy{position = sl.position,
                                                   max_distance = searchlightInnerRange}
 
     if nearestFoe ~= nil then
@@ -13,29 +13,29 @@ function InscribeStatanicPentagram(sl, surface) -- 'sl' for 'SearchLight'
                                          position = nearestFoe.position,
                                          waypoint = nearestFoe.position,
                                          entity = nil}
-        return 
+        return
     end
-    
+
     -- If the light has gotten close enough to waypoint, make a new waypoint
-    if len(lightEntities[sl.unit_number].position, 
+    if len(lightEntities[sl.unit_number].position,
            lightEntities[sl.unit_number].waypoint) < 5 then
         lightEntities[sl.unit_number].waypoint = makeWanderWaypoint(sl.position)
     end
-            
+
     local newPosition = moveTowards(lightEntities[sl.unit_number].position,
                                     lightEntities[sl.unit_number].waypoint,
                                     searchlightTrackSpeed)
-    
+
     -- kill any old target entities
     if lightEntities[sl.unit_number].entity ~= nil then
         lightEntities[sl.unit_number].entity.die()
     end
-    
+
     -- use small-biter + high speed + die every tick to create satanic pentagrams
-    lightEntities[sl.unit_number].entity = surface.create_entity{name = "small-biter", 
+    lightEntities[sl.unit_number].entity = surface.create_entity{name = "small-biter",
                                                                  position = newPosition,
                                                                  force="neutral"}
-    
+
     -- TODO face turret towards light or use a beacon model instead
     sl.shooting_target = lightEntities[sl.unit_number].entity
 
@@ -46,9 +46,9 @@ end
 
 function makeWanderWaypoint(origin)
     -- make it easier to find the light for now
-    -- x = origin.x + math.random(-searchlightOuterRange, searchlightOuterRange)
-    -- y = origin.y + math.random(-searchlightOuterRange, searchlightOuterRange)
-    
+    -- x = origin.x + math.random(-searchlightRange, searchlightRange)
+    -- y = origin.y + math.random(-searchlightRange, searchlightRange)
+
     local waypoint = {x = origin.x + math.random(-searchlightInnerRange, searchlightInnerRange),
                       y = origin.y + math.random(-searchlightInnerRange, searchlightInnerRange)}
 
@@ -58,20 +58,20 @@ end
 function moveTowards(currPos, destPos, speed)
     local vec = {x = destPos.x - currPos.x,
                  y = destPos.y - currPos.y}
-                 
+
     local distance = len(currPos, destPos)
-    
+
     local norm = {x = 0, y = 0}
-    
+
     if distance ~= 0 then
         norm.x = vec.x / distance
         norm.y = vec.y / distance
     end
-    
+
     -- TODO stop overshooting
     local newPos = {x = currPos.x + (speed * norm.x),
                     y = currPos.y + (speed * norm.y)}
-    
+
     return newPos
 end
 

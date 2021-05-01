@@ -4,7 +4,8 @@ require "sl-util"
 
 
 function TurtleWaypointReached(unit_number)
-    WanderTurtle(global.turtles[unit_number], global.turtle_to_baseSL[unit_number].position)
+  local g = global.unum_to_gID[unit_number]
+  WanderTurtle(g.turtle, g.base.position)
 end
 
 
@@ -30,8 +31,8 @@ function SpawnTurtle(baseSL, attackLight, surface, location)
   -- it makes a cool 'windup' effect as the searchlight is made
   local windupWaypoint = OrientationToPosition(baseSL.position,
                                                baseSL.orientation,
-                                               math.random(searchlightOuterRange / 8,
-                                                           searchlightOuterRange - 2))
+                                               math.random(searchlightRange / 8,
+                                                           searchlightRange - 2))
 
   WanderTurtle(turtle, baseSL.position, windupWaypoint)
 
@@ -53,7 +54,6 @@ function WanderTurtle(turtle, origin, waypoint)
                       destination = waypoint,
                       pathfind_flags = {low_priority = true,
                                         cache = false,
-                                        -- prefer_straight_paths = true, -- TODO Report as bug? Does the opposite of what it says
                                         allow_destroy_friendly_entities = true,
                                         allow_paths_through_own_entities = true},
                       radius = 1
@@ -64,23 +64,23 @@ end
 function MakeWanderWaypoint(origin)
   -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
   -- too close to the max range of the spotlight
-  local bufferedRange = searchlightOuterRange - 5
+  local bufferedRange = searchlightRange - 5
    -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
   local angle = math.random()
-  local distance = math.random(searchlightOuterRange/8, bufferedRange)
+  local distance = math.random(searchlightRange/8, bufferedRange)
 
   return OrientationToPosition(origin, angle, distance)
 end
 
 
 function Turtleport(turtle, position, origin)
-  local bufferedRange = searchlightOuterRange - 2
+  local bufferedRange = searchlightRange - 2
 
   -- If position is too far from the origin for the searchlight to attack it,
   -- calculate a slightly-closer position with the same angle and use that
   if not withinRadius(position, origin, bufferedRange) then
-    local vecOriginPos = {x = pos.x - origin.x,
-                          y = pos.y - origin.y}
+    local vecOriginPos = {x = position.x - origin.x,
+                          y = position.y - origin.y}
 
     local theta = math.atan2(vecOriginPos.y, vecOriginPos.x)
     position = ScreenOrientationToPosition(origin, theta, bufferedRange)
@@ -88,14 +88,16 @@ function Turtleport(turtle, position, origin)
 
   if not turtle.teleport(position) then
     -- The teleport failed for some reason, so respawn a fresh turtle and update maps
-    log("[Searchlights Mod] Teleport of hidden entity failed. Unit Number: " ..
-        turtle.unit_number .. "; target position: " .. position.x .. ", " .. position.y)
 
-    baseSL = global.turtle_to_baseSL[turtle.unit_number]
-    attackLight = global.baseSL_to_attackSL[baseSL.unit_number]
-    newTurtle = SpawnTurtle(baseSL, attackLight, baseSL.surface)
+    local g = global.turtle_to_gestalt[turtle.unit_number]
+    local newT = SpawnTurtle(g.base, g.al, g.base.surface)
 
-    maps_updateTurtle(turtle, newTurtle)
+    maps_updateTurtle(turtle, newT)
+
+    log("[Searchlights Mod] Error! Please report to mod author with before & after saves. " ..
+        "Teleport of hidden entity failed. Old Unit Number: " ..
+        turtle.unit_number .. " New Unit Number: " .. newT.unit_number ..
+        " Target Position: " .. position.x .. ", " .. position.y)
 
     turtle.destroy()
   end

@@ -2,8 +2,8 @@ require "sl-defines"
 require "control-common"
 
 
-local gridSize = searchlightOuterRange
-local gridSize = searchlightOuterRange / 8
+local gridSize = searchlightRange
+local gridSize = searchlightRange / 8
 
 -- TODO Use this iteration pattern over here:
 --      It's very tedious to modify/remove from a lua list while iterating.

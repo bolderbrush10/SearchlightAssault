@@ -41,8 +41,6 @@ function(event)
   CheckElectricNeeds(event.tick)
 
   TrackSpottedFoes(event.tick)
-
-  DecrementBoostTimers(event.tick)
 end)
 
 
@@ -71,7 +69,7 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  if not event.was_distracted and global.turtles[event.unit_number] then
+  if not event.was_distracted and global.unum_to_gID[event.unit_number] then
     TurtleWaypointReached(event.unit_number)
   end
 
@@ -163,9 +161,9 @@ for index, e in pairs
 
     if event.entity.name == searchlightBaseName then
       SearchlightRemoved(event.entity)
-    elseif event.type == "turret" then
+    elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
       TurretRemoved(event.entity)
-    elseif event.entity.unit_number then
+    elseif event.entity.unit_number and global.foes[event.entity.unit_number] then
       FoeDied(event.entity)
     end
 
