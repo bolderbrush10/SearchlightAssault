@@ -18,23 +18,15 @@ local boostableArea =
 
 
 function SearchlightAdded(sl)
-  attackLight, turtle = SpawnSLHiddenEntities(sl)
+  turtle = SpawnSLHiddenEntities(sl)
 
   friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
                                               type={"turret", "electric-turret", "ammo-turret"},
                                               force=sl.force}
-  for index, f in pairs(friends) do
-    if f.name == searchlightAttackName then
-      table.remove(friends, index)
-    end
-  end
 
-  local gestalt = maps_addGestalt(sl, attackLight, turtle, friends)
+  maps_addGestalt(sl, turtle, friends)
 
-  -- We'll check the power state and let it enable next tick,
-  -- just in case someone builds a spotlight right on top of
-  -- a bunch of enemies where there's no power
-  AttacklightDisabled(gestalt)
+  sl.shooting_target = turtle
 end
 
 
@@ -79,9 +71,7 @@ end
 function FoeSpotted(turtle, foe)
   local g = maps_getGestalt(turtle)
 
-  -- Move the attack light to the player force so that its alert_when_firing will show up
-  g.al.force = g.base.force
-  g.al.shooting_target = foe
+  g.base.shooting_target = foe
 
   -- Start tracking this foe so we can detect when it dies / leaves range
   maps_addFoe(foe, g)
@@ -112,6 +102,7 @@ end
 -- Checked every tick, but only while there's a foe spotted,
 -- so not too performance-impacting
 function TrackSpottedFoes(tick)
+
   -- Skip function if tables empty (which should be the case most of the time)
   -- TODO How much faster would it be to maintain table size variables?
   if next(global.fun_to_gIDs) == nil and next(global.boosted_to_tuID) == nil then
@@ -122,47 +113,28 @@ function TrackSpottedFoes(tick)
     for gID, gIDval in pairs(gestaltMap) do
       local g = global.gestalts[gID]
 
-      if g.al.shooting_target.unit_number ~= foe_unit_number then
+      if g.base.shooting_target == nil or g.base.shooting_target.unit_number ~= foe_unit_number then
         -- This should trigger infrequently,
         -- so it's ok to be a little slow inside this branch
         ResumeTargetingTurtle(global.foes[foe_unit_number].position, g)
         -- It's apparently safe to remove from a table while iterating in lua
         -- (But definitely not safe to add)
         global.fun_to_gIDs[foe_unit_number][gID] = nil
+      else
+        -- If a searchlight has any turrets that aren't busy,
+        -- try boosting them again
+        BoostFriends(g, global.foes[foe_unit_number])
       end
-
     end
   end
 
-  -- If any turrets aren't targeting a foe in our foe list, then unboost them
+  -- If any boosted turrets aren't targeting a foe in our foe list, then unboost them
   for boosted_unit_number, tuID in pairs(global.boosted_to_tuID) do
     local tunion = global.tunions[tuID]
-    if not global.fun_to_gIDs[tunion.turret.shooting_target.unit_number] then
+    local target = tunion.turret.shooting_target
+    if not target or not global.fun_to_gIDs[target.unit_number] then
       UnBoost(tunion)
     end
-  end
-end
-
-
--- TODO This onTick() function is a good candidate to convert to branchless instructions.
---      Could speed up execution a minor amount, depending on what's bottlenecked.
---      (Embedding some C code directly into lua could also help, see:
---       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
---      Would look something like:
---      local activeAsNum = bit32.band(attackLight.active, 1) -- band == bitwise and
---      attackLight.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
---          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
--- We wouldn't need this function if there was a way
--- to directly transfer / mirror electricity between units on different forces
-function CheckElectricNeeds(tick)
-  for gID, g in pairs(global.gestalts) do
-
-    if g.al.active and g.base.energy < searchlightCapacitorCutoff then
-      AttacklightDisabled(g)
-    elseif not g.al.active and g.base.energy > searchlightCapacitorStartable then
-      AttacklightEnabled(g)
-    end
-
   end
 end
 
@@ -173,45 +145,19 @@ end
 
 
 function SpawnSLHiddenEntities(sl)
-  attackLight = sl.surface.create_entity{name=searchlightAttackName,
-                                         position=sl.position,
-                                         direction=sl.direction,
-                                         force=searchlightFriend,
-                                         fast_replace = true,
-                                         create_build_effect_smoke = false}
-  attackLight.destructible = false
+  turtle = SpawnTurtle(sl, sl.surface, nil)
 
-  turtle = SpawnTurtle(sl, attackLight, sl.surface, nil)
-
-  return attackLight, turtle
-end
-
-
-function AttacklightEnabled(gestalt)
-  gestalt.al.active = true
-
-  -- We only want to reactivate the turtle if we're not attacking a foe
-  -- ( Per FoeSpotted() )
-  if gestalt.al.shooting_target == gestalt.turtle then
-    gestalt.turtle.active = true
-  end
-end
-
-
-function AttacklightDisabled(gestalt)
-  gestalt.al.active = false
-  gestalt.turtle.active = false
+  return turtle
 end
 
 
 function ResumeTargetingTurtle(foePosition, gestalt)
   local turtle = gestalt.turtle
   turtle.active = true
-  Turtleport(turtle, foePosition, gestalt.al.position)
+  Turtleport(turtle, foePosition, gestalt.base.position)
   WanderTurtle(turtle, gestalt.base.position)
 
-  gestalt.al.force = searchlightFriend
-  gestalt.al.shooting_target = turtle
+  gestalt.base.shooting_target = turtle
 end
 
 
@@ -233,9 +179,7 @@ function BoostFriends(gestalt, foe)
   end
 
   for tuID, _ in pairs(gestalt.tunions) do
-    tunion = global.tunions[tunion]
-    -- TODO if a foe is spotted, but a turret is already shooting something else,
-    --      it will never boost up and target that foe...
+    tunion = global.tunions[tuID]
     if not tunion.turret.shooting_target then
       Boost(tunion, foe)
     end
@@ -279,7 +223,16 @@ function UnBoost(tunion)
     return tunion.turret
   end
 
-  local turret = tunion.boosted
+  -- Before unboosting, see if there's another searchlight with a target for us
+  for gID, _ in pairs(tunion.lights) do
+    local g = global.gestalts[gID]
+    if g.shooting_target and global.foes[g.shooting_target.unit_number] then
+      tunion.turret.shooting_target = g.shooting_target
+      return tunion.turret
+    end
+  end
+
+  local turret = tunion.turret
   local newT = turret.surface.create_entity{name = turret.name:gsub(boostSuffix, ""),
                                             position = turret.position,
                                             force = turret.force,
@@ -304,7 +257,7 @@ function HasNoSharedTarget(tunion)
   end
 
   for gID, gIDval in pairs(tunion.lights) do
-    if global.gestalts[gID].al.shooting_target == tunion.boosted.shooting_target then
+    if global.gestalts[gID].base.shooting_target == tunion.turret.shooting_target then
       return false
     end
   end

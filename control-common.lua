@@ -12,7 +12,6 @@ function InitTables()
   {
     gID = int (gID),
     base = BaseSearchlight,
-    al = AttackLight,
     turtle = Turtle,
     tunions = Map: tuID -> true
   }
@@ -23,9 +22,9 @@ function InitTables()
   -- Map: gestalt ID -> Gestalt
   global.gestalts = {}
 
-  -- Map: unit_number -> gID
-  -- Currently tracking: baselight, attack light, turtle -> gID
-  global.unum_to_gID = {}
+  -- Map: unit_number -> Gestalt
+  -- Currently tracking: baselight, turtle -> Gestalt
+  global.unum_to_g = {}
 
   ------------------
   -- Turret Union --
@@ -63,11 +62,18 @@ function InitTables()
   -- TODO What if the only searchlight gets destroyed before a foe dies?
   --      We'd want to clear the foe map's entry
 
+  ------------------
+  --    Forces    --
+  ------------------
+
+  global.sl_force_init = {}
 end
+
 
 -------------------------------------------------------------------------------
 -- Private
 -------------------------------------------------------------------------------
+
 
 local function newTUID()
   global.tuID = global.tuID + 1
@@ -81,8 +87,8 @@ local function newGID()
 end
 
 
-local function makeGestalt(sl, attackLight, turtle)
-  return {gID = newGID(), base = sl, al = attackLight, turtle = turtle, tunions = {}}
+local function makeGestalt(sl, turtle)
+  return {gID = newGID(), base = sl, turtle = turtle, tunions = {}}
 end
 
 
@@ -161,13 +167,12 @@ end
 -- Public
 -------------------------------------------------------------------------------
 
-function maps_addGestalt(sl, attackLight, turtle, turretList)
-  local g = makeGestalt(sl, attackLight, turtle)
+function maps_addGestalt(sl, turtle, turretList)
+  local g = makeGestalt(sl, turtle)
 
   global.gestalts[g.gID] = g
-  global.unum_to_gID[sl.unit_number] = g
-  global.unum_to_gID[turtle.unit_number] = g
-  global.unum_to_gID[attackLight.unit_number] = g
+  global.unum_to_g[sl.unit_number] = g
+  global.unum_to_g[turtle.unit_number] = g
 
   for i, t in pairs(turretList) do
     maps_getTUnion(t, {g.gID}) -- creates TUnions if necessary and updates our lights member
@@ -178,7 +183,11 @@ end
 
 
 function maps_getGestalt(unit)
-  return global.unum_to_gID[unit.unit_number]
+  if unit.unit_number then
+    return global.unum_to_g[unit.unit_number]
+  end
+
+  return nil
 end
 
 
@@ -187,19 +196,17 @@ function maps_removeGestaltAndDestroyHiddenEnts(g)
   removeGestaltfromTUnions(g.gID)
 
   global.gestalts[g.gID] = nil
-  global.unum_to_gID[g.al.unit_number] = nil
-  global.unum_to_gID[g.base.unit_number] = nil
-  global.unum_to_gID[g.turtle.unit_number] = nil
+  global.unum_to_g[g.base.unit_number] = nil
+  global.unum_to_g[g.turtle.unit_number] = nil
 
-  g.al.destroy()
   g.turtle.destroy()
 end
 
 
 function maps_updateTurtle(old, new)
-  global.unum_to_gID[old.unit_number].turtle = new
-  global.unum_to_gID[new.unit_number] = global.unum_to_gID[old.unit_number]
-  global.unum_to_gID[old.unit_number] = nil
+  global.unum_to_g[old.unit_number].turtle = new
+  global.unum_to_g[new.unit_number] = global.unum_to_g[old.unit_number]
+  global.unum_to_g[old.unit_number] = nil
 end
 
 
@@ -215,7 +222,7 @@ function maps_addTUnion(turret, searchlights)
   local gIDs = {}
 
   for i, sl in pairs(searchlights) do
-    table.insert(gIDs, global.unum_to_gID[sl.unit_number].gID)
+    table.insert(gIDs, global.unum_to_g[sl.unit_number].gID)
   end
 
   makeTUnionFromTurret(turret, gIDs)
@@ -227,6 +234,8 @@ end
 function maps_getTUnion(turret, gIDs)
   if not global.tun_to_tID[turret.unit_number] then
     makeTUnionFromTurret(turret, gIDs)
+  else
+    updateTUnionSL(global.tun_to_tID[turret.unit_number], gIDs)
   end
 
   return global.tun_to_tID[turret.unit_number]
@@ -244,6 +253,7 @@ function maps_removeTUnion(turret)
   end
 
   global.tunions[tu.tuID] = nil
+  global.boosted_to_tuID[turret.unit_number] = nil
   global.tun_to_tID[turret.unit_number] = nil
 end
 

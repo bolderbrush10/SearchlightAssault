@@ -7,6 +7,7 @@ require "control-turtle"
 
 --
 -- TODO We need to think about what happens when a searchlight/turret of the opposing force is added / removed
+-- We'll have to make an event hook here that'll update something in control-forces.lua
 --
 
 
@@ -20,7 +21,6 @@ require "control-turtle"
 script.on_init(
 function(event)
 
-  InitForces()
   InitTables()
 
 end)
@@ -31,6 +31,7 @@ script.on_load(
 function(event)
 
   -- TODO Is there anything unsaved we need to recalculate every load here?
+  --      Anything we can recalculate, to save disk space?
 
 end)
 
@@ -38,19 +39,8 @@ end)
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
-  CheckElectricNeeds(event.tick)
 
   TrackSpottedFoes(event.tick)
-end)
-
-
--- On Force Created
-script.on_event(defines.events.on_force_created,
-function(event)
-
-  if event.force.name ~= searchlightFriend and event.force.name ~= searchlightFoe then
-    SetCeaseFires(event.force)
-  end
 
 end)
 
@@ -69,7 +59,7 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  if not event.was_distracted and global.unum_to_gID[event.unit_number] then
+  if not event.was_distracted and global.unum_to_g[event.unit_number] then
     TurtleWaypointReached(event.unit_number)
   end
 
@@ -79,7 +69,7 @@ function(event)
 
   -- TODO if a turtle gets distracted, re-issue it's goto command n times,
   --      or figure out what entity it was trying to attack and manually fire the
-  --      attack_trigger event here
+  --      attack_trigger event there and remove the turtle
 
 end)
 
@@ -116,10 +106,10 @@ end
 script.on_event(defines.events.on_trigger_created_entity,
 function(event)
 
-  if event.created_entity.name == searchlightBaseName then
-    SearchlightAdded(event.created_entity)
-  elseif event.created_entity.type == "turret" then
-    TurretAdded(event.created_entity)
+  if event.entity.name == searchlightBaseName then
+    SearchlightAdded(event.entity )
+  elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
+    TurretAdded(event.entity)
   end
 
 end)
@@ -169,3 +159,31 @@ for index, e in pairs
 
   end)
 end
+
+
+--
+-- FORCES
+--
+
+-- On Force Relationship Changed
+for index, e in pairs
+({
+  defines.events.on_force_cease_fire_changed,
+  defines.events.on_force_friends_changed,
+}) do
+  script.on_event(e,
+  function(event)
+
+    UpdateTForceRelationships(event.force)
+
+  end)
+end
+
+
+-- On Force About To Be Merged
+script.on_event(defines.events.on_forces_merging,
+function(event)
+
+  MigrateTurtleForces(event.source, event.destination)
+
+end)

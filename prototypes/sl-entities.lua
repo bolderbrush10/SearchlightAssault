@@ -26,27 +26,20 @@ local hiddenEntityFlags =
 
 
 -- Searchlight Base Entity
-local sl_b = {}
-sl_b.type = "electric-energy-interface"
+local sl_b = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+sl_b.type = "turret"
 sl_b.name = searchlightBaseName
 sl_b.max_health = 250
--- TODO move into graphics
-sl_b.animations =
-{
-  north = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
-  south = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
-  east  = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
-  west  = table.deepcopy(data.raw["electric-turret"]["laser-turret"].base_picture),
-}
 sl_b.icon = "__Searchlights__/graphics/terrible.png"
 sl_b.icon_size = 80
-sl_b.energy_usage = searchlightEnergyUsage
+sl_b.alert_when_attacking = false
 sl_b.energy_source =
 {
   type = "electric",
   usage_priority = "secondary-input",
   buffer_capacity = searchlightCapacitorSize,
   input_flow_limit = "6000kW",
+  drain = searchlightEnergyUsage,
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
@@ -84,51 +77,7 @@ sl_b.radius_visualisation_specification =
     }
   }
 }
-
-
--- Searchlight Attack Entity
-local sl_a = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
-sl_a.type = "turret"
-sl_a.selectable_in_game = false
-sl_a.name = searchlightAttackName
- -- arbitrary high number between 5 and 500 to be 'instant'
-sl_a.rotation_speed = 50
--- TODO move into graphics
-sl_a.folded_animation =
-{
-  layers =
-  {
-    {
-      filename = "__Searchlights__/graphics/spotlight-inactive-quad.png",
-      priority = "medium",
-      width = 150,
-      height = 239,
-      frame_count = 1,
-      line_length = 4,
-      run_mode = "forward",
-      axially_symmetrical = false,
-      direction_count = 4,
-      scale = 0.35,
-      shift = util.by_pixel(0, -20),
-    }
-  }
-}
-sl_a.preparing_animation = nil
-sl_a.prepared_animation = nil
-sl_a.folding_animation = nil
-sl_a.base_picture = nil
- -- arbitrary high number between 5 and 500 to be 'instant'
-sl_a.rotation_speed = 50
--- We don't intend to leave a corpse at all, but if the worst happens...
--- TODO This is actually a bit more instrusive than you'd think.. find / make an actually-transparent corpse
---      Likewise for the turtle
-sl_a.corpse = "small-scorchmark"
-sl_a.create_ghost_on_death = false
-sl_a.flags = hiddenEntityFlags
-sl_a.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
-sl_a.collision_box = {{0, 0}, {0, 0}}
-sl_a.collision_mask = {}
-sl_a.attack_parameters =
+sl_b.attack_parameters =
 {
   type = "beam",
   range = searchlightRange,
@@ -155,7 +104,7 @@ sl_a.attack_parameters =
 }
 
 
--- The Attackspotlight's beam lights up the turtle's location
+-- The Spotlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 local t = {}
 t.type = "unit"
@@ -172,7 +121,7 @@ t.has_belt_immunity = true
 t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
-t.max_pursue_distance = 2
+t.max_pursue_distance = 5
 -- Setting vision distance too low can cause turtles to get stuck in their foes
 t.vision_distance = searchlightSpotRadius
 t.selectable_in_game = false
@@ -224,4 +173,4 @@ t.attack_parameters =
 
 
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, t}
+data:extend{sl_b, t}

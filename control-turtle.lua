@@ -1,17 +1,18 @@
 require "control-common"
+require "control-forces"
 require "sl-defines"
 require "sl-util"
 
 
 function TurtleWaypointReached(unit_number)
-  local g = global.unum_to_gID[unit_number]
+  local g = global.unum_to_g[unit_number]
   WanderTurtle(g.turtle, g.base.position)
 end
 
 
 -- location is expected to be the spotlight's last shooting target,
 -- if it was targeting something.
-function SpawnTurtle(baseSL, attackLight, surface, location)
+function SpawnTurtle(baseSL, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
     location = OrientationToPosition(baseSL.position, baseSL.orientation, 3)
@@ -19,16 +20,15 @@ function SpawnTurtle(baseSL, attackLight, surface, location)
 
   local turtle = surface.create_entity{name = turtleName,
                                        position = location,
-                                       force = searchlightFoe,
+                                       force = PrepareTurtleForce(baseSL.force),
                                        fast_replace = true,
                                        create_build_effect_smoke = false}
 
   turtle.destructible = false
-  attackLight.shooting_target = turtle
-
+  baseSL.shooting_target = turtle
 
   -- If we set our first waypoint in the same direction, but further away,
-  -- it makes a cool 'windup' effect as the searchlight is made
+  -- it makes the searchlight appear to "start up"
   local windupWaypoint = OrientationToPosition(baseSL.position,
                                                baseSL.orientation,
                                                math.random(searchlightRange / 8,
@@ -90,7 +90,7 @@ function Turtleport(turtle, position, origin)
     -- The teleport failed for some reason, so respawn a fresh turtle and update maps
 
     local g = global.turtle_to_gestalt[turtle.unit_number]
-    local newT = SpawnTurtle(g.base, g.al, g.base.surface)
+    local newT = SpawnTurtle(g.base, g.base, g.base.surface)
 
     maps_updateTurtle(turtle, newT)
 

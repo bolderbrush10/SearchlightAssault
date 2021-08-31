@@ -91,9 +91,8 @@ turtleName = "searchlight-turtle"
 
 spottedEffectID = "searchlight-spotted-effect"
 
--- Force names
-searchlightFoe = "hddnSLFoe"
-searchlightFriend = "hddnSLFnd"
+-- Force names (To be appended to the name of the force that owns a spotlight)
+turtleForceSuffix = "_SLTurtle"
 
 -- Trigger Target Mask names
 turtleMaskName = "spotlight-turtle"

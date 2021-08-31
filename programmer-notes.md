@@ -2,8 +2,17 @@
 
 - We also want to think about teleporting or somehow... hiding the entities we're replacing. It's been a while since we thought about that. It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
 
+- Still need to think about gameplay / balance for boosting effect... Cooldown on turrets which have been boosted?
 
-- Still need to think about gameplay / balance for boosting effect...
+- Need to think about swapping in searchlight when unpowered vs powered vs foe spotted
+  (Maybe nothing on == unpowered (not attacking turtle), big light on == powered, big light + filament on == powered & foe spotted?)
+  Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
+
+- Fix radius_visualisation_specification
+
+- TODO sometimes, very rarely, the searchlight will target something random in range while
+  the turtle is being despawned / respawned. Maybe we should disable / enable it right after its foe dies?
+
 
 
 ## Next Tasks:
@@ -13,12 +22,13 @@
   - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
      Their sprites could still just be a part of the base-searchlight's sprite)
 
-Can we make a turret use multiple attack types so we can swap searchlight colors in real time?
-   (like how tanks have different attacks)
-- entity.selected_gun_index :: uint [RW]  Index of the currently selected weapon slot of this character, car, or spidertron, or nil if the car/spidertron doesn't have guns.
-- Maybe that means I would have to make the hidden searchlight entity a car? I guess that's ok lol
+- Test multiplayer online
 
-- Test multiplayer
+- Make a kickass prison escape game mode
+  (Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?)
+
+- Make a config option to take in the names of turrets that players DON'T
+  want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
 
 ## Performance reports:
@@ -220,16 +230,12 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 ### Feature: Rotate searchlight to rotate turtle waypoint
 
--- TODO Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time
+-- TODO Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
 
 
-### Feature: Searchlight aggro's biters
+### Feature: Traincar
 
--- TODO So, we decided to make the attacklight destructible and assign it to the player force,
---      so that way its alert_when_attacking will register for the player, and biter attacks will be triggered.
---      Since the attacklight has no hit box though, this usually means the surrounding baselight structure
---      (which only has 1/4th the hp) takes all the hits first and dies before the attacklight does.
---      But we still should link the HP of the attacklight to the base light & otherwise be prepared for if the attacklight dies first.
+-- TODO Make a train wagon type with 2-4 searchlights mounted on it
 
 
 ### Feature: Sounds & Audio
@@ -252,6 +258,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
         we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
 
 -- TODO Maybe we SHOULD fire those script___created/destroyed events...
+
 
 ### Feature: Graphics Polish
 
