@@ -57,6 +57,7 @@ sl_b.minable =
   result = searchlightItemName,
 }
 -- TODO move into graphics
+-- TODO This got broken at some point?? figure that out...
 sl_b.radius_visualisation_specification =
 {
   distance = searchlightFriendRadius,
@@ -90,6 +91,32 @@ local sl_a = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
 sl_a.type = "turret"
 sl_a.selectable_in_game = false
 sl_a.name = searchlightAttackName
+ -- arbitrary high number between 5 and 500 to be 'instant'
+sl_a.rotation_speed = 50
+-- TODO move into graphics
+sl_a.folded_animation =
+{
+  layers =
+  {
+    {
+      filename = "__Searchlights__/graphics/spotlight-inactive-quad.png",
+      priority = "medium",
+      width = 150,
+      height = 239,
+      frame_count = 1,
+      line_length = 4,
+      run_mode = "forward",
+      axially_symmetrical = false,
+      direction_count = 4,
+      scale = 0.35,
+      shift = util.by_pixel(0, -20),
+    }
+  }
+}
+sl_a.preparing_animation = nil
+sl_a.prepared_animation = nil
+sl_a.folding_animation = nil
+sl_a.base_picture = nil
  -- arbitrary high number between 5 and 500 to be 'instant'
 sl_a.rotation_speed = 50
 -- We don't intend to leave a corpse at all, but if the worst happens...
