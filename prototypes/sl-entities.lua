@@ -74,7 +74,7 @@ sl_b.attack_parameters =
   ammo_type =
   {
     category = "beam",
-    energy_consumption = "800kJ",
+    energy_consumption = "1J",
     action =
     {
       type = "direct",
