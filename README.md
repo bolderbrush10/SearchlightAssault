@@ -20,7 +20,6 @@ And in this mod, our turtle, instead of drawing a line, will render a spotlight 
 0. No mechanism in the API to blacklist units from being attacked (except in very narrow cases)
 0. Unsophisticated technique to "fire" the spotlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
-    and a dummy spotlight in its own dummy force to shoot at the turtle
 
 
 ###File Guide:
