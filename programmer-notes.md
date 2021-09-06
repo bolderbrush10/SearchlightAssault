@@ -82,34 +82,6 @@ the turtle is being despawned / respawned. Maybe we should disable / enable it r
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
 
-- Patch notes to consider:
-
-  https://forums.factorio.com/viewtopic.php?f=3&t=91657
-
-  New item flag "spawnable", every item has to have that flag to be creatable through the shortcuts directly.
-
-
-- Important search function:
-  find_units{area=…, force=…, condition=…} → array of LuaEntity
-
-  Find units (entities with type "unit") of a given force and force condition within a given area.
-
-  Parameters
-  Table with the following fields:
-
-      area :: BoundingBox: Box to find units within.
-      force :: LuaForce or string: Force performing the search.
-      condition :: ForceCondition: Only forces which meet the condition will be included in the search.
-
-  Note: This is more efficient than LuaSurface::find_entities.
-  Example
-  Find friendly units to "player" force
-  local friendly_units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "friend")
-  Example
-  Find units of "player" force
-  local units = game.player.surface.find_units({area = {{-10, -10},{10, 10}}, force = "player", condition = "same"})
-
-
 --[[
 Types/RenderLayer
 
@@ -146,7 +118,7 @@ The order of acceptable values from lowest to highest:
 -- Nah. Honestly, imagine what the actual game devs would do. There'd just be ONE version of a turret. So don't be like this.
 
 
--- Use the new decorations thing to spawn in crap around the boostable radius
+-- Use the new decorations thing to spawn in junk around the boostable radius
 -- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
 -- We should probably make it an option in the mod to disable this...
 -- Considering that the spawned_decorations are basically permanent (unless we clean them up ourselves on turret death?)
@@ -158,17 +130,12 @@ The order of acceptable values from lowest to highest:
 
 ### Priority Fix: Visuals & Sprite Errors
 
--- TODO what the hell happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
+-- TODO what the heck happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
 C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 
 ### Feature: Range Boosting
 -- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
-
--- TODO We also could use some thinking about how to make sure that turrets don't get to keep that range-boost and target things that no searchlight has spotted yet
-
--- TODO delay un-boosting boosted turrets until they finish their folding animation
---      (but also somehow prevent them from using their expanded range in the meanwhile)
 
 -- TODO preserve mining progress somehow when things are boosted / unboosted
 
