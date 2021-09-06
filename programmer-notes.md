@@ -13,7 +13,13 @@
 - TODO sometimes, very rarely, the searchlight will target something random in range while
   the turtle is being despawned / respawned. Maybe we should disable / enable it right after its foe dies?
 
+- TODO Where did the searchlight's energy capacitor bar go?
 
+- TODO Disable turtle movement when out of electricity
+
+- Break up sprite into mask layer (team colors), glow layer, and base (to save on memory)
+
+- Draw a little glow around the base of the searchlight, like a lamp
 
 ## Next Tasks:
 - Should we plan to create & pop up our own custom gui for circuit conditions?

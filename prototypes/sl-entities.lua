@@ -26,12 +26,14 @@ local hiddenEntityFlags =
 
 
 -- Searchlight Base Entity
-local sl_b = table.deepcopy(data.raw["electric-turret"]["laser-turret"])
-sl_b.type = "turret"
+local sl_b = {} -- table.deepcopy(data.raw["electric-turret"]["laser-turret"])
+-- local sl_b = table.deepcopy(data.raw["ammo-turret"]["gun-turret"])
+sl_b.type = "electric-turret"
 sl_b.name = searchlightBaseName
 sl_b.max_health = 250
-sl_b.icon = "__Searchlights__/graphics/terrible.png"
-sl_b.icon_size = 80
+sl_b.icon = "__Searchlights__/graphics/spotlight-icon.png"
+sl_b.icon_size = 40
+sl_b.icon_mipmaps = 4
 sl_b.alert_when_attacking = false
 sl_b.energy_source =
 {
@@ -44,39 +46,23 @@ sl_b.energy_source =
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
 sl_b.flags = {"placeable-player", "placeable-neutral", "placeable-enemy", "player-creation"}
+sl_b.call_for_help_radius = 40
 sl_b.minable =
 {
   mining_time = 0.5,
   result = searchlightItemName,
 }
--- TODO move into graphics
--- TODO This got broken at some point?? figure that out...
-sl_b.radius_visualisation_specification =
-{
-  distance = searchlightFriendRadius,
-  sprite =
-  {
-    layers =
-    {
-      {
-        filename = "__Searchlights__/graphics/circleish-radius-visualizat.png",
-        priority = "extra-high-no-scale",
-        width = 10,
-        height = 10,
-        scale = 8,
-        tint = {0.8, 0.2, 0.2, 0.8}
-      },
-      {
-        filename = "__Searchlights__/graphics/terrible.png",
-        priority = "extra-high-no-scale",
-        width = 80,
-        height = 80,
-        scale = 0.125,
-        tint = {0.2, 0.2, 0.8, 0.8}
-      },
-    }
-  }
-}
+-- -- TODO This got broken at some point?? figure that out...
+sl_b.radius_visualisation_specification = g["radius_visualisation_specification"]
+sl_b.shoot_in_prepare_state = true
+sl_b.folded_animation      = g["spotlight_dim_animation"]
+sl_b.prepared_animation    = g["spotlight_dim_animation"]
+sl_b.energy_glow_animation = g["spotlight_glow_animation"]
+sl_b.glow_light_intensity = 1.0
+sl_b.preparing_animation = nil
+sl_b.folding_animation   = nil
+sl_b.attacking_animation = nil
+sl_b.base_picture = nil
 sl_b.attack_parameters =
 {
   type = "beam",
@@ -88,6 +74,7 @@ sl_b.attack_parameters =
   ammo_type =
   {
     category = "beam",
+    energy_consumption = "800kJ",
     action =
     {
       type = "direct",
@@ -110,8 +97,9 @@ local t = {}
 t.type = "unit"
 t.name = turtleName
 t.movement_speed = searchlightWanderSpeed -- Can update during runtime for wander vs track mode
--- run_animation = Layer_transparent_animation
-t.run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation
+t.run_animation = g["Layer_transparent_animation"]
+-- TODO remove / move into branch
+-- t.run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation
 t.distance_per_frame = 1 -- speed at which the run animation plays, in tiles per frame
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
