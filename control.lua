@@ -1,6 +1,5 @@
 require "control-common"
 require "control-forces"
-require "control-grid"
 require "control-searchlight"
 require "control-turtle"
 
@@ -40,6 +39,7 @@ end)
 script.on_event(defines.events.on_tick,
 function(event)
 
+  CheckElectricNeeds(event.tick)
   TrackSpottedFoes(event.tick)
 
 end)

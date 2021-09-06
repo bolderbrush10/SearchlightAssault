@@ -99,6 +99,28 @@ end
 ----------------------
 
 
+-- TODO This onTick() function is a good candidate to convert to branchless instructions.
+--      Could speed up execution a minor amount, depending on what's bottlenecked.
+--      (Embedding some C code directly into lua could also help, see:
+--       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
+--      Would look something like:
+--      local activeAsNum = bit32.band(attackLight.active, 1)
+--      *.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
+--          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
+-- We wouldn't need this function if there was an event for when entities run out of power
+function CheckElectricNeeds(tick)
+  for gID, g in pairs(global.gestalts) do
+
+    if g.base.energy < searchlightCapacitorCutoff then
+      g.turtle.active = false
+    elseif g.base.energy > searchlightCapacitorStartable then
+      g.turtle.active = true
+    end
+
+  end
+end
+
+
 -- Checked every tick, but only while there's a foe spotted,
 -- so not too performance-impacting
 function TrackSpottedFoes(tick)

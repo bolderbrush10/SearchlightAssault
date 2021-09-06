@@ -1,7 +1,5 @@
 ## Current  Task:
 
-- We also want to think about teleporting or somehow... hiding the entities we're replacing. It's been a while since we thought about that. It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
-
 - Still need to think about gameplay / balance for boosting effect... Cooldown on turrets which have been boosted?
 
 - Need to think about swapping in searchlight when unpowered vs powered vs foe spotted
@@ -9,15 +7,6 @@
   Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
 
 - Fix radius_visualisation_specification
-
-- TODO sometimes, very rarely, the searchlight will target something random in range while
-  the turtle is being despawned / respawned. Maybe we should disable / enable it right after its foe dies?
-
-- TODO Disable turtle movement when out of electricity
-
-- Break up sprite into mask layer (team colors), glow layer, and base (to save on memory)
-
-- Draw a little glow around the base of the searchlight, like a lamp
 
 ## Next Tasks:
 - Should we plan to create & pop up our own custom gui for circuit conditions?
@@ -77,6 +66,9 @@ The 'wiggle bug' where a turtle gets stuck inside a larger entity still happens 
 Not sure how to prevent this...
 I think the best we can do is detect when a turtle finishes a command via distraction,
 and then we manually check for foes within its spot-radius and retarget the attacklight if appropriate.
+
+Sometimes, very rarely, the searchlight will target something random in range while
+the turtle is being despawned / respawned. Maybe we should disable / enable it right after its foe dies?
 
 
 ## Misc Notes
@@ -284,6 +276,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
 
+-- TODO Break up sprite into mask layer (team colors), glow layer, and base (to save on memory)
+
+-- TODO Draw a little glow around the base of the searchlight, like a lamp
 
 ### Feature: Professionalism Polish
 
@@ -363,6 +358,8 @@ local next = next
 
 -- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
+-- TODO energy_glow_animation on turrets flickers badly, but not when you use draw_as_light, so that's probably a bug
+
 
 ### Map modes / play
 
@@ -376,7 +373,7 @@ local next = next
 
 ### Advertising
 
--- TODO Submit mod to Xterminator, other big modded factorio youtubers / names
+-- TODO Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
 
 
 ### Testing
@@ -410,6 +407,9 @@ local next = next
     - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
     - Probably want a scene with a jail break that succeeds
     - Probably wanta  scene with a jail break that fails
+- Think about teleporting or somehow... hiding the entities we're replacing.
+  It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
+
 
 
 
