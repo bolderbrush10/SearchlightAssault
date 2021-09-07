@@ -99,6 +99,11 @@ local function MakeBoost(currTable, newRange)
           boostCopy.attack_parameters.ammo_type.action.action_delivery.max_length = newRange
       end
 
+      if boostCopy.attack_parameters
+        and boostCopy.attack_parameters.cooldown then
+        boostCopy.attack_parameters.cooldown = boostCopy.attack_parameters.cooldown * 50
+      end
+
       -- TODO clean this up or what?
       -- if boostCopy.base_picture then
 

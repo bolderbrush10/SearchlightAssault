@@ -23,6 +23,8 @@
 - Make a config option to take in the names of turrets that players DON'T
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
+- Better boost effect graphic
+
 
 ## Performance reports:
 
