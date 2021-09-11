@@ -1,12 +1,5 @@
 ## Current  Task:
 
-- Still need to think about gameplay / balance for boosting effect... Cooldown on turrets which have been boosted?
-
-- Need to think about swapping in searchlight when unpowered vs powered vs foe spotted
-  (Maybe nothing on == unpowered (not attacking turtle), big light on == powered, big light + filament on == powered & foe spotted?)
-  Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
-
-- Fix radius_visualisation_specification
 
 ## Next Tasks:
 - Should we plan to create & pop up our own custom gui for circuit conditions?
@@ -18,13 +11,24 @@
 - Test multiplayer online
 
 - Make a kickass prison escape game mode
-  (Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?)
+  Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?
+  So, we discovered that making a map doesn't come with triggers and other dynamic things
+  If we want to have an elaborate pvp prisonbreak scenario, we'll have to add it into the mod
 
 - Make a config option to take in the names of turrets that players DON'T
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
 - Better boost effect graphic
 
+- Still need to think about gameplay / balance for boosting effect... Lingering cooldown on turrets which have been boosted?
+
+- Need to think about swapping in searchlight when unpowered vs powered vs foe spotted
+  (Maybe nothing on == unpowered (not attacking turtle), big light on == powered, big light + filament on == powered & foe spotted?)
+  Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
+
+- Fix radius_visualisation_specification
+
+- Clean up data-updates.lua
 
 ## Performance reports:
 
@@ -109,7 +113,7 @@ The order of acceptable values from lowest to highest:
 ## Design Decisions & Discussion
 
 -- So, obviously the balance of this mod is always going to be whack. Any meaningful amount of +Range is ridiculously powerful, no matter where we put it in the tech tree.
--- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted?
+-- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted? Can use entity.consumption_modifier to multiply
 -- (Maybe we can have a 'flash' go off when turrets energize / deenergize to hide the stuttering attack that happens when turrets are being swapped in and out?)
 -- Maybe have two different 'ranges' of boost? Such that it can boost 1 turret out to X meters, and then all the rest to X - Z meters?
 
@@ -255,6 +259,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO So, apparently, binding variables and functions to local speeds them up.
 --      We should go through all of our code and make sure that anything which can be made local, is made local.
+
+-- TODO Final sweep over README.md
 
 ```
 For maximum efficiency you'll want to bind next to a local variable, e.g.,

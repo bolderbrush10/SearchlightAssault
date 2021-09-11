@@ -59,9 +59,6 @@ function InitTables()
   -- Map: foe unit_number -> Map: gID -> true
   global.fun_to_gIDs = {}
 
-  -- TODO What if the only searchlight gets destroyed before a foe dies?
-  --      We'd want to clear the foe map's entry
-
   ------------------
   --    Forces    --
   ------------------
@@ -159,7 +156,15 @@ end
 
 local function removeGestaltfromFoes(gID)
   for foe_unit_number, gMap in pairs(global.fun_to_gIDs) do
+
     gMap[gID] = nil
+
+    -- If no other searchlights were tracking this foe, clear it
+    if next(gMap) == nil then
+      global.foes[foe_unit_number] = nil
+      global.fun_to_gIDs[foe_unit_number] = nil
+    end
+
   end
 end
 
