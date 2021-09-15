@@ -86,7 +86,7 @@ searchlightRecipeName = "searchlight"
 searchlightTechnologyName = "searchlight"
 
 searchlightBaseName = "searchlight-base"
-searchlightAttackName = "searchlight-attack"
+searchlightControllerName = "searchlight-control"
 turtleName = "searchlight-turtle"
 
 spottedEffectID = "searchlight-spotted-effect"

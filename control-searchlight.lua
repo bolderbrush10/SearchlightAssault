@@ -215,6 +215,8 @@ function Boost(tunion, foe)
   end
 
   local turret = tunion.turret
+  local control_unit = SpawnControl(turret)
+
   local newT = turret.surface.create_entity{name = turret.name .. boostSuffix,
                                             position = turret.position,
                                             force = turret.force,
@@ -222,7 +224,7 @@ function Boost(tunion, foe)
                                             create_build_effect_smoke = false}
 
   CopyTurret(turret, newT)
-  maps_boostTurret(turret, newT)
+  maps_boostTurret(turret, newT, control_unit)
   turret.destroy()
   -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
   -- not actually "destroy" the entity (We'll put the original back soon
@@ -267,6 +269,20 @@ function UnBoost(tunion)
   -- As with Boost(), don't raise script_raised_destroy
 
   return newT
+end
+
+
+function SpawnControl(turret)
+  pos = turret.selection_box.right_bottom
+  pos.x = pos.x - 0.5
+  pos.y = pos.y - 0.5
+
+  local control = turret.surface.create_entity{name = searchlightControllerName,
+                                               position = pos,
+                                               force = turret.force,
+                                               create_build_effect_smoke = true}
+
+  return control
 end
 
 

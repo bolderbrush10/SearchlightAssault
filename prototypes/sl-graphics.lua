@@ -157,6 +157,25 @@ local spotlight_dim_animation =
 export["spotlight_dim_animation"] = spotlight_dim_animation
 
 
+local control_unit_sprite =
+{
+  filename = "__Searchlights__/graphics/control-test.png",
+  width = 200,
+  height = 200,
+  scale = 0.1,
+}
+export["control_unit_sprite"] = control_unit_sprite
+
+
+local control_unit_light =
+{
+  type = "basic",
+  intensity = 0.8,
+  size = 2,
+}
+export["control_unit_light"] = control_unit_light
+
+
 local SpotlightBeamPassive =
 {
   type = "beam",
@@ -187,8 +206,8 @@ local SpotlightBeamPassive =
   body = Layer_transparent_pixel,
 }
 
-
 -- data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
 data:extend{SpotlightBeamPassive}
+
 
 return export

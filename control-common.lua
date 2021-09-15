@@ -34,7 +34,8 @@ function InitTables()
     tuID = int (tuID),
     turret = base / boosted,
     boosted = true / false,
-    lights = Map: gID -> true
+    lights = Map: gID -> true,
+    control = &entity,
   }
   ]]--
 
@@ -136,7 +137,7 @@ local function makeTUnionFromTurret(turret, gIDs)
     return nil
   end
 
-  tunion = {tuID = newTUID(), turret = turret, boosted = boosted, lights = {}}
+  tunion = {tuID = newTUID(), turret = turret, boosted = boosted, lights = {}, control = nil}
 
   global.tunions[tunion.tuID] = tunion
   global.tun_to_tID[turret.unit_number] = tunion
@@ -263,7 +264,7 @@ function maps_removeTUnion(turret)
 end
 
 
-function maps_boostTurret(base, boosted)
+function maps_boostTurret(base, boosted, control_unit)
   local tu = global.tun_to_tID[base.unit_number]
   global.tun_to_tID[base.unit_number] = nil
   global.tun_to_tID[boosted.unit_number] = tu
@@ -271,6 +272,7 @@ function maps_boostTurret(base, boosted)
 
   tu.turret = boosted
   tu.boosted = true
+  tu.control = control_unit
 end
 
 
@@ -282,6 +284,8 @@ function maps_unboostTurret(base, boosted)
 
   tu.turret = base
   tu.boosted = false
+  tu.control.destroy()
+  tu.control = nil
 end
 
 

@@ -1,4 +1,29 @@
-## Current  Task:
+## Current Task:
+
+- I think what I want to work on is adding an electrical-energy interface object.
+  We'll spawn it ontop of whatever turret is being boosted, and it'll have an animation showing the wires
+  from the spotlight coming out of the ground and radiating little sparks of energy.
+
+  We'll want to look up if we can have an animation that plays some amount of frames one time,
+  and then loops the ending
+
+  If we get that working, then we can apply that animation to the spotlight beam effect,
+  and have it change colors when a foe a spotted?
+
+  We can have the electric-energy interface spawning animation's length sync'd up to the spotlight beam
+  effect color transition -- and also disable the boosted turret during that time, for game-balance.
+  (Maybe also disable the turret and play an outro animation to despawn the electric-energy interface?)
+  Maybe spawn two entities, and the 2nd doesn't show up until after the first's animation is finished?
+  Maybe one layer has repeat = false...
+
+  Actually, what I think we want to do is just animate a laser-like beam of light
+  going from the spotlight base to the control unit.
+
+- Need to clean up the SL-Control-Unit properly when turrets / searchlights are destroyed
+- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
+- Why are we getting a flashing 'low power' icon on the control unit?
+
+- Why isn't our sprite showing up?
 
 
 ## Next Tasks:
@@ -27,8 +52,10 @@
   Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
 
 - Fix radius_visualisation_specification
+  (Maybe change it from a range thing to "neighboring the searchlight"?)
 
 - Clean up data-updates.lua
+
 
 ## Performance reports:
 
@@ -113,7 +140,8 @@ The order of acceptable values from lowest to highest:
 ## Design Decisions & Discussion
 
 -- So, obviously the balance of this mod is always going to be whack. Any meaningful amount of +Range is ridiculously powerful, no matter where we put it in the tech tree.
--- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted? Can use entity.consumption_modifier to multiply
+-- Perhaps, in addition to costing more power the more turrets a light boots, we can create an event to trigger an attack when a biter gets spotted?
+-- (entity.consumption_modifier is for Car types only...)
 -- (Maybe we can have a 'flash' go off when turrets energize / deenergize to hide the stuttering attack that happens when turrets are being swapped in and out?)
 -- Maybe have two different 'ranges' of boost? Such that it can boost 1 turret out to X meters, and then all the rest to X - Z meters?
 
@@ -122,13 +150,6 @@ The order of acceptable values from lowest to highest:
 -- Have another version that takes a beacon as an ingredient to auto-boost?
 -- Have a version that takes a radar for a really big boost?
 -- Nah. Honestly, imagine what the actual game devs would do. There'd just be ONE version of a turret. So don't be like this.
-
-
--- Use the new decorations thing to spawn in junk around the boostable radius
--- spawn_decorations() Triggers spawn_decoration actions defined in the entity prototype or does nothing if entity is not "turret" or "unit-spawner".
--- We should probably make it an option in the mod to disable this...
--- Considering that the spawned_decorations are basically permanent (unless we clean them up ourselves on turret death?)
--- it's probably more sensible to not do this.
 
 
 ## TODO's
@@ -228,6 +249,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Maybe we SHOULD fire those script___created/destroyed events...
 
+-- TODO Test against the most popular mods
+
 
 ### Feature: Graphics Polish
 
@@ -251,7 +274,13 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Break up sprite into mask layer (team colors), glow layer, and base (to save on memory)
 
+-- TODO Get the emissions layer rendered from blender to include reflections
+
 -- TODO Draw a little glow around the base of the searchlight, like a lamp
+
+-- TODO Test non-high resolution graphics
+
+-- TODO Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
 
 ### Feature: Professionalism Polish
 

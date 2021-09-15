@@ -26,10 +26,9 @@ local hiddenEntityFlags =
 
 
 -- Searchlight Base Entity
-local sl_b = {} -- table.deepcopy(data.raw["electric-turret"]["laser-turret"])
--- local sl_b = table.deepcopy(data.raw["ammo-turret"]["gun-turret"])
-sl_b.type = "electric-turret"
+local sl_b = {}
 sl_b.name = searchlightBaseName
+sl_b.type = "electric-turret"
 sl_b.max_health = 250
 sl_b.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_b.icon_size = 40
@@ -91,11 +90,31 @@ sl_b.attack_parameters =
 }
 
 
+-- Searchlight Control Entity
+local sl_c = {}
+sl_c.name = searchlightControllerName
+sl_c.type = "electric-energy-interface"
+sl_c.picture = g["control_unit_sprite"]
+sl_c.light   = g["control_unit_light"] -- TODO Doesn't seem to work
+sl_c.continuous_animation = true
+sl_c.energy_source =
+{
+  type = "electric",
+  usage_priority = "primary-input",
+  buffer_capacity = searchlightCapacitorSize,
+  drain = searchlightEnergyUsage,
+}
+sl_c.render_layer = "higher-object-above"
+sl_c.flags = hiddenEntityFlags
+sl_c.corpse = "small-scorchmark"
+sl_c.create_ghost_on_death = false
+
+
 -- The Spotlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 local t = {}
-t.type = "unit"
 t.name = turtleName
+t.type = "unit"
 t.movement_speed = searchlightWanderSpeed -- Can update during runtime for wander vs track mode
 t.run_animation = g["Layer_transparent_animation"]
 -- TODO remove / move into branch
@@ -161,4 +180,4 @@ t.attack_parameters =
 
 
 -- Add new definitions to game data
-data:extend{sl_b, t}
+data:extend{sl_b, sl_c, t}
