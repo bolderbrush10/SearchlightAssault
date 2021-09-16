@@ -258,6 +258,11 @@ function maps_removeTUnion(turret)
     global.gestalts[gID].tunions[tu.tuID] = nil
   end
 
+  if tu.control then
+    tu.control.destroy()
+    tu.control = nil
+  end
+
   global.tunions[tu.tuID] = nil
   global.boosted_to_tuID[turret.unit_number] = nil
   global.tun_to_tID[turret.unit_number] = nil

@@ -26,7 +26,7 @@ ticksBetweenFoeSearches = 60
 searchlightRange = 100
 
 -- Max distance at which the spotlight boosts the range of same-force turrets (using a square grid)
-searchlightBoostEffectRange = 4
+searchlightBoostEffectRange = 1.5
 
 -- Range boost effect provided to friendly turrets so they can attack the distant foe the searchlight spotted
 -- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.

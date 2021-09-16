@@ -19,11 +19,7 @@
   Actually, what I think we want to do is just animate a laser-like beam of light
   going from the spotlight base to the control unit.
 
-- Need to clean up the SL-Control-Unit properly when turrets / searchlights are destroyed
 - Maybe create a little dirt-throw effect when the control unit spawns / despawns?
-- Why are we getting a flashing 'low power' icon on the control unit?
-
-- Why isn't our sprite showing up?
 
 
 ## Next Tasks:
