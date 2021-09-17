@@ -1,23 +1,15 @@
 ## Current Task:
 
-- I think what I want to work on is adding an electrical-energy interface object.
-  We'll spawn it ontop of whatever turret is being boosted, and it'll have an animation showing the wires
-  from the spotlight coming out of the ground and radiating little sparks of energy.
+- Disable turrets while boosting / unboosting
 
-  We'll want to look up if we can have an animation that plays some amount of frames one time,
-  and then loops the ending
+- 1-2ish seconds "yellow light" alert before going to red light
 
-  If we get that working, then we can apply that animation to the spotlight beam effect,
-  and have it change colors when a foe a spotted?
+  How to allow people to "escape" the yellow light?
+  The turtle will be deactivated, so maybe we just freeze the spotlight in place?
+  Then, if they're still in the radius 1 second later, we switch to red, otherwise renable turtle at old position?
 
-  We can have the electric-energy interface spawning animation's length sync'd up to the spotlight beam
-  effect color transition -- and also disable the boosted turret during that time, for game-balance.
-  (Maybe also disable the turret and play an outro animation to despawn the electric-energy interface?)
-  Maybe spawn two entities, and the 2nd doesn't show up until after the first's animation is finished?
-  Maybe one layer has repeat = false...
-
-  Actually, what I think we want to do is just animate a laser-like beam of light
-  going from the spotlight base to the control unit.
+- Animate a laser-like beam of light going from the spotlight base to the control unit.
+  And/or an electrical pulse from the wires at the bottom of the searchlight that echos up the control units?
 
 - Maybe create a little dirt-throw effect when the control unit spawns / despawns?
 
