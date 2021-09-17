@@ -14,7 +14,7 @@ local export = {}
 
 local Layer_transparent_pixel =
 {
-  filename = "__Searchlights__/graphics/transparent_pixel.png",
+  filename = "__Searchlights__/graphics/transparent-pixel.png",
   width = 1,
   height = 1,
 }
@@ -22,7 +22,7 @@ export["Layer_transparent_pixel"] = Layer_transparent_pixel
 
 local Layer_transparent_animation =
 {
-  filename = "__Searchlights__/graphics/transparent_pixels.png",
+  filename = "__Searchlights__/graphics/transparent-pixels.png",
   width = 8,
   height = 8,
   direction_count = 1,
@@ -60,49 +60,6 @@ Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r
 -- local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
 -- Light_Layer_SpotLight_DimLight_Red.tint = redTint
 
-
-
--- local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
--- SpotlightBeamAlarm.name = "spotlight-beam-alarm"
--- SpotlightBeamAlarm.ground_light_animations =
--- {
---   ending =
---   {
---     layers =
---     {
---       Light_Layer_SpotLight_NormLight_Red,
---       Light_Layer_SpotLight_NormLight_Less,
---     }
---   }
--- }
--- SpotlightBeamAlarm.ending =
--- {
---   layers =
---   {
---     Light_Layer_SpotLight_RimLight_Red,
---     Light_Layer_SpotLight_DimLight_Red,
---   }
--- }
-
-local radius_visualisation_specification =
-{
-  distance = searchlightFriendRadius,
-  sprite =
-  {
-    layers =
-    {
-      {
-        filename = "__Searchlights__/graphics/circleish-radius-visualizat.png",
-        priority = "extra-high-no-scale",
-        width = 10,
-        height = 10,
-        scale = 8,
-        tint = {0.8, 0.2, 0.2, 0.8}
-      }
-    }
-  }
-}
-export["radius_visualisation_specification"] = radius_visualisation_specification
 
 
 local spotlight_glow_animation =
@@ -206,7 +163,29 @@ local SpotlightBeamPassive =
   body = Layer_transparent_pixel,
 }
 
--- data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
+-- local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
+-- SpotlightBeamAlarm.name = "spotlight-beam-alarm"
+-- SpotlightBeamAlarm.ground_light_animations =
+-- {
+--   ending =
+--   {
+--     layers =
+--     {
+--       Light_Layer_SpotLight_NormLight_Red,
+--       Light_Layer_SpotLight_NormLight_Less,
+--     }
+--   }
+-- }
+-- SpotlightBeamAlarm.ending =
+-- {
+--   layers =
+--   {
+--     Light_Layer_SpotLight_RimLight_Red,
+--     Light_Layer_SpotLight_DimLight_Red,
+--   }
+-- }
+
+
 data:extend{SpotlightBeamPassive}
 
 

@@ -31,7 +31,7 @@ sl_b.name = searchlightBaseName
 sl_b.type = "electric-turret"
 sl_b.max_health = 250
 sl_b.icon = "__Searchlights__/graphics/spotlight-icon.png"
-sl_b.icon_size = 40
+sl_b.icon_size = 64
 sl_b.icon_mipmaps = 4
 sl_b.alert_when_attacking = false
 sl_b.energy_source =
@@ -51,8 +51,6 @@ sl_b.minable =
   mining_time = 0.5,
   result = searchlightItemName,
 }
--- -- TODO This got broken at some point?? figure that out...
-sl_b.radius_visualisation_specification = g["radius_visualisation_specification"]
 sl_b.shoot_in_prepare_state = true
 sl_b.folded_animation      = g["spotlight_dim_animation"]
 sl_b.prepared_animation    = g["spotlight_dim_animation"]
