@@ -32,6 +32,23 @@ export["Layer_transparent_animation"] = Layer_transparent_animation
 
 ------------------------------------------------------------
 -- Spotlight Layers
+local control_unit_sprite =
+{
+  filename = "__Searchlights__/graphics/control-test.png",
+  width = 200,
+  height = 200,
+  scale = 0.1,
+}
+export["control_unit_sprite"] = control_unit_sprite
+
+
+local control_unit_light =
+{
+  type = "basic",
+  intensity = 0.8,
+  size = 2,
+}
+export["control_unit_light"] = control_unit_light
 
 
 local Light_Layer_SpotLight_NormLight =
