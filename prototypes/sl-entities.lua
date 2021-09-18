@@ -60,18 +60,21 @@ sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
 sl_b.base_picture = nil
+-- Affects "hop" time between despawning the turtle and attacking directly, etc
+-- Too low will cause lighting to overlap
+local attackCooldownDuration = 25
 sl_b.attack_parameters =
 {
   type = "beam",
   range = searchlightRange,
-  cooldown = 40,
+  cooldown = attackCooldownDuration,
   -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
   source_direction_count = 64,
   source_offset = {0, -3.423489 / 4},
   ammo_type =
   {
     category = "beam",
-    energy_consumption = "1J",
+    energy_consumption = "1J", -- If zero, info panel won't show an electricy bar
     action =
     {
       type = "direct",
@@ -80,12 +83,19 @@ sl_b.attack_parameters =
         type = "beam",
         beam = "spotlight-beam-passive",
         max_length = searchlightRange,
-        duration = 40,
+        duration = attackCooldownDuration,
         source_offset = {-1, -1.31439 }
       }
     }
   }
 }
+
+
+-- Searchlight Alarm Entity
+local sl_a = table.deepcopy(sl_b)
+sl_a.name = searchlightAlarmName
+sl_a.alert_when_attacking = true
+sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
 
 -- Searchlight Control Entity
@@ -183,4 +193,4 @@ t.attack_parameters =
 
 
 -- Add new definitions to game data
-data:extend{sl_b, sl_c, t}
+data:extend{sl_a, sl_b, sl_c, t}

@@ -29,6 +29,11 @@ local Layer_transparent_animation =
 }
 export["Layer_transparent_animation"] = Layer_transparent_animation
 
+
+------------------------------------------------------------
+-- Spotlight Layers
+
+
 local Light_Layer_SpotLight_NormLight =
 {
   filename = "__Searchlights__/graphics/spotlight-r.png",
@@ -51,14 +56,14 @@ export["Light_Layer_SpotLight_NormLight"] = Light_Layer_SpotLight_NormLight
 local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
 
--- local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
--- Light_Layer_SpotLight_NormLight_Red.tint = redTint
+local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
+Light_Layer_SpotLight_NormLight_Red.tint = redTint
 
 -- local Light_Layer_SpotLight_RimLight_Red = table.deepcopy(Light_Layer_SpotLight_RimLight)
 -- Light_Layer_SpotLight_RimLight_Red.tint = redTint
 
--- local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
--- Light_Layer_SpotLight_DimLight_Red.tint = redTint
+local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
+Light_Layer_SpotLight_DimLight_Red.tint = redTint
 
 
 
@@ -114,23 +119,8 @@ local spotlight_dim_animation =
 export["spotlight_dim_animation"] = spotlight_dim_animation
 
 
-local control_unit_sprite =
-{
-  filename = "__Searchlights__/graphics/control-test.png",
-  width = 200,
-  height = 200,
-  scale = 0.1,
-}
-export["control_unit_sprite"] = control_unit_sprite
-
-
-local control_unit_light =
-{
-  type = "basic",
-  intensity = 0.8,
-  size = 2,
-}
-export["control_unit_light"] = control_unit_light
+------------------------------------------------------------
+-- Spotlight Beams
 
 
 local SpotlightBeamPassive =
@@ -163,30 +153,50 @@ local SpotlightBeamPassive =
   body = Layer_transparent_pixel,
 }
 
--- local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
--- SpotlightBeamAlarm.name = "spotlight-beam-alarm"
--- SpotlightBeamAlarm.ground_light_animations =
--- {
---   ending =
---   {
---     layers =
---     {
---       Light_Layer_SpotLight_NormLight_Red,
---       Light_Layer_SpotLight_NormLight_Less,
---     }
---   }
--- }
--- SpotlightBeamAlarm.ending =
--- {
---   layers =
---   {
---     Light_Layer_SpotLight_RimLight_Red,
---     Light_Layer_SpotLight_DimLight_Red,
---   }
--- }
+
+local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
+SpotlightBeamAlarm.name = "spotlight-beam-alarm"
+SpotlightBeamAlarm.ground_light_animations =
+{
+  ending =
+  {
+    layers =
+    {
+      Light_Layer_SpotLight_NormLight_Red,
+      -- Light_Layer_SpotLight_NormLight_Less,
+    }
+  }
+}
+SpotlightBeamAlarm.ending =
+{
+  layers =
+  {
+    -- Light_Layer_SpotLight_RimLight_Red,
+    Light_Layer_SpotLight_DimLight_Red,
+  }
+}
 
 
-data:extend{SpotlightBeamPassive}
+data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
+
+
+------------------------------------------------------------
+-- Spotlight Warning Light
+
+
+local SpotlightWarningLightSprite =
+{
+  filename = "__Searchlights__/graphics/yellow-light.png",
+  name = searchlightWatchLightSpriteName,
+  type = "sprite",
+  blend_mode = "normal",
+  width=32,
+  height=32,
+}
+
+
+data:extend{SpotlightWarningLightSprite}
+
 
 
 return export

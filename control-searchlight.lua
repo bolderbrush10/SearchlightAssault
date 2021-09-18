@@ -18,11 +18,11 @@ local boostableArea =
 
 
 function SearchlightAdded(sl)
-  turtle = SpawnSLHiddenEntities(sl)
+  local turtle = SpawnTurtle(sl, sl.surface, nil)
 
-  friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
-                                              type={"turret", "electric-turret", "ammo-turret"},
-                                              force=sl.force}
+  local friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
+                                                    type={"turret", "electric-turret", "ammo-turret"},
+                                                    force=sl.force}
 
   maps_addGestalt(sl, turtle, friends)
 
@@ -55,9 +55,9 @@ end
 
 function TurretAdded(turret)
   -- Search for spotlights in vicinity and add self as a boostable
-  searchlights = turret.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(turret.position),
-                                                       name=searchlightBaseName,
-                                                       force=turret.force}
+  local searchlights = turret.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(turret.position),
+                                                             name=searchlightBaseName,
+                                                             force=turret.force}
 
   maps_addTUnion(turret, searchlights)
 end
@@ -71,15 +71,13 @@ end
 function FoeSpotted(turtle, foe)
   local g = maps_getGestalt(turtle)
 
-  g.base.shooting_target = foe
-
-  -- Start tracking this foe so we can detect when it dies / leaves range
-  maps_addFoe(foe, g)
-
   -- Turn off the turtle. We'll turn it back it on after the foe is gone
   turtle.active = false
+  g.turtleActive = false
 
-  BoostFriends(g, foe)
+  -- If there's a foe in the watch circle after a few moments,
+  -- we'll sound the alarm and target it
+  OpenWatchCircle(g)
 end
 
 
@@ -113,7 +111,7 @@ function CheckElectricNeeds(tick)
 
     if g.base.energy < searchlightCapacitorCutoff then
       g.turtle.active = false
-    elseif g.base.energy > searchlightCapacitorStartable then
+    elseif g.base.energy > searchlightCapacitorStartable and g.turtleActive then
       g.turtle.active = true
     end
 
@@ -166,16 +164,59 @@ end
 --------------------
 
 
-function SpawnSLHiddenEntities(sl)
-  turtle = SpawnTurtle(sl, sl.surface, nil)
+function OpenWatchCircle(g)
 
-  return turtle
+  global.watch_circles[game.tick + searchlightSpotTime_ms] = g.gID
+
+  rendering.draw_light{sprite=searchlightWatchLightSpriteName,
+                       scale=15,
+                       intensity=1,
+                       target=g.turtle,
+                       surface=g.turtle.surface,
+                       time_to_live=searchlightSpotTime_ms}
+
+  rendering.draw_sprite{sprite=searchlightWatchLightSpriteName,
+                        target=g.turtle,
+                        surface=g.turtle.surface,
+                        time_to_live=searchlightSpotTime_ms,
+                        render_layer="floor"}
+
+end
+
+
+function CloseWatchCircle(gID)
+
+  if not global.gestalts[gID] then
+    return
+  end
+
+  local g = global.gestalts[gID]
+
+  local tPos = g.turtle.position
+  local foes = g.base.surface.find_entities_filtered{position = tPos,
+                                                     radius = searchlightSpotRadius,
+                                                     force = GetEnemyForces(g.turtle.force)}
+
+  local foe = GetNearest(tPos, foes)
+
+  if foe then
+    -- Start tracking this foe so we can detect when it dies / leaves range
+    maps_addFoe(foe, g)
+
+    g.base.shooting_target = foe
+    BoostFriends(g, foe)
+  else
+    g.turtle.active = true
+    g.turtleActive = true
+  end
+
 end
 
 
 function ResumeTargetingTurtle(foePosition, gestalt)
   local turtle = gestalt.turtle
   turtle.active = true
+  gestalt.turtleActive = true
   Turtleport(turtle, foePosition, gestalt.base.position)
   WanderTurtle(turtle, gestalt.base.position)
 
@@ -273,6 +314,7 @@ end
 
 
 function SpawnControl(turret)
+  -- TODO Might be more visually interesting if this was a slightly-random position
   pos = turret.selection_box.right_bottom
   pos.x = pos.x - 0.5
   pos.y = pos.y - 0.5

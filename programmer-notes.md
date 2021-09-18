@@ -15,6 +15,9 @@
 
 
 ## Next Tasks:
+
+- Flame turret arc checking before boost
+
 - Should we plan to create & pop up our own custom gui for circuit conditions?
 - What kind of entity has good circuit conditions we can steal / how to rig the connections
   - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
@@ -270,12 +273,15 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
 
+-- TODO Remnants
+
 ### Feature: Professionalism Polish
 
 -- TODO clean up unused junk across all files
 
 -- TODO So, apparently, binding variables and functions to local speeds them up.
 --      We should go through all of our code and make sure that anything which can be made local, is made local.
+--      DOUBLE CHECK for variables to make local inside of loops, etc
 
 -- TODO Final sweep over README.md
 

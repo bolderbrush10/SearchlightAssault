@@ -42,6 +42,11 @@ function(event)
   CheckElectricNeeds(event.tick)
   TrackSpottedFoes(event.tick)
 
+  if global.watch_circles[event.tick] then
+    CloseWatchCircle(global.watch_circles[event.tick])
+    global.watch_circles[event.tick] = nil
+  end
+
 end)
 
 

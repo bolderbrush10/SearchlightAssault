@@ -191,3 +191,45 @@ function CopyTurret(oldT, newT)
     CopyFluids(oldT, newT)
   end
 end
+
+
+function GetEnemyForces(force)
+ local forces = {}
+
+ for _, f in pairs(game.forces) do
+  if force.is_enemy(f) then
+    table.insert(forces, f)
+  end
+ end
+
+ return forces
+end
+
+
+function GetNearest(position, entityList)
+  if entityList == nil then
+    return nil
+  end
+
+  if entityList[1] == nil then
+    return nil
+  end
+
+  if entityList[2] == nil then
+    return entityList[1]
+  end
+
+  local bestDist = 999999
+  local bestE = nil
+
+  for _, e in pairs(entityList) do
+    local dist = lensquared(position, e.position)
+
+    if dist < bestDist then
+      bestDist = dist
+      bestE = e
+    end
+  end
+
+  return bestE
+end

@@ -13,6 +13,7 @@ function InitTables()
     gID = int (gID),
     base = BaseSearchlight,
     turtle = Turtle,
+    turtleActive = true/false, -- Used to 'latch' active state during power outages
     tunions = Map: tuID -> true
   }
   ]]--
@@ -64,7 +65,15 @@ function InitTables()
   --    Forces    --
   ------------------
 
+  -- Map: Turtle Force Name -> true
   global.sl_force_init = {}
+
+  ------------------
+  -- Watch Circle --
+  ------------------
+
+  -- Map: game tick -> gID
+  global.watch_circles = {}
 end
 
 
@@ -86,7 +95,7 @@ end
 
 
 local function makeGestalt(sl, turtle)
-  return {gID = newGID(), base = sl, turtle = turtle, tunions = {}}
+  return {gID = newGID(), base = sl, turtle = turtle, turtleActive = true, tunions = {}}
 end
 
 
