@@ -324,6 +324,8 @@ function SpawnControl(turret)
                                                force = turret.force,
                                                create_build_effect_smoke = true}
 
+  control.destructible = false
+
   return control
 end
 
