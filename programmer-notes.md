@@ -1,22 +1,12 @@
 ## Current Task:
 
-- Disable turrets while boosting / unboosting
-
-- Animate a laser-like beam of light going from the spotlight base to the control unit.
-  And/or an electrical pulse from the wires at the bottom of the searchlight that echos up the control units?
-
-- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
-
-
-## Next Tasks:
-
-- Flame turret arc checking before boost
-
 - Should we plan to create & pop up our own custom gui for circuit conditions?
 - What kind of entity has good circuit conditions we can steal / how to rig the connections
   - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
   - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
      Their sprites could still just be a part of the base-searchlight's sprite)
+
+## Next Tasks:
 
 - Test multiplayer online
 
@@ -24,22 +14,23 @@
   Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?
   So, we discovered that making a map doesn't come with triggers and other dynamic things
   If we want to have an elaborate pvp prisonbreak scenario, we'll have to add it into the mod
+  So, custom triggers and such aren't really a thing..
+  Maybe just make it a maze with a "race to the rocket" kind of deal? Maybe two teams?
+  We can still have areas where players need to gather the final few rocket ingredients
+  Shortcuts where people can go to dunk in science packs and finish the steel axe technology
+  Lots of Big Rocks in the way as a bottle neck
+  Need to build landfill to get over moat
+  etc
 
 - Make a config option to take in the names of turrets that players DON'T
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
-- Better boost effect graphic
-
-- Still need to think about gameplay / balance for boosting effect... Lingering cooldown on turrets which have been boosted?
-
-- Need to think about swapping in searchlight when unpowered vs powered vs foe spotted
-  (Maybe nothing on == unpowered (not attacking turtle), big light on == powered, big light + filament on == powered & foe spotted?)
-  Maybe we need to use the 'energy glow' animation layer so the spotlight sprite 'glows' at night
-
-- Fix radius_visualisation_specification
-  (Maybe change it from a range thing to "neighboring the searchlight"?)
-
 - Clean up data-updates.lua
+
+- Animate a laser-like beam of light going from the spotlight base to the control unit.
+  And/or an electrical pulse from the wires at the bottom of the searchlight that echos up the control units?
+
+- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
 
 
 ## Performance reports:
