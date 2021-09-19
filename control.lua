@@ -133,7 +133,7 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.entity.name == searchlightBaseName then
+    if event.entity.name == searchlightBaseName or event.entity.name == searchlightAlarmName then
       SearchlightRemoved(event.entity)
     else
       TurretRemoved(event.entity)
@@ -141,6 +141,7 @@ for index, e in pairs
 
   end, {
     {filter = "name", name = searchlightBaseName},
+    {filter = "name", name = searchlightAlarmName, mode = "or"},
     {filter = "turret", mode = "or"}
   })
 end
@@ -154,7 +155,7 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.entity.name == searchlightBaseName then
+    if event.entity.name == searchlightBaseName or event.entity.name == searchlightAlarmName then
       SearchlightRemoved(event.entity)
     elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
       TurretRemoved(event.entity)

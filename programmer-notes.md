@@ -1,12 +1,8 @@
 ## Current Task:
 
+- Fix localization for AlarmSearchlight
+
 - Disable turrets while boosting / unboosting
-
-- 1-2ish seconds "yellow light" alert before going to red light
-
-  How to allow people to "escape" the yellow light?
-  The turtle will be deactivated, so maybe we just freeze the spotlight in place?
-  Then, if they're still in the radius 1 second later, we switch to red, otherwise renable turtle at old position?
 
 - Animate a laser-like beam of light going from the spotlight base to the control unit.
   And/or an electrical pulse from the wires at the bottom of the searchlight that echos up the control units?

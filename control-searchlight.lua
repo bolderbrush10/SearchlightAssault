@@ -203,6 +203,8 @@ function CloseWatchCircle(gID)
     -- Start tracking this foe so we can detect when it dies / leaves range
     maps_addFoe(foe, g)
 
+    RaiseAlarmLight(g)
+
     g.base.shooting_target = foe
     BoostFriends(g, foe)
   else
@@ -232,6 +234,48 @@ function GetBoostableAreaFromPosition(position)
   adjusted.right_bottom.y = position.y + boostableArea.y
 
   return adjusted
+end
+
+
+function RaiseAlarmLight(gestalt)
+  if gestalt.base.name == searchlightAlarmName then
+    return -- Alarm already raised
+  end
+
+  local base = gestalt.base
+  local raised = base.surface.create_entity{name = searchlightAlarmName,
+                                            position = base.position,
+                                            force = base.force,
+                                            fast_replace = true,
+                                            create_build_effect_smoke = false}
+
+  CopyTurret(base, raised)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[raised.unit_number] = gestalt
+  gestalt.base = raised
+
+  base.destroy()
+end
+
+
+function ClearAlarmLight(gestalt)
+  if gestalt.base.name == searchlightBaseName then
+    return -- Alarm already raised
+  end
+
+  local base = gestalt.base
+  local cleared = base.surface.create_entity{name = searchlightAlarmName,
+                                             position = base.position,
+                                             force = base.force,
+                                             fast_replace = true,
+                                             create_build_effect_smoke = false}
+
+  CopyTurret(base, cleared)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[cleared.unit_number] = gestalt
+  gestalt.base = cleared
+
+  base.destroy()
 end
 
 

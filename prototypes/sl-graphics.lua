@@ -62,7 +62,7 @@ local Light_Layer_SpotLight_NormLight =
 }
 export["Light_Layer_SpotLight_NormLight"] = Light_Layer_SpotLight_NormLight
 
--- local redTint = {r=1.0, g=0.1, b=0.1, a=1}
+local redTint = {r=0.9, g=0.1, b=0.1, a=1}
 
 -- local Light_Layer_SpotLight_NormLight_Less = table.deepcopy(Light_Layer_SpotLight_NormLight)
 -- Light_Layer_SpotLight_NormLight_Less.filename = "__Searchlights__/graphics/spotlight-r-less.png"
@@ -80,7 +80,7 @@ Light_Layer_SpotLight_NormLight_Red.tint = redTint
 -- Light_Layer_SpotLight_RimLight_Red.tint = redTint
 
 local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
-Light_Layer_SpotLight_DimLight_Red.tint = redTint
+-- Light_Layer_SpotLight_DimLight_Red.tint = redTint
 
 
 
@@ -111,6 +111,11 @@ local spotlight_glow_animation =
 }
 export["spotlight_glow_animation"] = spotlight_glow_animation
 
+
+local spotlight_alarm_glow_animation = table.deepcopy(spotlight_glow_animation)
+spotlight_alarm_glow_animation.filename = "__Searchlights__/graphics/spotlight-shooting-alarm.png"
+spotlight_alarm_glow_animation.hr_version.filename = "__Searchlights__/graphics/hr-spotlight-shooting-alarm.png"
+export["spotlight_alarm_glow_animation"] = spotlight_alarm_glow_animation
 
 local spotlight_dim_animation =
 {

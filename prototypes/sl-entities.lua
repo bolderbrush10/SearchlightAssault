@@ -95,6 +95,7 @@ sl_b.attack_parameters =
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = searchlightAlarmName
 sl_a.alert_when_attacking = true
+sl_a.energy_glow_animation = g["spotlight_alarm_glow_animation"]
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
 
