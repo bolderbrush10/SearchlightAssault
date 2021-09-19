@@ -104,7 +104,10 @@ local sl_c = {}
 sl_c.name = searchlightControllerName
 sl_c.type = "electric-energy-interface"
 sl_c.picture = g["control_unit_sprite"]
-sl_c.light   = g["control_unit_light"] -- TODO Doesn't seem to work
+sl_c.light   = g["control_unit_light"]
+sl_c.icon = "__Searchlights__/graphics/control-icon.png"
+sl_c.icon_size = 64
+sl_c.icon_mipmaps = 4
 sl_c.continuous_animation = true
 sl_c.energy_source =
 {

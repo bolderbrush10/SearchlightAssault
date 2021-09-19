@@ -1,7 +1,5 @@
 ## Current Task:
 
-- Fix localization for AlarmSearchlight
-
 - Disable turrets while boosting / unboosting
 
 - Animate a laser-like beam of light going from the spotlight base to the control unit.
