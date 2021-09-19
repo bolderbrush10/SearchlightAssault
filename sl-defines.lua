@@ -37,6 +37,7 @@ searchlightCapacitorStartable =  2500000 -- joules
 -- How much electricity the searchlight consumes
 -- (I think it's cute to have its usage be the sum of its parts)
 searchlightEnergyUsage = "327kW"
+searchlightControlEnergyUsage = "900kW"
 
 -------------------------------------------------
 -- Things that aren't interesting to mess with --

@@ -114,7 +114,7 @@ sl_c.energy_source =
   type = "electric",
   usage_priority = "primary-input",
   buffer_capacity = searchlightCapacitorSize,
-  drain = searchlightEnergyUsage,
+  drain = searchlightControlEnergyUsage,
 }
 sl_c.render_layer = "higher-object-above"
 sl_c.flags = hiddenEntityFlags
