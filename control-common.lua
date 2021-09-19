@@ -12,8 +12,10 @@ function InitTables()
   {
     gID = int (gID),
     base = BaseSearchlight,
+    signal = SignalBox,
     turtle = Turtle,
     turtleActive = true/false, -- Used to 'latch' active state during power outages
+    turtleCoord = nil / {x, y}
     tunions = Map: tuID -> true
   }
   ]]--
@@ -94,8 +96,8 @@ local function newGID()
 end
 
 
-local function makeGestalt(sl, turtle)
-  return {gID = newGID(), base = sl, turtle = turtle, turtleActive = true, tunions = {}}
+local function makeGestalt(sl, sigBox, turtle)
+  return {gID = newGID(), base = sl, signal = sigBox, turtle = turtle, turtleActive = true, tunions = {}}
 end
 
 
@@ -182,8 +184,8 @@ end
 -- Public
 -------------------------------------------------------------------------------
 
-function maps_addGestalt(sl, turtle, turretList)
-  local g = makeGestalt(sl, turtle)
+function maps_addGestalt(sl, sigBox, turtle, turretList)
+  local g = makeGestalt(sl, sigBox, turtle)
 
   global.gestalts[g.gID] = g
   global.unum_to_g[sl.unit_number] = g
@@ -214,6 +216,7 @@ function maps_removeGestaltAndDestroyHiddenEnts(g)
   global.unum_to_g[g.base.unit_number] = nil
   global.unum_to_g[g.turtle.unit_number] = nil
 
+  g.signal.destroy()
   g.turtle.destroy()
 end
 

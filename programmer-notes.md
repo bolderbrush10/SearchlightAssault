@@ -5,10 +5,23 @@
   - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
   - (Or maybe we don't even hide the combinators, that could be cool if they were "exposed".
      Their sprites could still just be a part of the base-searchlight's sprite)
+- Should we look up if there's an event for when the player modifies a gui to read X/Y, and only read from the SL combinator then?
+  (nb, we'd have to figure out how to track copy-pasted / ghost entities)
+
+- Make sure if turtle leaves SL range we stop it
+- We know the speed of the turtle... Maybe we calculate the max distance it can travel in n ticks before reaching the turret range,
+  and start checking every n ticks accordingly?
 
 ## Next Tasks:
 
+- Use Prototype/CustomInput and make a GUI panel option to allow taking direct control of the spotlight
+  Pop up a window that shows the spotlight beam's area
+
+- Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
+
 - Test multiplayer online
+
+- On force changed for individual entities doesn't work.. is that a problem?
 
 - Make a kickass prison escape game mode
   Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?
@@ -235,6 +248,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO make use of new feature from patch notes: - Added optional lamp prototype property "always_on".
 
 -- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
+
+-- TODO maybe do a subtle shaft of light effect as a beam 'attack'?
 
 -- TODO mipmaps for the searchlight item & technology icons
 

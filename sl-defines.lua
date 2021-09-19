@@ -55,7 +55,9 @@ searchlightSpotRadius = 3
 -- 'stuck' without attacking, and thus results in us having to rely on the
 -- ai_command_complete event fired when the distraction attack-event is done
 -- (which is a process that is seemingly-impossible to speed up)
-searchlightWanderSpeed = 0.2
+searchlightWanderSpeed = 0.1
+
+searchlightRushSpeed = 0.3
 
 -- Amount of time in milliseconds from when a spotlight becomes suspicious
 -- until the spotlight confirms it has spotted a foe
@@ -78,6 +80,7 @@ searchlightTechnologyName = "searchlight"
 searchlightBaseName = "searchlight-base"
 searchlightAlarmName = "searchlight-alarm"
 searchlightControllerName = "searchlight-control"
+searchlightSignalBoxName = "searchlight-signal-box"
 turtleName = "searchlight-turtle"
 
 searchlightWatchLightSpriteName = "SpotlightWarningLightSprite"

@@ -75,6 +75,12 @@ function rectangeDistSquared(aTopLeftx, aTopLefty, aBottomRightx, aBottomRighty,
 end
 
 
+function ClampCoordToDistance(coord, distance)
+  local theta = math.atan2(coord.y, coord.x)
+  return ScreenOrientationToPosition({x=0, y=0}, theta, distance)
+end
+
+
 -- theta given as 0.0 - 1.0, 0/1 is top middle of screen
 function OrientationToPosition(origin, theta, distance)
   local radTheta = theta * 2 * math.pi
@@ -241,7 +247,7 @@ function GetEnemyForces(force)
 end
 
 
-function GetNearest(position, entityList)
+function GetNearestEntFromList(position, entityList)
   if entityList == nil then
     return nil
   end

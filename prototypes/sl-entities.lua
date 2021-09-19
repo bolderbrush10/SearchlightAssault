@@ -7,6 +7,20 @@ local g = require "sl-graphics"
 -- because other mods may have inadvertent access to functions at this step.
 
 
+local SignalEntityFlags =
+{
+  "no-copy-paste",
+  "no-automated-item-insertion",
+  "not-blueprintable",
+  "not-deconstructable",
+  "not-flammable",
+  "not-in-kill-statistics",
+  "not-repairable",
+  "not-rotatable",
+  "not-upgradable",
+  "placeable-off-grid",
+}
+
 local hiddenEntityFlags =
 {
   "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
@@ -23,7 +37,6 @@ local hiddenEntityFlags =
   "not-upgradable",
   "placeable-off-grid",
 }
-
 
 -- Searchlight Base Entity
 local sl_b = {}
@@ -127,6 +140,51 @@ sl_c.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 sl_c.collision_mask = {} -- enable noclip for pathfinding too
 
 
+-- Searchlight Signal Box Entity
+local sl_s = {}
+sl_s.type = "constant-combinator"
+sl_s.name = searchlightSignalBoxName
+sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
+sl_s.icon_size = 64
+sl_s.icon_mipmaps = 4
+sl_s.flags = hiddenEntityFlags
+sl_s.selection_box = {{-.5, -.5}, {.5, .5}}
+sl_s.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+sl_s.collision_mask = {} -- enable noclip for pathfinding too
+sl_s.selection_priority = 255
+sl_s.item_slot_count = 2
+sl_s.circuit_wire_max_distance = 9
+sl_s.sprites = g["signal_box_sprite"]
+sl_s.activity_led_sprites = g["Layer_transparent_pixel"]
+sl_s.activity_led_light_offsets =
+{
+  {0, 0},
+  {0, 0},
+  {0, 0},
+  {0, 0},
+}
+local wirePos =
+{
+  wire =
+  {
+    red = {-0.25, 0},
+    green = {0.25, 0}
+  },
+  shadow =
+  {
+    red = {-0.25 + .2, .3},
+    green = {0.25 + .2, .3}
+  }
+}
+sl_s.circuit_wire_connection_points =
+{
+  wirePos,
+  wirePos,
+  wirePos,
+  wirePos,
+}
+
+
 -- The Spotlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 local t = {}
@@ -197,4 +255,4 @@ t.attack_parameters =
 
 
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, sl_c, t}
+data:extend{sl_a, sl_b, sl_c, sl_s, t}

@@ -6,7 +6,14 @@ require "sl-util"
 
 function TurtleWaypointReached(unit_number)
   local g = global.unum_to_g[unit_number]
-  WanderTurtle(g.turtle, g.base.position)
+
+  if g.turtleCoord == nil then
+    WanderTurtle(g.turtle, g.base.position)
+  else
+    g.turtle.set_command({type = defines.command.stop,
+                          distraction = defines.distraction.by_anything,
+                         })
+  end
 end
 
 
@@ -46,7 +53,7 @@ function WanderTurtle(turtle, origin, waypoint)
   if waypoint == nil then
     waypoint = MakeWanderWaypoint(origin)
   end
-  turtle.speed = 0.1
+  turtle.speed = searchlightWanderSpeed
 
   turtle.set_command({type = defines.command.go_to_location,
                       -- TODO Do we want to make it an option to allow spotting non-military foe-built structures?
@@ -100,5 +107,40 @@ function Turtleport(turtle, position, origin)
         " Target Position: " .. position.x .. ", " .. position.y)
 
     turtle.destroy()
+  end
+end
+
+
+function ManualTurtleMove(gestalt, coord)
+  local bufferedRange = searchlightRange - 5
+
+  -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
+  if lensquared(coord, {x=0, y=0}) > square(bufferedRange) then
+    local old = coord
+    coord = ClampCoordToDistance(coord, bufferedRange)
+  end
+
+  local translatedCoord = coord
+  translatedCoord.x = translatedCoord.x + gestalt.base.position.x
+  translatedCoord.y = translatedCoord.y + gestalt.base.position.y
+
+
+
+  if gestalt.turtleCoord == nil
+     or translatedCoord.x ~= gestalt.turtleCoord.x
+     or translatedCoord.y ~= gestalt.turtleCoord.y then
+
+    gestalt.turtleCoord = translatedCoord
+
+    gestalt.turtle.speed = searchlightRushSpeed
+    gestalt.turtle.set_command({type = defines.command.go_to_location,
+                                distraction = defines.distraction.by_enemy,
+                                destination = gestalt.turtleCoord,
+                                pathfind_flags = {low_priority = true,
+                                                  cache = false,
+                                                  allow_destroy_friendly_entities = true,
+                                                  allow_paths_through_own_entities = true},
+                                radius = 1
+                               })
   end
 end

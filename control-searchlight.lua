@@ -18,8 +18,6 @@ local boostableArea =
 
 
 function SearchlightAdded(sl)
-  local turtle = SpawnTurtle(sl, sl.surface, nil)
-
   local friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
                                                     type={"fluid-turret", "electric-turret", "ammo-turret"},
                                                     force=sl.force}
@@ -32,7 +30,8 @@ function SearchlightAdded(sl)
     end
   end
 
-  maps_addGestalt(sl, turtle, candidates)
+  local turtle = SpawnTurtle(sl, sl.surface, nil)
+  maps_addGestalt(sl, SpawnSignalBox(sl), turtle, candidates)
 
   sl.shooting_target = turtle
 end
@@ -122,7 +121,7 @@ end
 --      *.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
 --          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
 -- We wouldn't need this function if there was an event for when entities run out of power
-function CheckElectricNeeds(tick)
+function CheckElectricNeeds()
   for gID, g in pairs(global.gestalts) do
 
     if g.base.energy < searchlightCapacitorCutoff then
@@ -137,9 +136,9 @@ function CheckElectricNeeds(tick)
 end
 
 
--- Checked every tick, but only while there's a foe spotted,
+-- Checked every tick, but the heavy logic is only while a foe is spotted,
 -- so not too performance-impacting
-function TrackSpottedFoes(tick)
+function TrackSpottedFoes()
 
   -- Skip function if tables empty (which should be the case most of the time)
   -- TODO How much faster would it be to maintain table size variables?
@@ -177,6 +176,23 @@ function TrackSpottedFoes(tick)
 end
 
 
+-- Checked every tick
+function HandleCircuitConditions()
+  for gID, g in pairs(global.gestalts) do
+
+    local x = g.signal.get_merged_signal({type="virtual", name="signal-X"})
+    local y = g.signal.get_merged_signal({type="virtual", name="signal-Y"})
+
+    if x ~= 0 or y ~= 0 then
+      local pos = {x=x, y=y}
+      ManualTurtleMove(g, pos)
+    else
+      g.turtleCoord = nil
+    end
+  end
+end
+
+
 --------------------
 --  Helper Funcs  --
 --------------------
@@ -202,6 +218,7 @@ function OpenWatchCircle(g)
 end
 
 
+-- Not called every tick, just rarely at a set time after a foe is spotted
 function CloseWatchCircle(gID)
 
   if not global.gestalts[gID] then
@@ -215,7 +232,7 @@ function CloseWatchCircle(gID)
                                                      radius = searchlightSpotRadius * 1.1,
                                                      force = GetEnemyForces(g.turtle.force)}
 
-  local foe = GetNearest(tPos, foes)
+  local foe = GetNearestEntFromList(tPos, foes)
 
   if foe then
     -- Start tracking this foe so we can detect when it dies / leaves range
@@ -392,6 +409,21 @@ function SpawnControl(turret)
   control.destructible = false
 
   return control
+end
+
+
+function SpawnSignalBox(sl)
+  pos = sl.position
+  pos.y = pos.y + 0.5
+
+  local box = sl.surface.create_entity{name = searchlightSignalBoxName,
+                                       position = pos,
+                                       force = sl.force,
+                                       create_build_effect_smoke = false}
+
+  box.destructible = false
+
+  return box
 end
 
 

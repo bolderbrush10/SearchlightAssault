@@ -50,6 +50,20 @@ local control_unit_light =
 }
 export["control_unit_light"] = control_unit_light
 
+------------------------------------------------------------
+-- Signal Box Sprite
+
+
+local signal_box_sprite =
+{
+  filename = "__Searchlights__/graphics/signal-box.png",
+  width = 127,
+  height = 83,
+  scale=0.5
+}
+export["signal_box_sprite"] = signal_box_sprite
+
+
 
 local Light_Layer_SpotLight_NormLight =
 {

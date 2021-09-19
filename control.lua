@@ -39,8 +39,9 @@ end)
 script.on_event(defines.events.on_tick,
 function(event)
 
-  CheckElectricNeeds(event.tick)
-  TrackSpottedFoes(event.tick)
+  CheckElectricNeeds()
+  TrackSpottedFoes()
+  HandleCircuitConditions()
 
   if global.watch_circles[event.tick] then
     CloseWatchCircle(global.watch_circles[event.tick])
@@ -94,10 +95,17 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.created_entity.name == searchlightBaseName then
-      SearchlightAdded(event.created_entity)
+    local entity = nil
+    if event.created_entity then
+      entity = event.created_entity
     else
-      TurretAdded(event.created_entity)
+      entity = event.entity
+    end
+
+    if entity.name == searchlightBaseName then
+      SearchlightAdded(entity)
+    else
+      TurretAdded(entity)
     end
 
   end, {
