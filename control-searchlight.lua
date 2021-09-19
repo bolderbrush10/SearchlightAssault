@@ -8,8 +8,8 @@ require "util" -- for table.deepcopy
 
 local boostableArea =
 {
-  x = searchlightBoostEffectRange,
-  y = searchlightBoostEffectRange
+  x = searchlightBoostEffectRange*2,
+  y = searchlightBoostEffectRange*2
 }
 
 ------------------------
@@ -21,10 +21,18 @@ function SearchlightAdded(sl)
   local turtle = SpawnTurtle(sl, sl.surface, nil)
 
   local friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
-                                                    type={"turret", "electric-turret", "ammo-turret"},
+                                                    type={"fluid-turret", "electric-turret", "ammo-turret"},
                                                     force=sl.force}
 
-  maps_addGestalt(sl, turtle, friends)
+  -- Only allow adjacent searchlights and turrets to make boost partners
+  candidates = {}
+  for _, f in pairs(friends) do
+    if rectangeDistSquared(unpackRectangles(f.selection_box, sl.selection_box)) < 1 then
+      table.insert(candidates, f)
+    end
+  end
+
+  maps_addGestalt(sl, turtle, candidates)
 
   sl.shooting_target = turtle
 end
@@ -56,10 +64,18 @@ end
 function TurretAdded(turret)
   -- Search for spotlights in vicinity and add self as a boostable
   local searchlights = turret.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(turret.position),
-                                                             name=searchlightBaseName,
+                                                             name={searchlightBaseName, searchlightAlarmName},
                                                              force=turret.force}
 
-  maps_addTUnion(turret, searchlights)
+  -- Only allow adjacent searchlights and turrets to make boost partners
+  candidates = {}
+  for _, sl in pairs(searchlights) do
+    if rectangeDistSquared(unpackRectangles(sl.selection_box, turret.selection_box)) < 1 then
+      table.insert(candidates, sl)
+    end
+  end
+
+  maps_addTUnion(turret, candidates)
 end
 
 
@@ -110,8 +126,10 @@ function CheckElectricNeeds(tick)
   for gID, g in pairs(global.gestalts) do
 
     if g.base.energy < searchlightCapacitorCutoff then
+      -- TODO Disable any boosted turrets
       g.turtle.active = false
     elseif g.base.energy > searchlightCapacitorStartable and g.turtleActive then
+      -- TODO Reenable any boosted turrets
       g.turtle.active = true
     end
 
@@ -194,7 +212,7 @@ function CloseWatchCircle(gID)
 
   local tPos = g.turtle.position
   local foes = g.base.surface.find_entities_filtered{position = tPos,
-                                                     radius = searchlightSpotRadius,
+                                                     radius = searchlightSpotRadius * 1.1,
                                                      force = GetEnemyForces(g.turtle.force)}
 
   local foe = GetNearest(tPos, foes)
@@ -286,30 +304,31 @@ function BoostFriends(gestalt, foe)
   end
 
   for tuID, _ in pairs(gestalt.tunions) do
-    tunion = global.tunions[tuID]
-    if not tunion.turret.shooting_target then
-      Boost(tunion, foe)
-    end
+    Boost(global.tunions[tuID], foe)
   end
 end
 
 
 function Boost(tunion, foe)
   if tunion.boosted then
-    return tunion.turret
+    return
   end
 
   local turret = tunion.turret
-  local control_unit = SpawnControl(turret)
+
+  if not IsPositionWithinTurretArc(foe.position, turret) then
+    return
+  end
 
   local newT = turret.surface.create_entity{name = turret.name .. boostSuffix,
                                             position = turret.position,
                                             force = turret.force,
+                                            direction = turret.direction,
                                             fast_replace = true,
                                             create_build_effect_smoke = false}
 
   CopyTurret(turret, newT)
-  maps_boostTurret(turret, newT, control_unit)
+  maps_boostTurret(turret, newT, SpawnControl(newT))
   turret.destroy()
   -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
   -- not actually "destroy" the entity (We'll put the original back soon
@@ -329,7 +348,7 @@ end
 
 function UnBoost(tunion)
   if not tunion.boosted then
-    return tunion.turret
+    return
   end
 
   -- Before unboosting, see if there's another searchlight with a target for us
@@ -345,6 +364,7 @@ function UnBoost(tunion)
   local newT = turret.surface.create_entity{name = turret.name:gsub(boostSuffix, ""),
                                             position = turret.position,
                                             force = turret.force,
+                                            direction = turret.direction,
                                             fast_replace = true,
                                             create_build_effect_smoke = false}
 

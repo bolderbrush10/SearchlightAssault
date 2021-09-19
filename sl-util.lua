@@ -1,5 +1,6 @@
 require "sl-defines"
 
+-- TODO Double check that these don't need to be made local / used during prototype phase
 
 -- We don't need to these put in the globals, since it's fine to recalulate them on game load
 local DirectionToVector = {}
@@ -37,6 +38,40 @@ end
 
 function withinRadius(posA, posB, acceptable_radius)
   return lensquared(posA, posB) < square(acceptable_radius)
+end
+
+
+function unpackRectangles(a, b)
+  return a.left_top.x, a.left_top.y, a.right_bottom.x, a.right_bottom.y,
+         b.left_top.x, b.left_top.y, b.right_bottom.x, b.right_bottom.y
+end
+
+
+function rectangeDistSquared(aTopLeftx, aTopLefty, aBottomRightx, aBottomRighty,
+                             bTopLeftx, bTopLefty, bBottomRightx, bBottomRighty)
+    left = bBottomRightx < aTopLeftx
+    right = aBottomRightx < bTopLeftx
+    bottom = bBottomRighty < aTopLefty
+    top = aBottomRighty < bTopLefty
+    if top and left then
+        return lensquared({x=aTopLeftx,     y=aBottomRighty}, {x=bBottomRightx, y=bTopLefty})
+    elseif left and bottom then
+        return lensquared({x=aTopLeftx,     y=aTopLefty},     {x=bBottomRightx, y=bBottomRighty})
+    elseif bottom and right then
+        return lensquared({x=aBottomRightx, y=aTopLefty},     {x=bTopLeftx,     y=bBottomRighty})
+    elseif right and top then
+        return lensquared({x=aBottomRightx, y=aBottomRighty}, {x=bTopLeftx,     y=bTopLefty})
+    elseif left then
+        return square(aTopLeftx - bBottomRightx)
+    elseif right then
+        return square(bTopLeftx - aBottomRightx)
+    elseif bottom then
+        return square(aTopLefty - bBottomRighty)
+    elseif top then
+        return square(bTopLefty - aBottomRighty)
+    else -- rectangles intersect
+        return 0
+    end
 end
 
 
@@ -90,40 +125,40 @@ end
 
 
 function LookupArc(turret)
-  if global.firing_arcs[turret.name] then
-    return global.firing_arcs[turret.name]
+  if firing_arcs[turret.name] then
+    return firing_arcs[turret.name]
   end
 
   local tPrototype = game.entity_prototypes[turret.name]
 
   if tPrototype.attack_parameters
      and tPrototype.attack_parameters.turn_range then
-    global.firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
+    firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
   else
-    global.firing_arcs[turret.name] = -1
+    firing_arcs[turret.name] = -1
   end
 
-  return global.firing_arcs[turret.name]
+  return firing_arcs[turret.name]
 end
 
 
 function LookupRange(turret)
-  if global.firing_range[turret.name] then
-    return global.firing_range[turret.name]
+  if firing_range[turret.name] then
+    return firing_range[turret.name]
   end
 
   local tPrototype = game.entity_prototypes[turret.name]
 
   if tPrototype.turret_range then
-    global.firing_range[turret.name] = tPrototype.turret_range
+    firing_range[turret.name] = tPrototype.turret_range
   elseif tPrototype.attack_parameters
      and tPrototype.attack_parameters.range then
-    global.firing_range[turret.name] = tPrototype.attack_parameters.range
+    firing_range[turret.name] = tPrototype.attack_parameters.range
   else
-    global.firing_range[turret.name] = -1
+    firing_range[turret.name] = -1
   end
 
-  return global.firing_range[turret.name]
+  return firing_range[turret.name]
 end
 
 
