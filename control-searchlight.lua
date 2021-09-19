@@ -240,6 +240,7 @@ function ResumeTargetingTurtle(foePosition, gestalt)
   Turtleport(turtle, foePosition, gestalt.base.position)
   WanderTurtle(turtle, gestalt.base.position)
 
+  ClearAlarmLight(gestalt)
   gestalt.base.shooting_target = turtle
 end
 
@@ -282,7 +283,7 @@ function ClearAlarmLight(gestalt)
   end
 
   local base = gestalt.base
-  local cleared = base.surface.create_entity{name = searchlightAlarmName,
+  local cleared = base.surface.create_entity{name = searchlightBaseName,
                                              position = base.position,
                                              force = base.force,
                                              fast_replace = true,
