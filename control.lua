@@ -40,8 +40,8 @@ script.on_event(defines.events.on_tick,
 function(event)
 
   CheckElectricNeeds()
-  TrackSpottedFoes()
   HandleCircuitConditions()
+  TrackSpottedFoes()
 
   if global.watch_circles[event.tick] then
     CloseWatchCircle(global.watch_circles[event.tick])
@@ -54,9 +54,12 @@ end)
 -- On Script Trigger (turtle attack)
 script.on_event(defines.events.on_script_trigger_effect,
 function(event)
-  if event.effect_id == spottedEffectID
-  and event.source_entity and event.target_entity then
-    FoeSpotted(event.source_entity, event.target_entity)
+  if event.source_entity and event.target_entity then
+    if event.effect_id == spottedEffectID then
+      FoeSuspected(event.source_entity, event.target_entity)
+    elseif event.effect_id == confirmedSpottedEffectID then
+      OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
+    end
   end
 end)
 
@@ -65,17 +68,14 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  if not event.was_distracted and global.unum_to_g[event.unit_number] then
-    TurtleWaypointReached(event.unit_number)
+  if global.unum_to_g[event.unit_number] then
+    if not event.was_distracted then
+      TurtleWaypointReached(event.unit_number, event.result == defines.behavior_result.fail)
+    else
+      -- TODO Will this trigger before or after the distraction starts/finishes?
+      TurtleDistracted(event.unit_number, event.result == defines.behavior_result.fail)
+    end
   end
-
-  -- event.unit_number
-  -- event.was_distracted
-  -- event.result
-
-  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
-  --      or figure out what entity it was trying to attack and manually fire the
-  --      attack_trigger event there and remove the turtle
 
 end)
 

@@ -61,6 +61,7 @@ searchlightRushSpeed = 0.3
 
 -- Amount of time in milliseconds from when a spotlight becomes suspicious
 -- until the spotlight confirms it has spotted a foe
+-- (Setting this too low will cause conflicts with landmine arming-time)
 searchlightSpotTime_ms = 1.5 * 60
 
 -- Delay in ticks between boosting and unboosting friends
@@ -81,11 +82,13 @@ searchlightBaseName = "searchlight-base"
 searchlightAlarmName = "searchlight-alarm"
 searchlightControllerName = "searchlight-control"
 searchlightSignalBoxName = "searchlight-signal-box"
+spotterName = "searchlight-spotter"
 turtleName = "searchlight-turtle"
 
 searchlightWatchLightSpriteName = "SpotlightWarningLightSprite"
 
 spottedEffectID = "searchlight-spotted-effect"
+confirmedSpottedEffectID = "searchlight-confirm-spotted-effect"
 
 -- Force names (To be appended to the name of the force that owns a spotlight)
 turtleForceSuffix = "_SLTurtle"

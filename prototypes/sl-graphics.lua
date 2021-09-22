@@ -12,6 +12,7 @@ require "sl-defines"
 
 local export = {}
 
+
 local Layer_transparent_pixel =
 {
   filename = "__Searchlights__/graphics/transparent-pixel.png",
@@ -19,6 +20,7 @@ local Layer_transparent_pixel =
   height = 1,
 }
 export["Layer_transparent_pixel"] = Layer_transparent_pixel
+
 
 local Layer_transparent_animation =
 {
@@ -50,6 +52,7 @@ local control_unit_light =
 }
 export["control_unit_light"] = control_unit_light
 
+
 ------------------------------------------------------------
 -- Signal Box Sprite
 
@@ -59,10 +62,13 @@ local signal_box_sprite =
   filename = "__Searchlights__/graphics/signal-box.png",
   width = 127,
   height = 83,
-  scale=0.5
+  scale = 0.5,
 }
 export["signal_box_sprite"] = signal_box_sprite
 
+
+------------------------------------------------------------
+-- Spotlight Layers
 
 
 local Light_Layer_SpotLight_NormLight =

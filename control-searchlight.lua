@@ -83,16 +83,22 @@ function TurretRemoved(turret)
 end
 
 
-function FoeSpotted(turtle, foe)
+function FoeSuspected(turtle, foe)
   local g = maps_getGestalt(turtle)
 
   -- Turn off the turtle. We'll turn it back it on after the foe is gone
   turtle.active = false
   g.turtleActive = false
 
-  -- If there's a foe in the watch circle after a few moments,
+  -- If there's a foe in the spotter's radius after a few moments,
   -- we'll sound the alarm and target it
-  OpenWatchCircle(g)
+  local s = SpawnSpotter(g, foe)
+
+  -- If the spotlight hasn't found anything by the given tick, we'll close its circle
+  -- (note that it takes quite a few extra ticks for the landmine to do its business,
+  --  but we still want to make sure the circle is closed by the time the spotlight
+  --  would spawn a new spotter and be 'rearmed')
+  OpenWatchCircle(s, nil, game.tick - 10 + searchlightSpotTime_ms * 2)
 end
 
 
@@ -136,10 +142,27 @@ function CheckElectricNeeds()
 end
 
 
+-- Checked every tick
+-- Probably a good candidate to sign this up for every_n_tick, maybe once a second?
+function HandleCircuitConditions()
+  for gID, g in pairs(global.gestalts) do
+
+    local x = g.signal.get_merged_signal({type="virtual", name="signal-X"})
+    local y = g.signal.get_merged_signal({type="virtual", name="signal-Y"})
+
+    if x ~= 0 or y ~= 0 then
+      local pos = {x=x, y=y}
+      ManualTurtleMove(g, pos)
+    else
+      g.turtleCoord = nil
+    end
+  end
+end
+
+
 -- Checked every tick, but the heavy logic is only while a foe is spotted,
 -- so not too performance-impacting
 function TrackSpottedFoes()
-
   -- Skip function if tables empty (which should be the case most of the time)
   -- TODO How much faster would it be to maintain table size variables?
   if next(global.fun_to_gIDs) == nil and next(global.boosted_to_tuID) == nil then
@@ -176,75 +199,68 @@ function TrackSpottedFoes()
 end
 
 
--- Checked every tick
-function HandleCircuitConditions()
-  for gID, g in pairs(global.gestalts) do
-
-    local x = g.signal.get_merged_signal({type="virtual", name="signal-X"})
-    local y = g.signal.get_merged_signal({type="virtual", name="signal-Y"})
-
-    if x ~= 0 or y ~= 0 then
-      local pos = {x=x, y=y}
-      ManualTurtleMove(g, pos)
-    else
-      g.turtleCoord = nil
-    end
-  end
-end
-
-
 --------------------
 --  Helper Funcs  --
 --------------------
 
 
-function OpenWatchCircle(g)
+function OpenWatchCircle(spotter, foe, tickToClose)
+  local gID = global.unum_to_g[spotter.unit_number].gID
 
-  global.watch_circles[game.tick + searchlightSpotTime_ms] = g.gID
+  if global.watch_circles[tickToClose] == nil then
+    global.watch_circles[tickToClose] = {}
+  end
 
-  rendering.draw_light{sprite=searchlightWatchLightSpriteName,
-                       scale=15,
-                       intensity=1,
-                       target=g.turtle,
-                       surface=g.turtle.surface,
-                       time_to_live=searchlightSpotTime_ms}
+  if global.watch_circles[tickToClose][gID] == nil then
+    global.watch_circles[tickToClose][gID] = {}
+  end
 
-  rendering.draw_sprite{sprite=searchlightWatchLightSpriteName,
-                        target=g.turtle,
-                        surface=g.turtle.surface,
-                        time_to_live=searchlightSpotTime_ms,
-                        render_layer="floor"}
-
+  table.insert(global.watch_circles[tickToClose][gID], foe)
 end
 
 
 -- Not called every tick, just rarely at a set time after a foe is spotted
-function CloseWatchCircle(gID)
+function CloseWatchCircle(gIDFoeMap)
 
-  if not global.gestalts[gID] then
-    return
-  end
+  for gID, foeList in pairs(gIDFoeMap) do
+    -- Make sure our searchlight wasn't destroyed since last tick
+    if not global.gestalts[gID] then
+      -- The spotter should already have been destroyed whenever this gestalt was wiped out
+      goto continue
+    end
 
-  local g = global.gestalts[gID]
 
-  local tPos = g.turtle.position
-  local foes = g.base.surface.find_entities_filtered{position = tPos,
-                                                     radius = searchlightSpotRadius * 1.1,
-                                                     force = GetEnemyForces(g.turtle.force)}
+    local g = global.gestalts[gID]
+    maps_removeSpotter(g)
 
-  local foe = GetNearestEntFromList(tPos, foes)
+    -- Make sure none of our foes have died since last tick
+    for index, foe in pairs(foeList) do
+      if not foe.valid then
+        foeList[index] = nil
+      end
+    end
 
-  if foe then
-    -- Start tracking this foe so we can detect when it dies / leaves range
-    maps_addFoe(foe, g)
+    local tPos = g.turtle.position
+    local foe = GetNearestEntFromList(tPos, foeList)
 
-    RaiseAlarmLight(g)
+    if foe then
+      -- Case: Foe spotted successfully
+      maps_addFoe(foe, g)
 
-    g.base.shooting_target = foe
-    BoostFriends(g, foe)
-  else
-    g.turtle.active = true
-    g.turtleActive = true
+      RaiseAlarmLight(g)
+
+      g.base.shooting_target = foe
+      BoostFriends(g, foe)
+    elseif g.base.shooting_target == g.turtle then
+      -- Case: Watch circle closed but no foe spotted
+      g.turtle.active = true
+      g.turtleActive = true
+    end
+    -- else
+      -- Case: Foe previously spotted
+
+
+    ::continue::
   end
 
 end
@@ -424,6 +440,18 @@ function SpawnSignalBox(sl)
   box.destructible = false
 
   return box
+end
+
+
+function SpawnSpotter(g, foe)
+  local spotter = g.turtle.surface.create_entity{name = spotterName,
+                                                 position = g.turtle.position,
+                                                 force = g.turtle.force,
+                                                 create_build_effect_smoke = true} -- TODO disable smoke
+
+  maps_addSpotter(spotter, g)
+
+  return spotter
 end
 
 

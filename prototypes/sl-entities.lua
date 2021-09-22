@@ -187,6 +187,8 @@ sl_s.circuit_wire_connection_points =
 
 -- The Spotlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
+-- Many of the values are the product of hours of trial-and-error
+-- Do not tweak them without careful observation
 local t = {}
 t.name = turtleName
 t.type = "unit"
@@ -204,7 +206,6 @@ t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
 t.max_pursue_distance = 5
--- Setting vision distance too low can cause turtles to get stuck in their foes
 t.vision_distance = searchlightSpotRadius
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
@@ -220,11 +221,7 @@ t.ai_settings =
 --      target masks / entity flags here so flying units, etc aren't spottable
 t.attack_parameters =
 {
-  -- Any smaller a value for range(1) or min_attack_distance(3) will cause
-  -- the turtle to just wiggle in the center of biter nests.
-  -- Too much higher for min_attack_distance(6) and turtles will
-  -- give up on attacking and walk away more often.
-  range = 1,
+  range = searchlightSpotRadius - 2,
   min_attack_distance = 6,
   type = "projectile",
   cooldown = 60, -- measured in ticks
@@ -254,5 +251,51 @@ t.attack_parameters =
 }
 
 
+-- After a turtle has 'found' a foe, use the spotter to chase them down
+-- so the foe has a chance to escape
+local spotter = {}
+spotter.name = spotterName
+spotter.type = "land-mine"
+spotter.flags = hiddenEntityFlags
+spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+spotter.collision_mask = {} -- enable noclip for pathfinding too
+spotter.picture_safe = g["Layer_transparent_pixel"]
+spotter.picture_set = g["Layer_transparent_pixel"]
+spotter.trigger_radius = searchlightSpotRadius
+-- Keeping the spotter alive will make handling on_script_event calls slightly easier.
+-- We'll destroy it ourselves the tick after this fires, when we're done collecting events.
+spotter.force_die_on_attack = false
+spotter.timeout = searchlightSpotTime_ms
+spotter.action =
+{
+  type = "direct",
+  action_delivery =
+  {
+    type = "instant",
+    source_effects =
+    {
+      type = "nested-result",
+      affects_target = true,
+      action =
+      {
+        type = "area",
+        radius = searchlightSpotRadius,
+        force = "enemy",
+        action_delivery =
+        {
+          type = "instant",
+          target_effects =
+          {
+            type = "script",
+            effect_id = confirmedSpottedEffectID,
+          }
+        }
+      }
+    }
+  }
+}
+
+
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, sl_c, sl_s, t}
+data:extend{sl_a, sl_b, sl_c, sl_s, spotter, t}

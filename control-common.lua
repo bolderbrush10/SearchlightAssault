@@ -13,6 +13,7 @@ function InitTables()
     gID = int (gID),
     base = BaseSearchlight,
     signal = SignalBox,
+    spotter = nil / Spotter,
     turtle = Turtle,
     turtleActive = true/false, -- Used to 'latch' active state during power outages
     turtleCoord = nil / {x, y}
@@ -26,7 +27,7 @@ function InitTables()
   global.gestalts = {}
 
   -- Map: unit_number -> Gestalt
-  -- Currently tracking: baselight, turtle -> Gestalt
+  -- Currently tracking: baselight, spotter, turtle -> Gestalt
   global.unum_to_g = {}
 
   ------------------
@@ -74,7 +75,7 @@ function InitTables()
   -- Watch Circle --
   ------------------
 
-  -- Map: game tick -> gID
+  -- Map: game tick -> Map: gID -> [foes]
   global.watch_circles = {}
 end
 
@@ -97,7 +98,7 @@ end
 
 
 local function makeGestalt(sl, sigBox, turtle)
-  return {gID = newGID(), base = sl, signal = sigBox, turtle = turtle, turtleActive = true, tunions = {}}
+  return {gID = newGID(), base = sl, signal = sigBox, spotter = nil, turtle = turtle, turtleActive = true, tunions = {}}
 end
 
 
@@ -215,6 +216,7 @@ function maps_removeGestaltAndDestroyHiddenEnts(g)
   global.gestalts[g.gID] = nil
   global.unum_to_g[g.base.unit_number] = nil
   global.unum_to_g[g.turtle.unit_number] = nil
+  maps_removeSpotter(g)
 
   g.signal.destroy()
   g.turtle.destroy()
@@ -303,6 +305,23 @@ function maps_unboostTurret(base, boosted)
   tu.boosted = false
   tu.control.destroy()
   tu.control = nil
+end
+
+
+function maps_addSpotter(spotter, gestalt)
+  global.unum_to_g[spotter.unit_number] = gestalt
+  gestalt.spotter = spotter
+end
+
+
+function maps_removeSpotter(g)
+  if not g.spotter then
+    return
+  end
+
+  global.unum_to_g[g.spotter.unit_number] = nil
+  g.spotter.destroy()
+  g.spotter = nil
 end
 
 

@@ -1,5 +1,8 @@
 ## Current Task:
 
+
+## Next Tasks:
+
 - Should we plan to create & pop up our own custom gui for circuit conditions?
 - What kind of entity has good circuit conditions we can steal / how to rig the connections
   - Maybe we'll need to create hidden constant-combinators / deciders and dynamically set their output in on_tick...
@@ -8,11 +11,13 @@
 - Should we look up if there's an event for when the player modifies a gui to read X/Y, and only read from the SL combinator then?
   (nb, we'd have to figure out how to track copy-pasted / ghost entities)
 
-- Make sure if turtle leaves SL range we stop it
-- We know the speed of the turtle... Maybe we calculate the max distance it can travel in n ticks before reaching the turret range,
-  and start checking every n ticks accordingly?
+- Outputting a signal has no effect until the signal box is hooked up to a electric pole or something...
+- It seems like removing a circuit connection with the signal, doesn't revert from manual mode to wander mode,
+  nor does clearing an outputted signal...
 
-## Next Tasks:
+- We speed up the turtle when manually moving the searchlight...
+  So, we should probably make sure it gets slowed back down when it gets distracted,
+  or when the manual move is complete
 
 - Use Prototype/CustomInput and make a GUI panel option to allow taking direct control of the spotlight
   Pop up a window that shows the spotlight beam's area
@@ -172,6 +177,13 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 --      Or maybe put turrets on a cooldown after switching shooting target?
 
 
+### Feature: More features in circuit network interface
+
+-- Activate 'infrared mode' (target vehicles / player only) by sending a signal?
+
+-- etc
+
+
 ### Feature: Decorate Boostable Radius / Terrain
 
 -- TODO add a layer of animated glowing lines to boosted turrets?
@@ -215,6 +227,9 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 ### Feature: Traincar
 
 -- TODO Make a train wagon type with 2-4 searchlights mounted on it
+-- TODO Turret train -- put on a turret and let it wheel away
+        (Did no one make this already?)
+        This whole idea should probably be a whole different mod...
 
 
 ### Feature: Sounds & Audio
@@ -224,6 +239,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 - Maybe we want kind of an audible hum, like a bass-boosted flouresent light...
 - And some quiet background morse-code kinda sounds...
+- prototype: turtle.walking_sound to an electric hum / sizzle ?
+- attack_parameters.CyclicSound: Metal-Gear-Solid style "Alert noise" for turtle ?
+- attack_parameters.CyclicSound: Alarm klaxon for Alarm Mode searchlight ?
 
 
 ### Feature: Radar Integration
@@ -432,6 +450,8 @@ Features:
   (or like, 2x as far as the active sight range)
 
 - Gives radar-like map "remote vision" on targeted area
+- Prototypes/ArtilleryProjectile has one mandatory flag: reveal map
+  So maybe that'd be useful
 
 - Very high power cost
   (Maybe like 10x solar panels' worth per?

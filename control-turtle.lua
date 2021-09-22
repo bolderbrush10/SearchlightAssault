@@ -4,7 +4,8 @@ require "sl-defines"
 require "sl-util"
 
 
-function TurtleWaypointReached(unit_number)
+-- TODO Account for commandFailed
+function TurtleWaypointReached(unit_number, commandFailed)
   local g = global.unum_to_g[unit_number]
 
   if g.turtleCoord == nil then
@@ -15,6 +16,17 @@ function TurtleWaypointReached(unit_number)
                           distraction = defines.distraction.by_anything,
                          })
   end
+end
+
+function TurtleDistracted(unit_number, commandFailed)
+  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
+  --      or figure out what entity it was trying to attack and manually fire the
+  --      attack_trigger event there and remove the turtle
+
+  -- TODO Start tracking the turtle in global[] + count of failed commands
+  --      We'll want to check every tick in control-searchlight
+  --      if it's left its searchlight radius,
+  --      and we'll want to check if we need to manually-kick off a WatchCircle
 end
 
 
@@ -125,8 +137,7 @@ function ManualTurtleMove(gestalt, coord)
   translatedCoord.x = translatedCoord.x + gestalt.base.position.x
   translatedCoord.y = translatedCoord.y + gestalt.base.position.y
 
-
-
+  -- TODO Could probably keep an 'original coord' to compare against to save cycles
   if gestalt.turtleCoord == nil
      or translatedCoord.x ~= gestalt.turtleCoord.x
      or translatedCoord.y ~= gestalt.turtleCoord.y then
