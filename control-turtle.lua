@@ -9,6 +9,7 @@ function TurtleWaypointReached(unit_number)
 
   if g.turtleCoord == nil then
     WanderTurtle(g.turtle, g.base.position)
+    g.base.shooting_target = g.turtle -- retarget turtle just in case something happened
   else
     g.turtle.set_command({type = defines.command.stop,
                           distraction = defines.distraction.by_anything,
