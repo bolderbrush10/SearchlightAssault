@@ -1,15 +1,13 @@
+local d = require "sl-defines"
+local u = require "sl-util"
+
 require "control-common"
 require "control-turtle"
-require "sl-defines"
-require "sl-util"
-
-require "util" -- for table.deepcopy
-
 
 local boostableArea =
 {
-  x = searchlightBoostEffectRange*2,
-  y = searchlightBoostEffectRange*2
+  x = d.searchlightBoostEffectRange*2,
+  y = d.searchlightBoostEffectRange*2
 }
 
 ------------------------
@@ -25,7 +23,7 @@ function SearchlightAdded(sl)
   -- Only allow adjacent searchlights and turrets to make boost partners
   candidates = {}
   for _, f in pairs(friends) do
-    if rectangeDistSquared(unpackRectangles(f.selection_box, sl.selection_box)) < 1 then
+    if u.RectangeDistSquared(u.UnpackRectangles(f.selection_box, sl.selection_box)) < 1 then
       table.insert(candidates, f)
     end
   end
@@ -63,13 +61,13 @@ end
 function TurretAdded(turret)
   -- Search for spotlights in vicinity and add self as a boostable
   local searchlights = turret.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(turret.position),
-                                                             name={searchlightBaseName, searchlightAlarmName},
+                                                             name={d.searchlightBaseName, d.searchlightAlarmName},
                                                              force=turret.force}
 
   -- Only allow adjacent searchlights and turrets to make boost partners
   candidates = {}
   for _, sl in pairs(searchlights) do
-    if rectangeDistSquared(unpackRectangles(sl.selection_box, turret.selection_box)) < 1 then
+    if u.RectangeDistSquared(u.UnpackRectangles(sl.selection_box, turret.selection_box)) < 1 then
       table.insert(candidates, sl)
     end
   end
@@ -98,7 +96,7 @@ function FoeSuspected(turtle, foe)
   -- (note that it takes quite a few extra ticks for the landmine to do its business,
   --  but we still want to make sure the circle is closed by the time the spotlight
   --  would spawn a new spotter and be 'rearmed')
-  OpenWatchCircle(s, nil, game.tick - 10 + searchlightSpotTime_ms * 2)
+  OpenWatchCircle(s, nil, game.tick - 10 + d.searchlightSpotTime_ms * 2)
 end
 
 
@@ -124,16 +122,16 @@ end
 --       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
 --      Would look something like:
 --      local activeAsNum = bit32.band(attackLight.active, 1)
---      *.active = tobool((activeAsNum * (sl.energy - searchlightCapacitorStartable))
---          + ((-1 * activeAsNum) * (sl.energy + searchlightCapacitorCutoff)))
+--      *.active = tobool((activeAsNum * (sl.energy - d.searchlightCapacitorStartable))
+--          + ((-1 * activeAsNum) * (sl.energy + d.searchlightCapacitorCutoff)))
 -- We wouldn't need this function if there was an event for when entities run out of power
 function CheckElectricNeeds()
   for gID, g in pairs(global.gestalts) do
 
-    if g.base.energy < searchlightCapacitorCutoff then
+    if g.base.energy < d.searchlightCapacitorCutoff then
       -- TODO Disable any boosted turrets
       g.turtle.active = false
-    elseif g.base.energy > searchlightCapacitorStartable and g.turtleActive then
+    elseif g.base.energy > d.searchlightCapacitorStartable and g.turtleActive then
       -- TODO Reenable any boosted turrets
       g.turtle.active = true
     end
@@ -241,7 +239,7 @@ function CloseWatchCircle(gIDFoeMap)
     end
 
     local tPos = g.turtle.position
-    local foe = GetNearestEntFromList(tPos, foeList)
+    local foe = u.GetNearestEntFromList(tPos, foeList)
 
     if foe then
       -- Case: Foe spotted successfully
@@ -290,18 +288,18 @@ end
 
 
 function RaiseAlarmLight(gestalt)
-  if gestalt.base.name == searchlightAlarmName then
+  if gestalt.base.name == d.searchlightAlarmName then
     return -- Alarm already raised
   end
 
   local base = gestalt.base
-  local raised = base.surface.create_entity{name = searchlightAlarmName,
+  local raised = base.surface.create_entity{name = d.searchlightAlarmName,
                                             position = base.position,
                                             force = base.force,
                                             fast_replace = true,
                                             create_build_effect_smoke = false}
 
-  CopyTurret(base, raised)
+  u.CopyTurret(base, raised)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[raised.unit_number] = gestalt
   gestalt.base = raised
@@ -311,18 +309,18 @@ end
 
 
 function ClearAlarmLight(gestalt)
-  if gestalt.base.name == searchlightBaseName then
+  if gestalt.base.name == d.searchlightBaseName then
     return -- Alarm already raised
   end
 
   local base = gestalt.base
-  local cleared = base.surface.create_entity{name = searchlightBaseName,
+  local cleared = base.surface.create_entity{name = d.searchlightBaseName,
                                              position = base.position,
                                              force = base.force,
                                              fast_replace = true,
                                              create_build_effect_smoke = false}
 
-  CopyTurret(base, cleared)
+  u.CopyTurret(base, cleared)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[cleared.unit_number] = gestalt
   gestalt.base = cleared
@@ -350,18 +348,18 @@ function Boost(tunion, foe)
 
   local turret = tunion.turret
 
-  if not IsPositionWithinTurretArc(foe.position, turret) then
+  if not u.IsPositionWithinTurretArc(foe.position, turret) then
     return
   end
 
-  local newT = turret.surface.create_entity{name = turret.name .. boostSuffix,
+  local newT = turret.surface.create_entity{name = turret.name .. d.boostSuffix,
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
                                             fast_replace = true,
                                             create_build_effect_smoke = false}
 
-  CopyTurret(turret, newT)
+  u.CopyTurret(turret, newT)
   maps_boostTurret(turret, newT, SpawnControl(newT))
   turret.destroy()
   -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
@@ -395,14 +393,14 @@ function UnBoost(tunion)
   end
 
   local turret = tunion.turret
-  local newT = turret.surface.create_entity{name = turret.name:gsub(boostSuffix, ""),
+  local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
                                             fast_replace = true,
                                             create_build_effect_smoke = false}
 
-  CopyTurret(turret, newT)
+  u.CopyTurret(turret, newT)
   maps_unboostTurret(newT, turret)
   turret.destroy()
   -- As with Boost(), don't raise script_raised_destroy
@@ -417,7 +415,7 @@ function SpawnControl(turret)
   pos.x = pos.x - 0.5
   pos.y = pos.y - 0.5
 
-  local control = turret.surface.create_entity{name = searchlightControllerName,
+  local control = turret.surface.create_entity{name = d.searchlightControllerName,
                                                position = pos,
                                                force = turret.force,
                                                create_build_effect_smoke = true}
@@ -432,7 +430,7 @@ function SpawnSignalBox(sl)
   pos = sl.position
   pos.y = pos.y + 0.5
 
-  local box = sl.surface.create_entity{name = searchlightSignalBoxName,
+  local box = sl.surface.create_entity{name = d.searchlightSignalBoxName,
                                        position = pos,
                                        force = sl.force,
                                        create_build_effect_smoke = false}
@@ -444,7 +442,7 @@ end
 
 
 function SpawnSpotter(g, foe)
-  local spotter = g.turtle.surface.create_entity{name = spotterName,
+  local spotter = g.turtle.surface.create_entity{name = d.spotterName,
                                                  position = g.turtle.position,
                                                  force = g.turtle.force,
                                                  create_build_effect_smoke = true} -- TODO disable smoke

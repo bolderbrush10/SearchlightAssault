@@ -1,4 +1,6 @@
-require "sl-defines"
+local d = require "sl-defines"
+
+require "util" -- for table.deepcopy
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
@@ -7,104 +9,66 @@ require "sl-defines"
 -- local g = require "graphics"
 -- myEntity.animation = g[someAnimation]
 
--- TODO Lua macros are a lost cause. Figure out how to use C macros
---      to simply declare local items for export as opposed to the current method
 
 local export = {}
 
 
-local Layer_transparent_pixel =
+------------------------------------------------------------
+-- Misc
+
+export.layerTransparentPixel =
 {
   filename = "__Searchlights__/graphics/transparent-pixel.png",
   width = 1,
   height = 1,
 }
-export["Layer_transparent_pixel"] = Layer_transparent_pixel
 
 
-local Layer_transparent_animation =
+export.layerTransparentAnimation =
 {
   filename = "__Searchlights__/graphics/transparent-pixels.png",
   width = 8,
   height = 8,
   direction_count = 1,
 }
-export["Layer_transparent_animation"] = Layer_transparent_animation
 
 
 ------------------------------------------------------------
--- Spotlight Layers
-local control_unit_sprite =
+-- Control Unit Sprite and Light
+
+export.controlUnitSprite =
 {
   filename = "__Searchlights__/graphics/control-test.png",
   width = 200,
   height = 200,
   scale = 0.1,
 }
-export["control_unit_sprite"] = control_unit_sprite
 
 
-local control_unit_light =
+export.controlUnitLight =
 {
   type = "basic",
   intensity = 0.8,
   size = 2,
 }
-export["control_unit_light"] = control_unit_light
 
 
 ------------------------------------------------------------
 -- Signal Box Sprite
 
-
-local signal_box_sprite =
+export.signalBoxSprite =
 {
   filename = "__Searchlights__/graphics/signal-box.png",
   width = 127,
   height = 83,
   scale = 0.5,
 }
-export["signal_box_sprite"] = signal_box_sprite
 
 
 ------------------------------------------------------------
--- Spotlight Layers
+-- Spotlight Model & Glow
 
-
-local Light_Layer_SpotLight_NormLight =
-{
-  filename = "__Searchlights__/graphics/spotlight-r.png",
-  width = 200,
-  height = 200,
-  scale = 2,
-  flags = { "light" },
-  shift = {0.3, 0},
-}
-export["Light_Layer_SpotLight_NormLight"] = Light_Layer_SpotLight_NormLight
-
-local redTint = {r=0.9, g=0.1, b=0.1, a=1}
-
--- local Light_Layer_SpotLight_NormLight_Less = table.deepcopy(Light_Layer_SpotLight_NormLight)
--- Light_Layer_SpotLight_NormLight_Less.filename = "__Searchlights__/graphics/spotlight-r-less.png"
-
--- local Light_Layer_SpotLight_RimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
--- Light_Layer_SpotLight_RimLight.filename = "__Searchlights__/graphics/spotlight-r-rim.png"
-
-local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
-
-local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_NormLight_Red.tint = redTint
-
--- local Light_Layer_SpotLight_RimLight_Red = table.deepcopy(Light_Layer_SpotLight_RimLight)
--- Light_Layer_SpotLight_RimLight_Red.tint = redTint
-
-local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
--- Light_Layer_SpotLight_DimLight_Red.tint = redTint
-
-
-
-local spotlight_glow_animation =
+export.spotlightGlowAnimation =
 {
   filename = "__Searchlights__/graphics/spotlight-shooting.png",
   line_length = 8,
@@ -129,15 +93,14 @@ local spotlight_glow_animation =
     scale = 0.5
   }
 }
-export["spotlight_glow_animation"] = spotlight_glow_animation
 
 
-local spotlight_alarm_glow_animation = table.deepcopy(spotlight_glow_animation)
-spotlight_alarm_glow_animation.filename = "__Searchlights__/graphics/spotlight-shooting-alarm.png"
-spotlight_alarm_glow_animation.hr_version.filename = "__Searchlights__/graphics/hr-spotlight-shooting-alarm.png"
-export["spotlight_alarm_glow_animation"] = spotlight_alarm_glow_animation
+export.spotlightAlarmGlowAnimation = table.deepcopy(export.spotlightGlowAnimation)
+export.spotlightAlarmGlowAnimation.filename = "__Searchlights__/graphics/spotlight-shooting-alarm.png"
+export.spotlightAlarmGlowAnimation.hr_version.filename = "__Searchlights__/graphics/hr-spotlight-shooting-alarm.png"
 
-local spotlight_dim_animation =
+
+export.spotlightDimAnimation =
 {
   filename = "__Searchlights__/graphics/spotlight-dim.png",
   line_length = 8,
@@ -158,12 +121,35 @@ local spotlight_dim_animation =
     scale = 0.5
   }
 }
-export["spotlight_dim_animation"] = spotlight_dim_animation
+
+
+------------------------------------------------------------
+-- Spotlight Beam Layers
+
+local Light_Layer_SpotLight_NormLight =
+{
+  filename = "__Searchlights__/graphics/spotlight-r.png",
+  width = 200,
+  height = 200,
+  scale = 2,
+  flags = { "light" },
+  shift = {0.3, 0},
+}
+
+
+local redTint = {r=0.9, g=0.1, b=0.1, a=1}
+
+local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
+Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
+
+local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
+Light_Layer_SpotLight_NormLight_Red.tint = redTint
+
+local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
 
 
 ------------------------------------------------------------
 -- Spotlight Beams
-
 
 local SpotlightBeamPassive =
 {
@@ -190,9 +176,9 @@ local SpotlightBeamPassive =
       Light_Layer_SpotLight_DimLight,
     }
   },
-  head = Layer_transparent_pixel,
-  tail = Layer_transparent_pixel,
-  body = Layer_transparent_pixel,
+  head = export.layerTransparentPixel,
+  tail = export.layerTransparentPixel,
+  body = export.layerTransparentPixel,
 }
 
 
@@ -220,25 +206,6 @@ SpotlightBeamAlarm.ending =
 
 
 data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
-
-
-------------------------------------------------------------
--- Spotlight Warning Light
-
-
-local SpotlightWarningLightSprite =
-{
-  filename = "__Searchlights__/graphics/yellow-light.png",
-  name = searchlightWatchLightSpriteName,
-  type = "sprite",
-  blend_mode = "normal",
-  width=32,
-  height=32,
-}
-
-
-data:extend{SpotlightWarningLightSprite}
-
 
 
 return export

@@ -1,3 +1,5 @@
+local d = require "sl-defines"
+
 require "control-common"
 
 -- The 'turtle' force exists to hold an imaginary target (The 'Turtle')
@@ -12,7 +14,7 @@ require "control-common"
 
 -- Called when a new spotlight is created
 function PrepareTurtleForce(SpotlightForce)
-  local turtleForceName = SpotlightForce.name .. turtleForceSuffix
+  local turtleForceName = SpotlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] then
     return turtleForceName -- We've already initialized this force, nothing to do
@@ -35,11 +37,11 @@ end
 function UpdateTForceRelationships(SpotlightForce)
 
   -- A neat trick to see if a string ends with a given suffix
-  if SpotlightForce.name:sub(-#turtleForceSuffix) == turtleForceSuffix then
+  if SpotlightForce.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
     return -- Don't recurse
   end
 
-  local turtleForceName = SpotlightForce.name .. turtleForceSuffix
+  local turtleForceName = SpotlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] == nil then
     return -- Don't recurse
@@ -63,7 +65,7 @@ function UpdateTForceRelationships(SpotlightForce)
       ;
     elseif f.name == SpotlightForce.name then
       ;
-    elseif f.name:sub(-#turtleForceSuffix) == turtleForceSuffix then
+    elseif f.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
       -- Turtles should always ignore other turtles
       -- (Otherwise, two turtles from allied forces might fight in the middle of nowhere)
       f.set_cease_fire(tForce, true)
@@ -90,11 +92,11 @@ end
 
 function MigrateTurtleForces(oldSLForce, newSLForce)
   -- Don't recurse when we migrate turtles
-  if oldSLForce.name:sub(-#turtleForceSuffix) == turtleForceSuffix then
+  if oldSLForce.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
     return
   end
 
-  local oldtForceName = oldSLForce.name .. turtleForceSuffix
+  local oldtForceName = oldSLForce.name .. d.turtleForceSuffix
 
   -- If there's no associated turtle force, nothing to do
   if global.sl_force_init[oldtForceName] == nil then

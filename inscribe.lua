@@ -1,4 +1,4 @@
-require "searchlight-defines"
+local d = require "sl-defines"
 
 local lightEntities = {} -- not actual entites but roll with it
 
@@ -46,8 +46,8 @@ end
 
 function makeWanderWaypoint(origin)
     -- make it easier to find the light for now
-    -- x = origin.x + math.random(-searchlightRange, searchlightRange)
-    -- y = origin.y + math.random(-searchlightRange, searchlightRange)
+    -- x = origin.x + math.random(-d.searchlightRange, d.searchlightRange)
+    -- y = origin.y + math.random(-d.searchlightRange, d.searchlightRange)
 
     local waypoint = {x = origin.x + math.random(-searchlightInnerRange, searchlightInnerRange),
                       y = origin.y + math.random(-searchlightInnerRange, searchlightInnerRange)}

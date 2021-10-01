@@ -1,7 +1,9 @@
 -- This file's job is to grab any turrets it can find and create a boosted-range version.
 -- If some other mod put their turret into this data stage (or later), and we don't grab it, then too bad.
 
-require("sl-defines")
+local d = require "sl-defines"
+
+require "util" -- for table.deepcopy
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
@@ -25,10 +27,10 @@ data:extend{BoostSmoke}
 
 
 local function GetBoostName(entity, table)
-  if not string.match(entity.name, boostSuffix)
+  if not string.match(entity.name, d.boostSuffix)
      and not string.match(entity.name, "searchlight") then
 
-    local boostedName =  entity.name .. boostSuffix
+    local boostedName =  entity.name .. d.boostSuffix
 
     if table[boostedName] == nil then
       return boostedName
@@ -85,10 +87,10 @@ end
 
 local currTable
 currTable = data.raw["electric-turret"]
-MakeBoost(currTable, rangeBoostAmount)
+MakeBoost(currTable, d.rangeBoostAmount)
 
 currTable = data.raw["ammo-turret"]
-MakeBoost(currTable, rangeBoostAmount)
+MakeBoost(currTable, d.rangeBoostAmount)
 
 currTable = data.raw["fluid-turret"]
-MakeBoost(currTable, rangeBoostAmount)
+MakeBoost(currTable, d.rangeBoostAmount)

@@ -156,7 +156,7 @@ C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
 
 
 ### Feature: Range Boosting
--- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = searchlightRange + boostradius'?
+-- TODO okay so we have to think about the range boost effect and the fact that turrets we boost are further than 0 pixels away from the searchlight... Just because we boost a turret's range doesn't mean it can now reach whatever the searchlight is targeting.. So maybe we need to make sure that 'amount of range boost = d.searchlightRange + boostradius'?
 
 -- TODO preserve mining progress somehow when things are boosted / unboosted
 
@@ -344,7 +344,7 @@ local next = next
 -- TODO How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
 -- TODO Or just make a stand-alone version of the mod and a non-standalone version?
 
--- TODO rename searchlightFriendRadius to searchlightRangeBoostRadius or something
+-- TODO rename searchlightFriendRadius to d.searchlightRangeBoostRadius or something
 
 -- TODO Be more meticulous in checking entity.isValid on objects before we use them (including players, characters, cursors, item stacks, etc)
 

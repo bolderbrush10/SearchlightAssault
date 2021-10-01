@@ -1,11 +1,13 @@
-require "sl-defines"
+local d = require "sl-defines"
 
--- TODO Double check that these don't need to be made local / used during prototype phase
+-- It's not strictly necessary to declare functions locally like this, outside the data stage...
+-- But, using local reduces the amount of calls to the global table lua has to perform
+local u = {}
 
 -- We don't need to these put in the globals, since it's fine to recalulate them on game load
-local DirectionToVector = {}
 local firing_arcs = {}
 local firing_range = {}
+local DirectionToVector = {}
 
 
 -- Directions come as a number between 0 and 8 (as used in defines.direction)
@@ -20,69 +22,72 @@ DirectionToVector[defines.direction.east]      = {x =  1, y =  0}
 DirectionToVector[defines.direction.northeast] = {x =  1, y = -1}
 
 
-function len(a, b)
-  return math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2)
-end
-
-
--- Calculating the square root is usually slower than just squaring whatever you compare to
-function lensquared(a, b)
+-- Instead of using math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2),
+-- it's usually faster to just square whatever we're comparing against
+u.lensquared =
+function(a, b)
   return (a.x - b.x)^2 + (a.y - b.y)^2
 end
 
 
-function square(a)
+u.square =
+function(a)
   return a*a
 end
 
 
-function withinRadius(posA, posB, acceptable_radius)
-  return lensquared(posA, posB) < square(acceptable_radius)
+u.WithinRadius =
+function(posA, posB, acceptable_radius)
+  return u.lensquared(posA, posB) < u.square(acceptable_radius)
 end
 
 
-function unpackRectangles(a, b)
+u.UnpackRectangles =
+function(a, b)
   return a.left_top.x, a.left_top.y, a.right_bottom.x, a.right_bottom.y,
          b.left_top.x, b.left_top.y, b.right_bottom.x, b.right_bottom.y
 end
 
 
-function rectangeDistSquared(aTopLeftx, aTopLefty, aBottomRightx, aBottomRighty,
+u.RectangeDistSquared =
+function(aTopLeftx, aTopLefty, aBottomRightx, aBottomRighty,
                              bTopLeftx, bTopLefty, bBottomRightx, bBottomRighty)
     left = bBottomRightx < aTopLeftx
     right = aBottomRightx < bTopLeftx
     bottom = bBottomRighty < aTopLefty
     top = aBottomRighty < bTopLefty
     if top and left then
-        return lensquared({x=aTopLeftx,     y=aBottomRighty}, {x=bBottomRightx, y=bTopLefty})
+        return u.lensquared({x=aTopLeftx,     y=aBottomRighty}, {x=bBottomRightx, y=bTopLefty})
     elseif left and bottom then
-        return lensquared({x=aTopLeftx,     y=aTopLefty},     {x=bBottomRightx, y=bBottomRighty})
+        return u.lensquared({x=aTopLeftx,     y=aTopLefty},     {x=bBottomRightx, y=bBottomRighty})
     elseif bottom and right then
-        return lensquared({x=aBottomRightx, y=aTopLefty},     {x=bTopLeftx,     y=bBottomRighty})
+        return u.lensquared({x=aBottomRightx, y=aTopLefty},     {x=bTopLeftx,     y=bBottomRighty})
     elseif right and top then
-        return lensquared({x=aBottomRightx, y=aBottomRighty}, {x=bTopLeftx,     y=bTopLefty})
+        return u.lensquared({x=aBottomRightx, y=aBottomRighty}, {x=bTopLeftx,     y=bTopLefty})
     elseif left then
-        return square(aTopLeftx - bBottomRightx)
+        return u.square(aTopLeftx - bBottomRightx)
     elseif right then
-        return square(bTopLeftx - aBottomRightx)
+        return u.square(bTopLeftx - aBottomRightx)
     elseif bottom then
-        return square(aTopLefty - bBottomRighty)
+        return u.square(aTopLefty - bBottomRighty)
     elseif top then
-        return square(bTopLefty - aBottomRighty)
+        return u.square(bTopLefty - aBottomRighty)
     else -- rectangles intersect
         return 0
     end
 end
 
 
-function ClampCoordToDistance(coord, distance)
+u.ClampCoordToDistance =
+function(coord, distance)
   local theta = math.atan2(coord.y, coord.x)
-  return ScreenOrientationToPosition({x=0, y=0}, theta, distance)
+  return u.ScreenOrientationToPosition({x=0, y=0}, theta, distance)
 end
 
 
 -- theta given as 0.0 - 1.0, 0/1 is top middle of screen
-function OrientationToPosition(origin, theta, distance)
+u.OrientationToPosition =
+function(origin, theta, distance)
   local radTheta = theta * 2 * math.pi
 
   -- Invert y to fit screen coordinates
@@ -92,13 +97,54 @@ end
 
 
 -- theta given as radians, assumes screen-coordiantes already in use
-function ScreenOrientationToPosition(origin, radTheta, distance)
+u.ScreenOrientationToPosition =
+function(origin, radTheta, distance)
   return {x = origin.x + math.cos(radTheta) * distance,
           y = origin.y + math.sin(radTheta) * distance,}
 end
 
 
-function IsPositionWithinTurretArc(pos, turret)
+local function LookupArc(turret)
+  if firing_arcs[turret.name] then
+    return firing_arcs[turret.name]
+  end
+
+  local tPrototype = game.entity_prototypes[turret.name]
+
+  if tPrototype.attack_parameters
+     and tPrototype.attack_parameters.turn_range then
+    firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
+  else
+    firing_arcs[turret.name] = -1
+  end
+
+  return firing_arcs[turret.name]
+end
+
+
+
+local function LookupRange(turret)
+  if firing_range[turret.name] then
+    return firing_range[turret.name]
+  end
+
+  local tPrototype = game.entity_prototypes[turret.name]
+
+  if tPrototype.turret_range then
+    firing_range[turret.name] = tPrototype.turret_range
+  elseif tPrototype.attack_parameters
+     and tPrototype.attack_parameters.range then
+    firing_range[turret.name] = tPrototype.attack_parameters.range
+  else
+    firing_range[turret.name] = -1
+  end
+
+  return firing_range[turret.name]
+end
+
+
+u.IsPositionWithinTurretArc =
+function(pos, turret)
   local arc = LookupArc(turret)
 
   if arc <= 0 then
@@ -130,49 +176,11 @@ function IsPositionWithinTurretArc(pos, turret)
 end
 
 
-function LookupArc(turret)
-  if firing_arcs[turret.name] then
-    return firing_arcs[turret.name]
-  end
-
-  local tPrototype = game.entity_prototypes[turret.name]
-
-  if tPrototype.attack_parameters
-     and tPrototype.attack_parameters.turn_range then
-    firing_arcs[turret.name] = tPrototype.attack_parameters.turn_range
-  else
-    firing_arcs[turret.name] = -1
-  end
-
-  return firing_arcs[turret.name]
-end
-
-
-function LookupRange(turret)
-  if firing_range[turret.name] then
-    return firing_range[turret.name]
-  end
-
-  local tPrototype = game.entity_prototypes[turret.name]
-
-  if tPrototype.turret_range then
-    firing_range[turret.name] = tPrototype.turret_range
-  elseif tPrototype.attack_parameters
-     and tPrototype.attack_parameters.range then
-    firing_range[turret.name] = tPrototype.attack_parameters.range
-  else
-    firing_range[turret.name] = -1
-  end
-
-  return firing_range[turret.name]
-end
-
-
 -- "Do note that reading from a LuaFluidBox creates a new table and writing will copy the given fields from the table into the engine's own fluid box structure.
 --  Therefore, the correct way to update a fluidbox of an entity is to read it first, modify the table, then write the modified table back.
 --  Directly accessing the returned table's attributes won't have the desired effect."
 -- https://lua-api.factorio.com/latest/LuaFluidBox.html
-function CopyFluids(oldT, newT)
+local function CopyFluids(oldT, newT)
 
   -- Must manually index this part, too.
   for boxindex = 1, #oldT.fluidbox do
@@ -186,7 +194,7 @@ function CopyFluids(oldT, newT)
 end
 
 
-function CopyItems(oldTinv, newTinv)
+local function CopyItems(oldTinv, newTinv)
 
   for boxindex = 1, #oldTinv do
     local oldStack = oldTinv[boxindex]
@@ -199,7 +207,8 @@ function CopyItems(oldTinv, newTinv)
 end
 
 
-function CopyTurret(oldT, newT)
+u.CopyTurret =
+function(oldT, newT)
   newT.copy_settings(oldT)
   newT.kills = oldT.kills
   newT.health = oldT.health
@@ -234,20 +243,8 @@ function CopyTurret(oldT, newT)
 end
 
 
-function GetEnemyForces(force)
- local forces = {}
-
- for _, f in pairs(game.forces) do
-  if force.is_enemy(f) then
-    table.insert(forces, f)
-  end
- end
-
- return forces
-end
-
-
-function GetNearestEntFromList(position, entityList)
+u.GetNearestEntFromList =
+function(position, entityList)
   if entityList == nil then
     return nil
   end
@@ -264,7 +261,7 @@ function GetNearestEntFromList(position, entityList)
   local bestE = nil
 
   for _, e in pairs(entityList) do
-    local dist = lensquared(position, e.position)
+    local dist = u.lensquared(position, e.position)
 
     if dist < bestDist then
       bestDist = dist
@@ -274,3 +271,6 @@ function GetNearestEntFromList(position, entityList)
 
   return bestE
 end
+
+
+return u

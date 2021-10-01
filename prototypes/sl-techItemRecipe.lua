@@ -1,4 +1,5 @@
-require "sl-defines"
+local d = require "sl-defines"
+
 require "sl-entities"
 
 
@@ -13,10 +14,10 @@ local icon =
 local item = {}
 item.type = "item"
 item.stack_size = 50
-item.name = searchlightItemName
+item.name = d.searchlightItemName
 item.subgroup = "defensive-structure"
 item.order = "a[small-lamp]-a[searchlight]"
-item.place_result = searchlightBaseName
+item.place_result = d.searchlightBaseName
 item.icon = icon.filename
 item.icon_size = icon.icon_size
 
@@ -24,8 +25,8 @@ item.icon_size = icon.icon_size
 -- Recipe
 local recipe = {}
 recipe.type = "recipe"
-recipe.name = searchlightRecipeName
-recipe.result = searchlightItemName
+recipe.name = d.searchlightRecipeName
+recipe.result = d.searchlightItemName
 recipe.order = "a[small-lamp]-a[searchlight]"
 recipe.energy_required = 20
 recipe.enabled = false
@@ -40,7 +41,7 @@ recipe.ingredients =
 -- Technology
 local t = {}
 t.type = "technology"
-t.name = searchlightTechnologyName
+t.name = d.searchlightTechnologyName
 t.icon = icon.filename
 t.icon_size = icon.icon_size
 t.icon_mipmaps = 1
@@ -48,7 +49,7 @@ t.effects =
 {
   {
     type = "unlock-recipe",
-    recipe = searchlightRecipeName
+    recipe = d.searchlightRecipeName
   }
 }
 t.prerequisites = {"optics", "circuit-network"}

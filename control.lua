@@ -1,13 +1,10 @@
+local d = require "sl-defines"
+
 require "control-common"
 require "control-forces"
 require "control-searchlight"
 require "control-turtle"
 
-
---
--- TODO We need to think about what happens when a searchlight/turret of the opposing force is added / removed
--- We'll have to make an event hook here that'll update something in control-forces.lua
---
 
 
 --
@@ -55,9 +52,9 @@ end)
 script.on_event(defines.events.on_script_trigger_effect,
 function(event)
   if event.source_entity and event.target_entity then
-    if event.effect_id == spottedEffectID then
+    if event.effect_id == d.spottedEffectID then
       FoeSuspected(event.source_entity, event.target_entity)
-    elseif event.effect_id == confirmedSpottedEffectID then
+    elseif event.effect_id == d.confirmedSpottedEffectID then
       OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
     end
   end
@@ -102,14 +99,14 @@ for index, e in pairs
       entity = event.entity
     end
 
-    if entity.name == searchlightBaseName then
+    if entity.name == d.searchlightBaseName then
       SearchlightAdded(entity)
     else
       TurretAdded(entity)
     end
 
   end, {
-    {filter = "name", name = searchlightBaseName},
+    {filter = "name", name = d.searchlightBaseName},
     {filter = "turret", mode = "or"}
   })
 end
@@ -119,7 +116,7 @@ end
 script.on_event(defines.events.on_trigger_created_entity,
 function(event)
 
-  if event.entity.name == searchlightBaseName then
+  if event.entity.name == d.searchlightBaseName then
     SearchlightAdded(event.entity )
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
     TurretAdded(event.entity)
@@ -141,15 +138,15 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.entity.name == searchlightBaseName or event.entity.name == searchlightAlarmName then
+    if event.entity.name == d.searchlightBaseName or event.entity.name == d.searchlightAlarmName then
       SearchlightRemoved(event.entity)
     else
       TurretRemoved(event.entity)
     end
 
   end, {
-    {filter = "name", name = searchlightBaseName},
-    {filter = "name", name = searchlightAlarmName, mode = "or"},
+    {filter = "name", name = d.searchlightBaseName},
+    {filter = "name", name = d.searchlightAlarmName, mode = "or"},
     {filter = "turret", mode = "or"}
   })
 end
@@ -163,7 +160,7 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.entity.name == searchlightBaseName or event.entity.name == searchlightAlarmName then
+    if event.entity.name == d.searchlightBaseName or event.entity.name == d.searchlightAlarmName then
       SearchlightRemoved(event.entity)
     elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
       TurretRemoved(event.entity)

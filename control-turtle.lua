@@ -1,7 +1,8 @@
+local d = require "sl-defines"
+local u = require "sl-util"
+
 require "control-common"
 require "control-forces"
-require "sl-defines"
-require "sl-util"
 
 
 -- TODO Account for commandFailed
@@ -35,10 +36,10 @@ end
 function SpawnTurtle(baseSL, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
-    location = OrientationToPosition(baseSL.position, baseSL.orientation, 3)
+    location = u.OrientationToPosition(baseSL.position, baseSL.orientation, 3)
   end
 
-  local turtle = surface.create_entity{name = turtleName,
+  local turtle = surface.create_entity{name = d.turtleName,
                                        position = location,
                                        force = PrepareTurtleForce(baseSL.force),
                                        fast_replace = true,
@@ -49,10 +50,10 @@ function SpawnTurtle(baseSL, surface, location)
 
   -- If we set our first waypoint in the same direction, but further away,
   -- it makes the searchlight appear to "start up"
-  local windupWaypoint = OrientationToPosition(baseSL.position,
+  local windupWaypoint = u.OrientationToPosition(baseSL.position,
                                                baseSL.orientation,
-                                               math.random(searchlightRange / 8,
-                                                           searchlightRange - 2))
+                                               math.random(d.searchlightRange / 8,
+                                                           d.searchlightRange - 2))
 
   WanderTurtle(turtle, baseSL.position, windupWaypoint)
 
@@ -66,7 +67,7 @@ function WanderTurtle(turtle, origin, waypoint)
   if waypoint == nil then
     waypoint = MakeWanderWaypoint(origin)
   end
-  turtle.speed = searchlightWanderSpeed
+  turtle.speed = d.searchlightWanderSpeed
 
   turtle.set_command({type = defines.command.go_to_location,
                       -- TODO Do we want to make it an option to allow spotting non-military foe-built structures?
@@ -84,26 +85,26 @@ end
 function MakeWanderWaypoint(origin)
   -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
   -- too close to the max range of the spotlight
-  local bufferedRange = searchlightRange - 5
+  local bufferedRange = d.searchlightRange - 5
    -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
   local angle = math.random()
-  local distance = math.random(searchlightRange/8, bufferedRange)
+  local distance = math.random(d.searchlightRange/8, bufferedRange)
 
-  return OrientationToPosition(origin, angle, distance)
+  return u.OrientationToPosition(origin, angle, distance)
 end
 
 
 function Turtleport(turtle, position, origin)
-  local bufferedRange = searchlightRange - 2
+  local bufferedRange = d.searchlightRange - 2
 
   -- If position is too far from the origin for the searchlight to attack it,
   -- calculate a slightly-closer position with the same angle and use that
-  if not withinRadius(position, origin, bufferedRange) then
+  if not u.WithinRadius(position, origin, bufferedRange) then
     local vecOriginPos = {x = position.x - origin.x,
                           y = position.y - origin.y}
 
     local theta = math.atan2(vecOriginPos.y, vecOriginPos.x)
-    position = ScreenOrientationToPosition(origin, theta, bufferedRange)
+    position = u.ScreenOrientationToPosition(origin, theta, bufferedRange)
   end
 
   if not turtle.teleport(position) then
@@ -125,12 +126,12 @@ end
 
 
 function ManualTurtleMove(gestalt, coord)
-  local bufferedRange = searchlightRange - 5
+  local bufferedRange = d.searchlightRange - 5
 
   -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
-  if lensquared(coord, {x=0, y=0}) > square(bufferedRange) then
+  if u.lensquared(coord, {x=0, y=0}) > u.square(bufferedRange) then
     local old = coord
-    coord = ClampCoordToDistance(coord, bufferedRange)
+    coord = u.ClampCoordToDistance(coord, bufferedRange)
   end
 
   local translatedCoord = coord
@@ -144,7 +145,7 @@ function ManualTurtleMove(gestalt, coord)
 
     gestalt.turtleCoord = translatedCoord
 
-    gestalt.turtle.speed = searchlightRushSpeed
+    gestalt.turtle.speed = d.searchlightRushSpeed
     gestalt.turtle.set_command({type = defines.command.go_to_location,
                                 distraction = defines.distraction.by_enemy,
                                 destination = gestalt.turtleCoord,

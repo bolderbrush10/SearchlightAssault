@@ -15,6 +15,8 @@ end
 
 game.print(serpent.block(fluidTurret.fluidbox))
 
+run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation
+
 
 LuaGameScript
 table_to_json(data) → string
@@ -455,7 +457,7 @@ lightEntity.picture_on = blank
 turretEntity.attack_parameters = {
     type = "beam",
     cooldown = 100,
-    range = searchlightRange,
+    range = d.searchlightRange,
     use_shooter_direction = true,
     ammo_type = table.deepcopy(data.raw["electric-turret"]["laser-turret"]["attack_parameters"]["ammo_type"])
     ammo_type =
@@ -534,7 +536,7 @@ end
 function LightUpFoes(sl, surface)
     -- Instantly find foes within the inner range
     local nearestFoe = surface.find_nearest_enemy{position = sl.position,
-                                                  max_distance = searchlightRange}
+                                                  max_distance = d.searchlightRange}
 
     if nearestFoe ~= nil then
         local lightID = renderSpotLight_red(nearestFoe.position, sl, surface)
@@ -615,8 +617,8 @@ end
 
 function makeWanderWaypoint(origin)
     -- make it easier to find the light for now
-    -- x = origin.x + math.random(-searchlightRange, searchlightRange)
-    -- y = origin.y + math.random(-searchlightRange, searchlightRange)
+    -- x = origin.x + math.random(-d.searchlightRange, d.searchlightRange)
+    -- y = origin.y + math.random(-d.searchlightRange, d.searchlightRange)
 
     local waypoint = {x = origin.x + math.random(-searchlightInnerRange, searchlightInnerRange),
                       y = origin.y + math.random(-searchlightInnerRange, searchlightInnerRange)}
@@ -718,7 +720,7 @@ local Turtle =
 
 
 function Boost(oldT, surface, foe)
-  if game.entity_prototypes[oldT.name .. boostSuffix] == nil then
+  if game.entity_prototypes[oldT.name .. d.boostSuffix] == nil then
     return nil
   end
 
@@ -774,7 +776,7 @@ function(event)
 
   local player = game.players[event.player_index]
   if player.cursor_stack.valid_for_read then
-    -- and player.cursor_stack.name == searchlightItemName
+    -- and player.cursor_stack.name == d.searchlightItemName
 
     renderRange(game.players[event.player_index], player.cursor_position)
   end
@@ -831,7 +833,7 @@ local turt = nil
 function DEBUGTOOL(tick)
   if not turt then
     p = game.players[1]
-    res = p.surface.find_entities_filtered{name=turtleName}
+    res = p.surface.find_entities_filtered{name=d.turtleName}
     if res[1] then
       turt = res[1]
     else

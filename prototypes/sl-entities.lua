@@ -1,25 +1,11 @@
-require "sl-defines"
-
+local d = require "sl-defines"
 local g = require "sl-graphics"
 
+require "util" -- for table.deepcopy
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
-
-local SignalEntityFlags =
-{
-  "no-copy-paste",
-  "no-automated-item-insertion",
-  "not-blueprintable",
-  "not-deconstructable",
-  "not-flammable",
-  "not-in-kill-statistics",
-  "not-repairable",
-  "not-rotatable",
-  "not-upgradable",
-  "placeable-off-grid",
-}
 
 local hiddenEntityFlags =
 {
@@ -40,7 +26,7 @@ local hiddenEntityFlags =
 
 -- Searchlight Base Entity
 local sl_b = {}
-sl_b.name = searchlightBaseName
+sl_b.name = d.searchlightBaseName
 sl_b.type = "electric-turret"
 sl_b.max_health = 250
 sl_b.icon = "__Searchlights__/graphics/spotlight-icon.png"
@@ -51,9 +37,9 @@ sl_b.energy_source =
 {
   type = "electric",
   usage_priority = "secondary-input",
-  buffer_capacity = searchlightCapacitorSize,
+  buffer_capacity = d.searchlightCapacitorSize,
   input_flow_limit = "6000kW",
-  drain = searchlightEnergyUsage,
+  drain = d.searchlightEnergyUsage,
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
@@ -62,12 +48,12 @@ sl_b.call_for_help_radius = 40
 sl_b.minable =
 {
   mining_time = 0.5,
-  result = searchlightItemName,
+  result = d.searchlightItemName,
 }
 sl_b.shoot_in_prepare_state = true
-sl_b.folded_animation      = g["spotlight_dim_animation"]
-sl_b.prepared_animation    = g["spotlight_dim_animation"]
-sl_b.energy_glow_animation = g["spotlight_glow_animation"]
+sl_b.folded_animation      = g.spotlightDimAnimation
+sl_b.prepared_animation    = g.spotlightDimAnimation
+sl_b.energy_glow_animation = g.spotlightGlowAnimation
 sl_b.glow_light_intensity = 1.0
 sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
@@ -79,7 +65,7 @@ local attackCooldownDuration = 25
 sl_b.attack_parameters =
 {
   type = "beam",
-  range = searchlightRange,
+  range = d.searchlightRange,
   cooldown = attackCooldownDuration,
   -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
   source_direction_count = 64,
@@ -95,7 +81,7 @@ sl_b.attack_parameters =
       {
         type = "beam",
         beam = "spotlight-beam-passive",
-        max_length = searchlightRange,
+        max_length = d.searchlightRange,
         duration = attackCooldownDuration,
         source_offset = {-1, -1.31439 }
       }
@@ -106,18 +92,18 @@ sl_b.attack_parameters =
 
 -- Searchlight Alarm Entity
 local sl_a = table.deepcopy(sl_b)
-sl_a.name = searchlightAlarmName
+sl_a.name = d.searchlightAlarmName
 sl_a.alert_when_attacking = true
-sl_a.energy_glow_animation = g["spotlight_alarm_glow_animation"]
+sl_a.energy_glow_animation = g.spotlightAlarmGlowAnimation
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
 
 -- Searchlight Control Entity
 local sl_c = {}
-sl_c.name = searchlightControllerName
+sl_c.name = d.searchlightControllerName
 sl_c.type = "electric-energy-interface"
-sl_c.picture = g["control_unit_sprite"]
-sl_c.light   = g["control_unit_light"]
+sl_c.picture = g.controlUnitSprite
+sl_c.light   = g.controlUnitLight
 sl_c.icon = "__Searchlights__/graphics/control-icon.png"
 sl_c.icon_size = 64
 sl_c.icon_mipmaps = 4
@@ -126,8 +112,8 @@ sl_c.energy_source =
 {
   type = "electric",
   usage_priority = "primary-input",
-  buffer_capacity = searchlightCapacitorSize,
-  drain = searchlightControlEnergyUsage,
+  buffer_capacity = d.searchlightCapacitorSize,
+  drain = d.searchlightControlEnergyUsage,
 }
 sl_c.render_layer = "higher-object-above"
 sl_c.flags = hiddenEntityFlags
@@ -143,7 +129,7 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 -- Searchlight Signal Box Entity
 local sl_s = {}
 sl_s.type = "constant-combinator"
-sl_s.name = searchlightSignalBoxName
+sl_s.name = d.searchlightSignalBoxName
 sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
@@ -154,8 +140,8 @@ sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
 sl_s.item_slot_count = 2
 sl_s.circuit_wire_max_distance = 9
-sl_s.sprites = g["signal_box_sprite"]
-sl_s.activity_led_sprites = g["Layer_transparent_pixel"]
+sl_s.sprites = g.signalBoxSprite
+sl_s.activity_led_sprites = g.layerTransparentPixel
 sl_s.activity_led_light_offsets =
 {
   {0, 0},
@@ -190,12 +176,10 @@ sl_s.circuit_wire_connection_points =
 -- Many of the values are the product of hours of trial-and-error
 -- Do not tweak them without careful observation
 local t = {}
-t.name = turtleName
+t.name = d.turtleName
 t.type = "unit"
-t.movement_speed = searchlightWanderSpeed -- Can update during runtime for wander vs track mode
-t.run_animation = g["Layer_transparent_animation"]
--- TODO remove / move into branch
--- t.run_animation = table.deepcopy(data.raw["unit"]["small-biter"]).run_animation
+t.movement_speed = d.searchlightWanderSpeed -- Can update during runtime for wander vs track mode
+t.run_animation = g.layerTransparentAnimation
 t.distance_per_frame = 1 -- speed at which the run animation plays, in tiles per frame
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
@@ -206,7 +190,7 @@ t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
 t.max_pursue_distance = 5
-t.vision_distance = searchlightSpotRadius
+t.vision_distance = d.searchlightSpotRadius
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 t.collision_box = {{0, 0}, {0, 0}} -- enable noclip
@@ -217,15 +201,13 @@ t.ai_settings =
   destroy_when_commands_fail = false,
   do_separation = false,
 }
--- TODO We could probably make a mod option to filter against
---      target masks / entity flags here so flying units, etc aren't spottable
 t.attack_parameters =
 {
-  range = searchlightSpotRadius - 2,
+  range = d.searchlightSpotRadius - 2,
   min_attack_distance = 6,
   type = "projectile",
   cooldown = 60, -- measured in ticks
-  animation = g["Layer_transparent_animation"],
+  animation = g.layerTransparentAnimation,
   range_mode = "center-to-center",
   movement_slow_down_factor = 0,
   movement_slow_down_cooldown = 0,
@@ -243,7 +225,7 @@ t.attack_parameters =
         target_effects =
         {
           type = "script",
-          effect_id = spottedEffectID,
+          effect_id = d.spottedEffectID,
         }
       }
     }
@@ -254,19 +236,19 @@ t.attack_parameters =
 -- After a turtle has 'found' a foe, use the spotter to chase them down
 -- so the foe has a chance to escape
 local spotter = {}
-spotter.name = spotterName
+spotter.name = d.spotterName
 spotter.type = "land-mine"
 spotter.flags = hiddenEntityFlags
 spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 spotter.collision_mask = {} -- enable noclip for pathfinding too
-spotter.picture_safe = g["Layer_transparent_pixel"]
-spotter.picture_set = g["Layer_transparent_pixel"]
-spotter.trigger_radius = searchlightSpotRadius
+spotter.picture_safe = g.layerTransparentPixel
+spotter.picture_set = g.layerTransparentPixel
+spotter.trigger_radius = d.searchlightSpotRadius
 -- Keeping the spotter alive will make handling on_script_event calls slightly easier.
 -- We'll destroy it ourselves the tick after this fires, when we're done collecting events.
 spotter.force_die_on_attack = false
-spotter.timeout = searchlightSpotTime_ms
+spotter.timeout = d.searchlightSpotTime_ms
 spotter.action =
 {
   type = "direct",
@@ -280,7 +262,7 @@ spotter.action =
       action =
       {
         type = "area",
-        radius = searchlightSpotRadius,
+        radius = d.searchlightSpotRadius,
         force = "enemy",
         action_delivery =
         {
@@ -288,7 +270,7 @@ spotter.action =
           target_effects =
           {
             type = "script",
-            effect_id = confirmedSpottedEffectID,
+            effect_id = d.confirmedSpottedEffectID,
           }
         }
       }

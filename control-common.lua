@@ -1,7 +1,5 @@
-require "sl-defines"
-require "sl-util"
-
-require "util" -- for table.deepcopy
+local d = require "sl-defines"
+local u = require "sl-util"
 
 
 function InitTables()
@@ -115,11 +113,11 @@ local function boostTruth(turret)
     end
   end
 
-  if game.entity_prototypes[turret.name .. boostSuffix] then
+  if game.entity_prototypes[turret.name .. d.boostSuffix] then
     boostInfo[turret] = false
     return false
   -- A neat trick to see if a string ends with a given suffix
-  elseif turret.name:sub(-#boostSuffix) == boostSuffix then
+  elseif turret.name:sub(-#d.boostSuffix) == d.boostSuffix then
     boostInfo[turret] = true
     return true
   else
