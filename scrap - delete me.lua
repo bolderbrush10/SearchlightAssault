@@ -12,6 +12,36 @@ for key,value in pairs(o) do
     game.print("found member " .. key);
 end
 
+/c game.player.surface.daytime = 0
+/c game.player.surface.daytime = 0.5
+
+/c game.player.create_character()
+
+- Important example
+C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
+
+
+--[[
+Types/RenderLayer
+
+The render layer specifies the order of the sprite when rendering, most of the objects have it hardcoded in the source, but some are configurable.
+
+The value is specified as Types/string
+
+The order of acceptable values from lowest to highest:
+
+    lower-radius-visualization
+    radius-visualization
+    lower-object
+    lower-object-above-shadow
+    object
+    higher-object-under
+    higher-object-above
+    projectile
+    air-object
+    light-effect
+--]]
+
 
 game.print(serpent.block(fluidTurret.fluidbox))
 

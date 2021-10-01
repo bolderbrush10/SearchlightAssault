@@ -6,8 +6,8 @@ require "control-turtle"
 
 local boostableArea =
 {
-  x = d.searchlightBoostEffectRange*2,
-  y = d.searchlightBoostEffectRange*2
+  x = d.searchlightMaxNeighborDistance*2,
+  y = d.searchlightMaxNeighborDistance*2
 }
 
 ------------------------
@@ -436,6 +436,8 @@ function SpawnSignalBox(sl)
                                        create_build_effect_smoke = false}
 
   box.destructible = false
+  box.operable = false
+  box.rotatable = false
 
   return box
 end

@@ -26,9 +26,9 @@ export.layerTransparentPixel =
 
 export.layerTransparentAnimation =
 {
-  filename = "__Searchlights__/graphics/transparent-pixels.png",
-  width = 8,
-  height = 8,
+  filename = "__Searchlights__/graphics/transparent-pixel.png",
+  width = 1,
+  height = 1,
   direction_count = 1,
 }
 

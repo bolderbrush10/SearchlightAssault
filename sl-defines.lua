@@ -15,16 +15,16 @@ local d = {}
 d.searchlightRange = 100
 
 -- Max distance at which the spotlight boosts the range of same-force turrets (using a square grid)
--- At 1.5, this range is virtually 'adjacent-only'
-d.searchlightBoostEffectRange = 3
+-- At 3, this range is virtually 'adjacent-only'
+d.searchlightMaxNeighborDistance = 3
 
 -- Range boost effect provided to friendly turrets so they can attack the distant foe the searchlight spotted
 -- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.
 --  Since the maximum distance a boostable friend can be might not be a whole number, thanks to trigonometry,
 --  we'll just double that factor to keep it simple. (If we care, we can use something like:
---   math.ceil(squareroot(square(d.searchlightBoostEffectRange) + square(d.searchlightBoostEffectRange)))
+--   math.ceil(squareroot(square(d.searchlightMaxNeighborDistance) + square(d.searchlightMaxNeighborDistance)))
 --  to get a more accurate figure)
-d.rangeBoostAmount = d.searchlightRange + d.searchlightBoostEffectRange*2
+d.rangeBoostAmount = d.searchlightRange + d.searchlightMaxNeighborDistance*2
 
 -- Capacitor size (electric energy buffer) for the searchlight
 -- (The searchlight requires a partial-buffer to start operating, and turns back off when the buffer is below the cutoff)
@@ -70,23 +70,24 @@ d.searchlightSpotTime_ms = 1.5 * 60
 -- Really boring stuff                         --
 -------------------------------------------------
 
--- Effect, Entity, item, recipe names
--- (These need to copied manually into the locale files as far as I can tell)
+-- Player-Visible entity, item, recipe names
+-- Any updates to these names must be reflected in the locale config.cfg files
 d.searchlightItemName = "searchlight"
 d.searchlightRecipeName = "searchlight"
 d.searchlightTechnologyName = "searchlight"
 
 d.searchlightBaseName = "searchlight-base"
 d.searchlightAlarmName = "searchlight-alarm"
-d.searchlightControllerName = "searchlight-control"
 d.searchlightSignalBoxName = "searchlight-signal-box"
+d.searchlightControllerName = "searchlight-control"
+
+-- Non-Visible entity / effect names
 d.spotterName = "searchlight-spotter"
 d.turtleName = "searchlight-turtle"
-
 d.spottedEffectID = "searchlight-spotted-effect"
 d.confirmedSpottedEffectID = "searchlight-confirm-spotted-effect"
 
--- Force names (To be appended to the name of the force that owns a spotlight)
+-- Force name-suffix, to be appended to the name of the force that owns a spotlight
 d.turtleForceSuffix = "_SLTurtle"
 
 -- Identifies range boosted versions of turrets
