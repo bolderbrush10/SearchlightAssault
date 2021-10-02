@@ -3,9 +3,6 @@
 
 ## Next Tasks:
 
-- The spotlight-interface sprite should just exist on the spotlight model itself,
-  and we'll fit a selection-box around it.
-
 - Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
 
 - Test multiplayer online

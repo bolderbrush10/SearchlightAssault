@@ -126,21 +126,21 @@ sl_c.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 sl_c.collision_mask = {} -- enable noclip for pathfinding too
 
 
--- Searchlight Signal Box Entity
+-- Searchlight Signal Interface Entity
 local sl_s = {}
 sl_s.type = "constant-combinator"
-sl_s.name = d.searchlightSignalBoxName
+sl_s.name = d.searchlightSignalIntefaceName
 sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = hiddenEntityFlags
-sl_s.selection_box = {{-.5, -.5}, {.5, .5}}
+sl_s.selection_box = {{-.5, -.5}, {.5, .25}}
 sl_s.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
 sl_s.item_slot_count = 2
 sl_s.circuit_wire_max_distance = 9
-sl_s.sprites = g.signalBoxSprite
+sl_s.sprites = g.layerTransparentPixel
 sl_s.activity_led_sprites = g.layerTransparentPixel
 sl_s.activity_led_light_offsets =
 {

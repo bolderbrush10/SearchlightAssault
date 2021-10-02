@@ -54,18 +54,6 @@ export.controlUnitLight =
 
 
 ------------------------------------------------------------
--- Signal Box Sprite
-
-export.signalBoxSprite =
-{
-  filename = "__Searchlights__/graphics/signal-box.png",
-  width = 127,
-  height = 83,
-  scale = 0.5,
-}
-
-
-------------------------------------------------------------
 -- Spotlight Model & Glow
 
 export.spotlightGlowAnimation =

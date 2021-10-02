@@ -29,7 +29,7 @@ function SearchlightAdded(sl)
   end
 
   local turtle = SpawnTurtle(sl, sl.surface, nil)
-  maps_addGestalt(sl, SpawnSignalBox(sl), turtle, candidates)
+  maps_addGestalt(sl, SpawnSignalInterface(sl), turtle, candidates)
 
   sl.shooting_target = turtle
 end
@@ -426,20 +426,20 @@ function SpawnControl(turret)
 end
 
 
-function SpawnSignalBox(sl)
+function SpawnSignalInterface(sl)
   pos = sl.position
-  pos.y = pos.y + 0.5
+  pos.y = pos.y + 0.3
 
-  local box = sl.surface.create_entity{name = d.searchlightSignalBoxName,
-                                       position = pos,
-                                       force = sl.force,
-                                       create_build_effect_smoke = false}
+  local i = sl.surface.create_entity{name = d.searchlightSignalIntefaceName,
+                                     position = pos,
+                                     force = sl.force,
+                                     create_build_effect_smoke = false}
 
-  box.destructible = false
-  box.operable = false
-  box.rotatable = false
+  i.destructible = false
+  i.operable = false
+  i.rotatable = false
 
-  return box
+  return i
 end
 
 

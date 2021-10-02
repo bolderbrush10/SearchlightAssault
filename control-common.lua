@@ -10,7 +10,7 @@ function InitTables()
   {
     gID = int (gID),
     base = BaseSearchlight,
-    signal = SignalBox,
+    signal = SignalInterface,
     spotter = nil / Spotter,
     turtle = Turtle,
     turtleActive = true/false, -- Used to 'latch' active state during power outages
@@ -95,8 +95,8 @@ local function newGID()
 end
 
 
-local function makeGestalt(sl, sigBox, turtle)
-  return {gID = newGID(), base = sl, signal = sigBox, spotter = nil, turtle = turtle, turtleActive = true, tunions = {}}
+local function makeGestalt(sl, sigInterface, turtle)
+  return {gID = newGID(), base = sl, signal = sigInterface, spotter = nil, turtle = turtle, turtleActive = true, tunions = {}}
 end
 
 
@@ -183,8 +183,8 @@ end
 -- Public
 -------------------------------------------------------------------------------
 
-function maps_addGestalt(sl, sigBox, turtle, turretList)
-  local g = makeGestalt(sl, sigBox, turtle)
+function maps_addGestalt(sl, sigInterface, turtle, turretList)
+  local g = makeGestalt(sl, sigInterface, turtle)
 
   global.gestalts[g.gID] = g
   global.unum_to_g[sl.unit_number] = g
