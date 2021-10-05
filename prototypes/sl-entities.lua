@@ -51,14 +51,14 @@ sl_b.minable =
   result = d.searchlightItemName,
 }
 sl_b.shoot_in_prepare_state = true
-sl_b.folded_animation      = g.spotlightDimAnimation
-sl_b.prepared_animation    = g.spotlightDimAnimation
+sl_b.folded_animation      = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation}}
+sl_b.prepared_animation    = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation}}
 sl_b.energy_glow_animation = g.spotlightGlowAnimation
 sl_b.glow_light_intensity = 1.0
 sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
-sl_b.base_picture = nil
+sl_b.base_picture = g.spotlightBaseLayer
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap
 local attackCooldownDuration = 25
@@ -68,8 +68,8 @@ sl_b.attack_parameters =
   range = d.searchlightRange,
   cooldown = attackCooldownDuration,
   -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
-  source_direction_count = 64,
-  source_offset = {0, -3.423489 / 4},
+  source_direction_count = 256,
+  source_offset = {0, 1.2},
   ammo_type =
   {
     category = "beam",
@@ -83,7 +83,6 @@ sl_b.attack_parameters =
         beam = "spotlight-beam-passive",
         max_length = d.searchlightRange,
         duration = attackCooldownDuration,
-        source_offset = {-1, -1.31439 }
       }
     }
   }
@@ -134,7 +133,7 @@ sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = hiddenEntityFlags
-sl_s.selection_box = {{-.5, -.5}, {.5, .25}}
+sl_s.selection_box = {{-.8, -.25}, {.8, .75}}
 sl_s.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
@@ -153,13 +152,13 @@ local wirePos =
 {
   wire =
   {
-    red = {-0.25, 0},
-    green = {0.25, 0}
+    red = {0.35, .2},
+    green = {-0.35, .2},
   },
   shadow =
   {
-    red = {-0.25 + .2, .3},
-    green = {0.25 + .2, .3}
+    red = {0.35 + .4, .2 + .4},
+    green = {-0.35 + .4, .2 + .4},
   }
 }
 sl_s.circuit_wire_connection_points =

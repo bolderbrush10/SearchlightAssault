@@ -56,59 +56,72 @@ export.controlUnitLight =
 ------------------------------------------------------------
 -- Spotlight Model & Glow
 
-export.spotlightGlowAnimation =
+export.spotlightBaseLayer =
 {
-  filename = "__Searchlights__/graphics/spotlight-shooting.png",
-  line_length = 8,
-  width = 60,
-  height = 72,
-  frame_count = 1,
-  direction_count = 64,
-  blend_mode = "additive",
-  draw_as_glow = true,
-  shift = util.by_pixel(0, -18),
+  filename = "__Searchlights__/graphics/sl-base.png",
+  priority = "high",
+  axially_symmetrical = false,
+  width = 75,
+  height = 53,
+  shift = util.by_pixel(0, 14),
+  scale = 0.64,
   hr_version =
   {
-    filename = "__Searchlights__/graphics/hr-spotlight-shooting.png",
-    line_length = 8,
-    width = 125,
-    height = 150,
-    frame_count = 1,
-    direction_count = 64,
-    blend_mode = "additive",
-    draw_as_glow = true,
-    shift = util.by_pixel(0, -18),
-    scale = 0.5
+    filename = "__Searchlights__/graphics/sl-base-hr.png",
+    priority = "high",
+    axially_symmetrical = false,
+    width = 150,
+    height = 107,
+    scale = 0.32,
+    shift = util.by_pixel(0, 14),
   }
 }
 
 
-export.spotlightAlarmGlowAnimation = table.deepcopy(export.spotlightGlowAnimation)
-export.spotlightAlarmGlowAnimation.filename = "__Searchlights__/graphics/spotlight-shooting-alarm.png"
-export.spotlightAlarmGlowAnimation.hr_version.filename = "__Searchlights__/graphics/hr-spotlight-shooting-alarm.png"
+local modelW = 60
+local modelH = 71
+local maskFlags = { "mask", "low-object" }
 
 
-export.spotlightDimAnimation =
+-- args:
+-- filename, (optional) flags, (optional) drawAsGlow, (optional) runtimeTint
+local function make_spotlight(inputs)
+return
 {
-  filename = "__Searchlights__/graphics/spotlight-dim.png",
+  filename = "__Searchlights__/graphics/" .. inputs.filename .. ".png",
+  priority = "high",
+  flags = (inputs.flags or {}),
+  apply_runtime_tint = (inputs.runtimeTint or false),
   line_length = 8,
-  width = 60,
-  height = 72,
+  width = modelW,
+  height = modelH,
   frame_count = 1,
   direction_count = 64,
-  shift = util.by_pixel(0, -18),
+  draw_as_glow = (inputs.drawAsGlow or false),
+  shift = util.by_pixel(0, -20),
   hr_version =
   {
-    filename = "__Searchlights__/graphics/hr-spotlight-dim.png",
+    filename = "__Searchlights__/graphics/" .. inputs.filename .. "-hr.png",
+    priority = "high",
+    flags = (inputs.flags or {}),
+    apply_runtime_tint = (inputs.runtimeTint or false),
     line_length = 8,
-    width = 125,
-    height = 150,
+    width = modelW*2,
+    height = modelH*2,
     frame_count = 1,
     direction_count = 64,
-    shift = util.by_pixel(0, -18),
-    scale = 0.5
+    draw_as_glow = (inputs.drawAsGlow or false),
+    shift = util.by_pixel(0, -20),
+    scale = 0.5,
   }
 }
+end
+
+
+export.spotlightHeadAnimation = make_spotlight{filename="sl-head"}
+export.spotlightGlowAnimation = make_spotlight{filename="sl-glow", flags={"light"}, drawAsGlow=true}
+export.spotlightAlarmGlowAnimation = make_spotlight{filename="sl-alarm", flags={"light"}, drawAsGlow=true}
+export.spotlightMaskAnimation = make_spotlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
 
 
 ------------------------------------------------------------
@@ -121,17 +134,23 @@ local Light_Layer_SpotLight_NormLight =
   height = 200,
   scale = 2,
   flags = { "light" },
-  shift = {0.3, 0},
 }
 
 
 local redTint = {r=0.9, g=0.1, b=0.1, a=1}
+
+local Light_Layer_SpotLight_StartLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
+Light_Layer_SpotLight_StartLight.scale = 0.6
 
 local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
 
 local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_NormLight_Red.tint = redTint
+
+local Light_Layer_SpotLight_StartLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
+Light_Layer_SpotLight_StartLight_Red.scale = 0.6
+Light_Layer_SpotLight_StartLight_Red.tint = redTint
 
 local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
 
@@ -149,19 +168,20 @@ local SpotlightBeamPassive =
   random_end_animation_rotation = false,
   ground_light_animations =
   {
+    start =
+    {
+      layers =
+      {
+        Light_Layer_SpotLight_StartLight,
+      }
+    },
     ending =
     {
       layers =
       {
         Light_Layer_SpotLight_NormLight,
+        Light_Layer_SpotLight_DimLight,
       }
-    }
-  },
-  ending =
-  {
-    layers =
-    {
-      Light_Layer_SpotLight_DimLight,
     }
   },
   head = export.layerTransparentPixel,
@@ -174,21 +194,20 @@ local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
 SpotlightBeamAlarm.name = "spotlight-beam-alarm"
 SpotlightBeamAlarm.ground_light_animations =
 {
+  start =
+  {
+    layers =
+    {
+      Light_Layer_SpotLight_StartLight_Red,
+    }
+  },
   ending =
   {
     layers =
     {
       Light_Layer_SpotLight_NormLight_Red,
-      -- Light_Layer_SpotLight_NormLight_Less,
+      Light_Layer_SpotLight_DimLight_Red,
     }
-  }
-}
-SpotlightBeamAlarm.ending =
-{
-  layers =
-  {
-    -- Light_Layer_SpotLight_RimLight_Red,
-    Light_Layer_SpotLight_DimLight_Red,
   }
 }
 

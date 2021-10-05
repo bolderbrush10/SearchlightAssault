@@ -448,6 +448,7 @@ function SpawnSpotter(g, foe)
                                                  position = g.turtle.position,
                                                  force = g.turtle.force,
                                                  create_build_effect_smoke = true} -- TODO disable smoke
+  spotter.destructible = false
 
   maps_addSpotter(spotter, g)
 

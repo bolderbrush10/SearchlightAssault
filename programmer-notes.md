@@ -1,7 +1,12 @@
 ## Current Task:
 
-
 ## Next Tasks:
+
+- Further crop the mask sprite, figure out the offset it needs
+
+- Shadow layer
+
+- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
 
 - Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
 
