@@ -26,6 +26,9 @@ d.searchlightMaxNeighborDistance = 3
 --  to get a more accurate figure)
 d.rangeBoostAmount = d.searchlightRange + d.searchlightMaxNeighborDistance*2
 
+-- Range-boosted turrets fire this many times slower
+d.attackCooldownPenalty = 50
+
 -- Capacitor size (electric energy buffer) for the searchlight
 -- (The searchlight requires a partial-buffer to start operating, and turns back off when the buffer is below the cutoff)
 -- ((We use this to reduce pathological "flickering" cases when a factory is in low power,

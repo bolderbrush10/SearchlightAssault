@@ -51,8 +51,8 @@ sl_b.minable =
   result = d.searchlightItemName,
 }
 sl_b.shoot_in_prepare_state = true
-sl_b.folded_animation      = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation}}
-sl_b.prepared_animation    = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation}}
+sl_b.folded_animation      = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation, g.spotlightShadowLayer}}
+sl_b.prepared_animation    = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation, g.spotlightShadowLayer}}
 sl_b.energy_glow_animation = g.spotlightGlowAnimation
 sl_b.glow_light_intensity = 1.0
 sl_b.preparing_animation = nil
@@ -93,6 +93,7 @@ sl_b.attack_parameters =
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = d.searchlightAlarmName
 sl_a.alert_when_attacking = true
+sl_a.base_picture = g.spotlightBaseAnimated
 sl_a.energy_glow_animation = g.spotlightAlarmGlowAnimation
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
 
@@ -101,7 +102,7 @@ sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-a
 local sl_c = {}
 sl_c.name = d.searchlightControllerName
 sl_c.type = "electric-energy-interface"
-sl_c.picture = g.controlUnitSprite
+sl_c.animation = g.controlUnitSprite
 sl_c.light   = g.controlUnitLight
 sl_c.icon = "__Searchlights__/graphics/control-icon.png"
 sl_c.icon_size = 64
@@ -114,7 +115,7 @@ sl_c.energy_source =
   buffer_capacity = d.searchlightCapacitorSize,
   drain = d.searchlightControlEnergyUsage,
 }
-sl_c.render_layer = "higher-object-above"
+sl_c.render_layer = "object"
 sl_c.flags = hiddenEntityFlags
 sl_c.corpse = "small-scorchmark"
 sl_c.create_ghost_on_death = false

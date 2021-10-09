@@ -1,26 +1,22 @@
 ## Current Task:
 
+
+
 ## Next Tasks:
 
-- Further crop the mask sprite, figure out the offset it needs
-
-- Shadow layer
-
-- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
-
 - Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
+
+- Lights are absoultely invisible during the day now, fix that
 
 - Test multiplayer online
 
 - Make a config option to take in the names of turrets that players DON'T
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
-- Clean up data-updates.lua
-
-- Animate a laser-like beam of light going from the spotlight base to the control unit.
-  And/or an electrical pulse from the wires at the bottom of the searchlight that echos up the control units?
-
-- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
+- Mod ourselves into a couple of main-menu screens
+    - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
+    - Probably want a scene with a jail break that succeeds
+    - Probably wanta  scene with a jail break that fails
 
 
 ## Known Bugs:
@@ -28,45 +24,30 @@
 
 ## Design Decisions & Discussion
 
-Maybe require players to connect their light with wire to the turrets they want it to affect?
-Connect it to a beacon to have the light auto-boost in a radius?
-Have another version that takes a beacon as an ingredient to auto-boost?
-Have a version that takes a radar for a really big boost?
-Nah. Imagine what the actual game devs would do.
-There'd just be ONE version of a turret, and it'd be straightforward to use.
+- Maybe require players to connect their light with wire to the turrets they want it to affect?
+  Connect it to a beacon to have the light auto-boost in a radius?
+  Have another version that takes a beacon as an ingredient to auto-boost?
+  Have a version that takes a radar for a really big boost?
+
+  Nah. Imagine what the wube devs would do.
+  There'd just be ONE version of a turret, and it'd be straightforward to use.
 
 
-Decorate Boostable Radius / Terrain?
-No longer necessary, decided to just boost adjacent turrets
+- Indicate / Decorate Boostable Radius / Terrain?
+
+  No longer necessary, decided to just boost adjacent turrets
 
 
 ## TODO's
 
 
-### Priority Fix: Visuals & Sprite Errors
-
--- TODO what the heck happened to my spotlight rendering? I think the patch misaligned some of my layers. There's some errors being reported in
-C:\Users\Terci\AppData\Roaming\Factorio>factorio-current.log
-
-
-### Feature: More features in circuit network interface
-
--- Activate 'infrared mode' (target vehicles / player only) by sending a signal?
-
--- etc
-
 
 ### Feature: Rotate searchlight to rotate turtle waypoint
 
--- TODO Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
+- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
 
+- Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
-### Feature: Traincar
-
--- TODO Make a train wagon type with 2-4 searchlights mounted on it
--- TODO Turret train -- put on a turret and let it wheel away
-        (Did no one make this already?)
-        This whole idea should probably be a whole different mod...
 
 
 ### Feature: Sounds & Audio
@@ -79,6 +60,15 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - prototype: turtle.walking_sound to an electric hum / sizzle ?
 - attack_parameters.CyclicSound: Metal-Gear-Solid style "Alert noise" for turtle ?
 - attack_parameters.CyclicSound: Alarm klaxon for Alarm Mode searchlight ?
+
+
+### Testing
+
+-- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
+
+-- TODO Get people to play test the balance
+
+-- TODO Test blueprints construction / mass deconstruction
 
 
 ### Feature: Mod Compatability
@@ -95,24 +85,15 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
 
--- TODO maybe do a subtle shaft of light effect as a beam 'attack'?
-
--- TODO use integration_patch when we're tidying up the graphics
+-- TODO maybe do a subtle shaft of light effect as the beam's body?
 
 -- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
 
--- TODO Break up sprite into mask layer (team colors), glow layer, and base (to save on memory)
-
--- TODO Get the emissions layer rendered from blender to include reflections
-
--- TODO Draw a little glow around the base of the searchlight, like a lamp
-        Maybe align it so spins with the lamp, or use the "head" portion of the beam...
+-- TODO Leave remnants when destroyed (doesn't even have to be custom, pick another entity's if you must)
 
 -- TODO Test non-high resolution graphics
 
 -- TODO Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
-
--- TODO Leave remnants when destroyed
 
 
 ### Feature: Professionalism Polish
@@ -138,15 +119,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Port this file into the bottom of the readme when complete
 
--- TODO Break apart into a 'boostable turrets' mod
-        Let people use mod settings to control what level the boosting is
--- TODO How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
--- TODO Or just make a stand-alone version of the mod and a non-standalone version?
-
--- TODO prototype: map_color and enemy_map_color (make sure turtle & hidden SL_attack entity have no color)
-
--- TODO Rename graphics files to align with entity names; rename HR version from prefix to suffix so they show up next to low res files
-
 
 ### Feature: Mod-Uninstall Command
 
@@ -161,8 +133,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
 --      And how it's so damn awkward to set up a blacklist for an entity that you don't want even-just-turrets to attack.
 
--- TODO Ask a devleoper on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
---      (Alterntatively, ask for the simple ability to increase turret range during run time)
+-- TODO Ask a developer on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+--      (Alternatively, ask for the simple ability to increase turret range during run time)
 
 -- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
@@ -195,25 +167,39 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
 
 
-### Testing
--- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
-
--- TODO Get people to play test the balance
-
--- TODO Test blueprints construction / mass deconstruction
-
-
 ## STRETCH GOALS
-- Spotlight position & color controlled by circuit signals
+
+- Spotlight color controlled by circuit signals
+
 - Spotlight emits detection info to circuit network
-- Post what signals do what in circuit gui
-- Spotlight could possibly be set to only wander a 180degree arc around its inital placement?
-- Mod ourselves into a couple of main-menu screens
-    - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
-    - Probably want a scene with a jail break that succeeds
-    - Probably wanta  scene with a jail break that fails
+
+- Activate 'infrared mode' (target vehicles / player only) by sending a signal
+
 - Think about teleporting or somehow... hiding the entities we're replacing.
   It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
+
+- Can we possibly fix copy/paste/pipette on boosted turrets?
+
+- Further crop the mask sprite, figure out the offset it needs
+
+- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
+
+- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
+
+- Make a little 'dirt estucheon' for where the wires reach the ground
+
+-- TODO Break apart into a 'boostable turrets' mod
+        Let people use mod settings to control what level the boosting is
+        How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
+        Or just make a stand-alone version of the mod and a non-standalone version?
+
+
+### STRETCH Feature: Traincar
+
+-- TODO Make a train wagon type with 2-4 searchlights mounted on it
+-- TODO Turret train -- put on a turret and let it wheel away
+        (Did no one make this already?)
+        This whole idea should probably be a whole different mod...
 
 
 ## Performance reports:

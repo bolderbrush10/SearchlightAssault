@@ -36,12 +36,41 @@ export.layerTransparentAnimation =
 ------------------------------------------------------------
 -- Control Unit Sprite and Light
 
+-- Using using ~200 of a maximum of 255 animation frames absolutely necessary?
+-- Probably not. Looks cool though.
+local controlFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                         1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                         2,3,4,5,6,7,8,9,
+                         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+                         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+                         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+                         10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,
+                         9,9,9,9,7,7,7,1}
+
 export.controlUnitSprite =
 {
-  filename = "__Searchlights__/graphics/control-test.png",
-  width = 200,
-  height = 200,
-  scale = 0.1,
+  filename = "__Searchlights__/graphics/sl-control.png",
+  priority = "high",
+  axially_symmetrical = false,
+  frame_count = 10,
+  frame_sequence = controlFrameSeq,
+  line_length = 5,
+  width = 90,
+  height = 120,
+  scale = 0.4,
+  hr_version =
+  {
+    filename = "__Searchlights__/graphics/sl-control-hr.png",
+    priority = "high",
+    axially_symmetrical = false,
+    frame_count = 10,
+    frame_sequence = controlFrameSeq,
+    line_length = 5,
+    width = 90,
+    height = 120,
+    scale = 0.2,
+  }
 }
 
 
@@ -56,24 +85,72 @@ export.controlUnitLight =
 ------------------------------------------------------------
 -- Spotlight Model & Glow
 
+local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                      1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+                      2,2,3,3,4,4,5,5,6,6,7,7,8,}
+
+
 export.spotlightBaseLayer =
 {
   filename = "__Searchlights__/graphics/sl-base.png",
   priority = "high",
   axially_symmetrical = false,
+  frame_count = 1,
+  line_length = 4,
   width = 75,
   height = 53,
-  shift = util.by_pixel(0, 14),
-  scale = 0.64,
+  shift = util.by_pixel(0, 15),
+  scale = 0.66,
   hr_version =
   {
     filename = "__Searchlights__/graphics/sl-base-hr.png",
     priority = "high",
     axially_symmetrical = false,
+    frame_count = 1,
+    line_length = 4,
     width = 150,
     height = 107,
+    scale = 0.33,
+    shift = util.by_pixel(0, 15),
+  }
+}
+
+
+export.spotlightBaseAnimated = table.deepcopy(export.spotlightBaseLayer)
+export.spotlightBaseAnimated.frame_count = 8
+export.spotlightBaseAnimated.frame_sequence = baseFrameSeq
+export.spotlightBaseAnimated.hr_version.frame_count = 8
+export.spotlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
+
+
+export.spotlightShadowLayer =
+{
+  filename = "__Searchlights__/graphics/sl-shadow.png",
+  priority = "high",
+  axially_symmetrical = false,
+  draw_as_shadow = true,
+  frame_count = 1,
+  direction_count = 64,
+  line_length = 8,
+  width = 142,
+  height = 53,
+  scale = 0.64,
+  shift = util.by_pixel(22, 28),
+  hr_version =
+  {
+    filename = "__Searchlights__/graphics/sl-shadow-hr.png",
+    priority = "high",
+    axially_symmetrical = false,
+    draw_as_shadow = true,
+    frame_count = 1,
+    direction_count = 64,
+    line_length = 8,
+    width = 285,
+    height = 107,
     scale = 0.32,
-    shift = util.by_pixel(0, 14),
+    shift = util.by_pixel(22, 28),
   }
 }
 

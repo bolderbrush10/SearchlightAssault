@@ -9,23 +9,6 @@ require "util" -- for table.deepcopy
 -- because other mods may have inadvertent access to functions at this step.
 
 
--- TODO make use of this.. Would be good to show that turrets are being "overcharged"
--- If there was a way to sneak this into the firing animations,
--- or injected as a trigger to be created in the attack parameters, that'd be rad
-local BoostSmoke =
-{
-  name = "range-boost-smoke",
-  type = "trivial-smoke",
-  animation = data.raw["trivial-smoke"]["smoke-building"].animation,
-  duration = 255,
-  affected_by_wind = true,
-  show_when_smoke_off = true,
-  cyclic = true,
-}
-
-data:extend{BoostSmoke}
-
-
 local function GetBoostName(entity, table)
   if not string.match(entity.name, d.boostSuffix)
      and not string.match(entity.name, "searchlight") then
@@ -76,7 +59,7 @@ local function MakeBoost(currTable, newRange)
 
       if boostCopy.attack_parameters
         and boostCopy.attack_parameters.cooldown then
-        boostCopy.attack_parameters.cooldown = boostCopy.attack_parameters.cooldown * 50
+        boostCopy.attack_parameters.cooldown = boostCopy.attack_parameters.cooldown * d.attackCooldownPenalty
       end
 
       data:extend{boostCopy}
@@ -85,12 +68,7 @@ local function MakeBoost(currTable, newRange)
   end
 end
 
-local currTable
-currTable = data.raw["electric-turret"]
-MakeBoost(currTable, d.rangeBoostAmount)
 
-currTable = data.raw["ammo-turret"]
-MakeBoost(currTable, d.rangeBoostAmount)
-
-currTable = data.raw["fluid-turret"]
-MakeBoost(currTable, d.rangeBoostAmount)
+MakeBoost(data.raw["ammo-turret"],     d.rangeBoostAmount)
+MakeBoost(data.raw["fluid-turret"],    d.rangeBoostAmount)
+MakeBoost(data.raw["electric-turret"], d.rangeBoostAmount)
