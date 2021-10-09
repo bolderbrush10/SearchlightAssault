@@ -41,8 +41,6 @@ local function MakeBoost(currTable, newRange)
       end
 
       boostCopy.name = boostedName
-      boostCopy.flags = {"hidden"}
-      boostCopy.create_ghost_on_death = false
 
       if boostCopy.attack_parameters
          and boostCopy.attack_parameters.range < newRange then
