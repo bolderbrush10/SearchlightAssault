@@ -433,7 +433,7 @@ function SpawnSignalInterface(sl)
   pos = sl.position
   pos.y = pos.y + 0.3
 
-  local i = sl.surface.create_entity{name = d.searchlightSignalIntefaceName,
+  local i = sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
                                      position = pos,
                                      force = sl.force,
                                      create_build_effect_smoke = false}

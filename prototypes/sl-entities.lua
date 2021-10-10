@@ -12,7 +12,7 @@ local hiddenEntityFlags =
   "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
   "no-copy-paste",
   "no-automated-item-insertion",
-  "not-blueprintable",
+  "not-blueprintable", -- TODO Probably want to enable this for the sl-interface entity, actually
   "not-deconstructable",
   "not-flammable",
   "not-in-kill-statistics",
@@ -96,6 +96,7 @@ sl_a.alert_when_attacking = true
 sl_a.base_picture = g.spotlightBaseAnimated
 sl_a.energy_glow_animation = g.spotlightAlarmGlowAnimation
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
+sl_a.placeable_by = {item = d.searchlightItemName, count = 1}
 
 
 -- Searchlight Control Entity
@@ -129,7 +130,7 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 -- Searchlight Signal Interface Entity
 local sl_s = {}
 sl_s.type = "constant-combinator"
-sl_s.name = d.searchlightSignalIntefaceName
+sl_s.name = d.searchlightSignalInterfaceName
 sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4

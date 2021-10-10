@@ -81,7 +81,7 @@ d.searchlightTechnologyName = "searchlight"
 
 d.searchlightBaseName = "searchlight-base"
 d.searchlightAlarmName = "searchlight-alarm"
-d.searchlightSignalIntefaceName = "searchlight-signal-interface"
+d.searchlightSignalInterfaceName = "searchlight-signal-interface"
 d.searchlightControllerName = "searchlight-control"
 
 -- Non-Visible entity / effect names

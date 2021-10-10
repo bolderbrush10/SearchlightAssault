@@ -1,6 +1,6 @@
 ## Current Task:
 
-
+- Preserve circuit connections on wires
 
 ## Next Tasks:
 
@@ -16,8 +16,9 @@
 - Mod ourselves into a couple of main-menu screens
     - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
     - Probably want a scene with a jail break that succeeds
-    - Probably wanta  scene with a jail break that fails
+    - Probably want a scene with a jail break that fails
 
+- Move "A neat trick to see if a string ends with a given suffix" somewhere common
 
 ## Known Bugs:
 
@@ -45,6 +46,8 @@
 ### Feature: Rotate searchlight to rotate turtle waypoint
 
 - Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
+  So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
+  has a searchlight selected, I guess. Maybe play a little UI sound.
 
 - Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
@@ -64,14 +67,14 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ### Testing
 
--- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
-
 -- TODO Get people to play test the balance
 
 -- TODO Test blueprints construction / mass deconstruction
 
 
 ### Feature: Mod Compatability
+
+-- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
 
 -- TODO Maybe instead of creating & destroying range-boosted versions of turrets,
         we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
@@ -139,6 +142,19 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
 -- TODO energy_glow_animation on turrets flickers badly, but not when you use draw_as_light, so that's probably a bug
+        Related? https://forums.factorio.com/viewtopic.php?p=421477
+                 https://forums.factorio.com/viewtopic.php?p=522051
+
+-- TODO When editing an already-saved blueprint's contents by selecting a new area,
+        the on_player_setup_blueprint event is fired,
+        but the replacement contents don't show up in the player's blueprint or cursor blueprint stack
+        (cursor_stack.is_blueprint is true, but is_blueprint_setup() is false,
+         get_blueprint_entities() returns nothing, and get_blueprint_entity_count() is zero)
+        Where it does show up is in the blueprint from the player's inventory,
+        which means you have to iterate through the whole inventory
+        and hope you can find the right blueprint,
+        AND also deal with the problem of the blueprint being nested in a book...
+        Related? https://forums.factorio.com/viewtopic.php?t=99845
 
 
 ### Map modes / play
@@ -160,6 +176,12 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
   Lots of Big Rocks in the way as a bottle neck
   Need to build landfill to get over moat
   etc
+
+- I'm starting to think it'd be easier to just have the searchlights entirely under NPC control
+  Maybe we'll start with that, then make a VS version later
+
+- Maybe there's a part where players have to break through a wall, and this somehow triggers
+  a wave of construction bots to add combinators / new searchlights
 
 
 ### Advertising

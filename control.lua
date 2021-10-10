@@ -2,6 +2,7 @@ local d = require "sl-defines"
 
 require "control-common"
 require "control-forces"
+require "control-items"
 require "control-searchlight"
 require "control-turtle"
 
@@ -106,8 +107,7 @@ for index, e in pairs
     end
 
   end, {
-    {filter = "name", name = d.searchlightBaseName},
-    {filter = "turret", mode = "or"}
+    {filter = "turret"}
   })
 end
 
@@ -117,7 +117,7 @@ script.on_event(defines.events.on_trigger_created_entity,
 function(event)
 
   if event.entity.name == d.searchlightBaseName then
-    SearchlightAdded(event.entity )
+    SearchlightAdded(event.entity)
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
     TurretAdded(event.entity)
   end
@@ -145,9 +145,7 @@ for index, e in pairs
     end
 
   end, {
-    {filter = "name", name = d.searchlightBaseName},
-    {filter = "name", name = d.searchlightAlarmName, mode = "or"},
-    {filter = "turret", mode = "or"}
+    {filter = "turret"}
   })
 end
 
@@ -170,6 +168,55 @@ for index, e in pairs
 
   end)
 end
+
+
+--
+-- BLUEPRINTS & GHOSTS
+--
+
+
+-- When the player sets up / configures a blueprint,
+-- convert any boosted / alarm-mode entities
+-- back to their base entity type
+script.on_event(defines.events.on_player_setup_blueprint, ScanBP_StacksAndSwapToBaseType)
+script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndSwapToBaseType)
+
+
+-- When a turret dies, check to see if we need to swap its ghost to a base type
+script.on_event(defines.events.on_post_entity_died,
+function(event)
+
+  if not event.ghost then
+    return
+  end
+
+  local unboostedName = ""
+  if event.prototype.name == d.searchlightAlarmName then
+    unboostedName = d.searchlightBaseName
+  else
+    unboostedName = event.prototype.name:gsub(d.boostSuffix, "")
+  end
+
+  if not game.entity_prototypes[unboostedName] then
+    return
+  end
+
+  local gh = event.ghost
+
+  game.surfaces[event.surface_index].create_entity{name = "entity-ghost",
+                                                   inner_name = unboostedName,
+                                                   fast_replace = true,
+                                                   create_build_effect_smoke = false,
+                                                   position = gh.position,
+                                                   direction = gh.direction,
+                                                   force = gh.force,
+                                                  }
+
+  gh.destroy()
+
+end, {{filter = "type", type = "ammo-turret"},
+      {filter = "type", type = "fluid-turret"},
+      {filter = "type", type = "electric-turret"},})
 
 
 --

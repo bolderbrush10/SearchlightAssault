@@ -10,7 +10,6 @@ local icon =
 }
 
 
--- Item
 local item = {}
 item.type = "item"
 item.stack_size = 50
@@ -22,7 +21,6 @@ item.icon = icon.filename
 item.icon_size = icon.icon_size
 
 
--- Recipe
 local recipe = {}
 recipe.type = "recipe"
 recipe.name = d.searchlightRecipeName
@@ -38,7 +36,6 @@ recipe.ingredients =
 }
 
 
--- Technology
 local t = {}
 t.type = "technology"
 t.name = d.searchlightTechnologyName

@@ -25,12 +25,25 @@ local function GetBoostName(entity, table)
 end
 
 
+local function LookupPlaceableItem(name)
+  for _, i in pairs(data.raw["item"]) do
+    if i.place_result == name then
+      return i.name
+    end
+  end
+
+  return nil
+end
+
+
 -- Make boosted-range versions of non search light turrets
 -- (Factorio might run this entity-script multiple times, so be sure to avoid making dupes)
 local function MakeBoost(currTable, newRange)
   for index, turret in pairs(currTable) do
     local boostedName = GetBoostName(turret, currTable)
     if boostedName then
+
+      local boostSuccess = true
 
       local boostCopy = table.deepcopy(currTable[turret.name])
 
@@ -60,7 +73,35 @@ local function MakeBoost(currTable, newRange)
         boostCopy.attack_parameters.cooldown = boostCopy.attack_parameters.cooldown * d.attackCooldownPenalty
       end
 
-      data:extend{boostCopy}
+
+      -- "placeable_by" is normally only used by curved rails in the base game,
+      -- but we can take advantage of it here to make the smart-pipette ("Q") tool
+      -- select the base version of this turret, and also make blueprints think
+      -- they're using the base version.
+      -- (We'll detect when blueprints are actually created / updated and
+      --  silently swap out the range-boosted entity for the base version there)
+      if not boostCopy.placeable_by then
+
+        if data.raw["item"][turret.name] then
+          boostCopy.placeable_by = {item = turret.name, count = 1}
+        else
+          local placable = LookupPlaceableItem(turret.name)
+          if placable then
+            boostCopy.placeable_by = {item = placable, count = 1}
+          else
+            -- If there's no item that creates this turret,
+            -- then don't even try boosting it.
+            -- Otherwise we'll probably crash at some point
+            -- if players mess around with blueprints or somthing.
+            boostSuccess = false
+          end
+        end
+
+      end
+
+      if boostSuccess then
+        data:extend{boostCopy}
+      end
 
     end
   end

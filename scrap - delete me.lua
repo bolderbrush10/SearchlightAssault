@@ -20,7 +20,6 @@ end
 - Important example
 C:\Program Files (x86)\Steam\steamapps\common\Factorio\data\base\graphics\entity\laser-turret
 
-
 --[[
 Types/RenderLayer
 
