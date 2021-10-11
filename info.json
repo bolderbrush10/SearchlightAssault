@@ -2,9 +2,9 @@
   "name": "Searchlights",
   "version": "0.0.1",
   "title": "⚠️ Searchlights ⚠️",
-  "author": "benjamin rice",
-  "contact": "benjamin.rice@knights.ucf.edu",
+  "author": "ben",
+  "contact": "bolderbrush10@gmail.com",
   "homepage": "",
   "factorio_version": "1.1",
-  "description": "Add searchlights which track foes and provide range bonuses to turrets."
+  "description": "Adds a game map and searchlights which sweep for foes at great range, alerting you while directing adjacent turrets to snipe spotted foes.\nSearchlights can recieve search coordinates via circuit network signal.\nThe searchlight recipe is designed to dovetail into the early-mid game, providing players motivation to automate lamps & combinators.\nThe extra range provided by the searchlight is balanced by increased electricity consumption and shot cooldown, while making it possible to clear biter bases through pre-artillery attrition -- without resorting to turret-creeping!\n\nThe multiplayer map sl_escape is a tense challenge designed for 1 - 8 players.\nSneak past the lights, improvise tools as well as plans, and escape on the rocket before the prison is overrun!"
 }

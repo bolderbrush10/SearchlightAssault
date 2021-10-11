@@ -2,6 +2,7 @@
 
 - Preserve circuit connections on wires
 
+
 ## Next Tasks:
 
 - Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
@@ -19,6 +20,11 @@
     - Probably want a scene with a jail break that fails
 
 - Move "A neat trick to see if a string ends with a given suffix" somewhere common
+
+- Make a thumbnail.png
+
+- Spotlight emits detection info to circuit network
+
 
 ## Known Bugs:
 
@@ -115,11 +121,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
 --      We'll want to make a header / word template featuring a logo for the mod and stuff
 
--- TODO Mod portal page's description should mention our motivations and intended gameplay effects.
---      We can mention that the searchlight is intended to 'solve' the turret-creep strategy for early/mid-game expansion.
---      We can explain that the recipe is designed to incentive players to research & automate production
---      of items they might otherwise ignore (such as lamps and combinators)
-
 -- TODO Port this file into the bottom of the readme when complete
 
 
@@ -129,12 +130,12 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 --      So, there's not really a way to tell when this happens. And it doesn't look like the migration files will help either.
 --      I think the best thing we can do is add a function that the player can call via command that 'disables' the mod so they can save & uninstall
 --      And then we'll make a FAQ / User Manual to explain that if they don't want to risk random turrets disappearing, here's the steps they need to follow
-
+--      Don't forget to update the mod description and readme to mention the uninstall command
 
 ### Bugs to Report / Features to Request
 
 -- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
---      And how it's so damn awkward to set up a blacklist for an entity that you don't want even-just-turrets to attack.
+--      And how it's seemingly-impossible to set up a blacklist for an entity that you don't want even-just-turrets to attack.
 
 -- TODO Ask a developer on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
 --      (Alternatively, ask for the simple ability to increase turret range during run time)
@@ -183,6 +184,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - Maybe there's a part where players have to break through a wall, and this somehow triggers
   a wave of construction bots to add combinators / new searchlights
 
+- When time runs out, an unstoppable wave of biters should surge and chase everyone down
+  Maybe just make some offshore pollution machines to slowly ramp up their evolution lol
+  And make an indestrucible one by the rocket
 
 ### Advertising
 
@@ -192,8 +196,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 ## STRETCH GOALS
 
 - Spotlight color controlled by circuit signals
-
-- Spotlight emits detection info to circuit network
 
 - Activate 'infrared mode' (target vehicles / player only) by sending a signal
 

@@ -7,7 +7,6 @@ require "control-searchlight"
 require "control-turtle"
 
 
-
 --
 -- In the case where multiple event defines could ostensibly handle the same entity being created or destroyed,
 -- we'll register for the event definition which happens 'soonest'

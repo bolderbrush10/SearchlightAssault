@@ -6,13 +6,11 @@ require "util" -- for table.deepcopy
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
-
-local hiddenEntityFlags =
+local circuitInterfaceFlags =
 {
   "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
   "no-copy-paste",
   "no-automated-item-insertion",
-  "not-blueprintable", -- TODO Probably want to enable this for the sl-interface entity, actually
   "not-deconstructable",
   "not-flammable",
   "not-in-kill-statistics",
@@ -23,6 +21,10 @@ local hiddenEntityFlags =
   "not-upgradable",
   "placeable-off-grid",
 }
+
+local hiddenEntityFlags = table.deepcopy(circuitInterfaceFlags)
+table.insert(hiddenEntityFlags, "not-blueprintable")
+
 
 -- Searchlight Base Entity
 local sl_b = {}
@@ -134,7 +136,7 @@ sl_s.name = d.searchlightSignalInterfaceName
 sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
-sl_s.flags = hiddenEntityFlags
+sl_s.flags = circuitInterfaceFlags
 sl_s.selection_box = {{-.8, -.25}, {.8, .75}}
 sl_s.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 sl_s.collision_mask = {} -- enable noclip for pathfinding too

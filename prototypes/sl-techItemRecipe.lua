@@ -12,13 +12,13 @@ local icon =
 
 local item = {}
 item.type = "item"
-item.stack_size = 50
 item.name = d.searchlightItemName
+item.place_result = d.searchlightBaseName
 item.subgroup = "defensive-structure"
 item.order = "a[small-lamp]-a[searchlight]"
-item.place_result = d.searchlightBaseName
 item.icon = icon.filename
 item.icon_size = icon.icon_size
+item.stack_size = 50
 
 
 local recipe = {}
