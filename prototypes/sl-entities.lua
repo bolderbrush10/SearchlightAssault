@@ -6,7 +6,8 @@ require "util" -- for table.deepcopy
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
-local circuitInterfaceFlags =
+
+local baseHiddenEntityFlags =
 {
   "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
   "no-copy-paste",
@@ -22,7 +23,11 @@ local circuitInterfaceFlags =
   "placeable-off-grid",
 }
 
-local hiddenEntityFlags = table.deepcopy(circuitInterfaceFlags)
+local circuitInterfaceFlags = table.deepcopy(baseHiddenEntityFlags)
+table.insert(circuitInterfaceFlags, "player-creation")
+table.insert(circuitInterfaceFlags, "placeable-neutral")
+
+local hiddenEntityFlags = table.deepcopy(baseHiddenEntityFlags)
 table.insert(hiddenEntityFlags, "not-blueprintable")
 
 
@@ -45,6 +50,7 @@ sl_b.energy_source =
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
+sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}} -- Controls drawing-bounds in the info-panel
 sl_b.flags = {"placeable-player", "placeable-neutral", "placeable-enemy", "player-creation"}
 sl_b.call_for_help_radius = 40
 sl_b.minable =
@@ -137,11 +143,12 @@ sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
-sl_s.selection_box = {{-.8, -.25}, {.8, .75}}
-sl_s.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+sl_s.selection_box = {{-.8, -.2}, {.8, .7}}
+sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
 sl_s.item_slot_count = 2
+sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
 sl_s.circuit_wire_max_distance = 9
 sl_s.sprites = g.layerTransparentPixel
 sl_s.activity_led_sprites = g.layerTransparentPixel

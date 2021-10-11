@@ -180,6 +180,14 @@ end
 script.on_event(defines.events.on_player_setup_blueprint, ScanBP_StacksAndSwapToBaseType)
 script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndSwapToBaseType)
 
+script.on_event(defines.events.on_pre_ghost_deconstructed,
+function(event)
+  game.print("you did it")
+
+  -- TODO filter this for searchlights
+  --      make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
+end)
+
 
 -- When a turret dies, check to see if we need to swap its ghost to a base type
 script.on_event(defines.events.on_post_entity_died,
@@ -204,7 +212,9 @@ function(event)
 
   game.surfaces[event.surface_index].create_entity{name = "entity-ghost",
                                                    inner_name = unboostedName,
+                                                   expires = true,
                                                    fast_replace = true,
+                                                   raise_built = false,
                                                    create_build_effect_smoke = false,
                                                    position = gh.position,
                                                    direction = gh.direction,

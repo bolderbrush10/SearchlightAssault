@@ -1,11 +1,6 @@
 ## Current Task:
 
-- Preserve circuit connections on wires
-
-
 ## Next Tasks:
-
-- Fix blueprinting / ghosts for boosted turrets & searchlight & any control interfaces
 
 - Lights are absoultely invisible during the day now, fix that
 
@@ -132,6 +127,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 --      And then we'll make a FAQ / User Manual to explain that if they don't want to risk random turrets disappearing, here's the steps they need to follow
 --      Don't forget to update the mod description and readme to mention the uninstall command
 
+
 ### Bugs to Report / Features to Request
 
 -- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
@@ -187,6 +183,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - When time runs out, an unstoppable wave of biters should surge and chase everyone down
   Maybe just make some offshore pollution machines to slowly ramp up their evolution lol
   And make an indestrucible one by the rocket
+
 
 ### Advertising
 

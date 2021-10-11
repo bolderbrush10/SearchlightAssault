@@ -429,14 +429,56 @@ function SpawnControl(turret)
 end
 
 
-function SpawnSignalInterface(sl)
-  pos = sl.position
-  pos.y = pos.y + 0.3
+function FindSignalInterfaceGhosts(sl)
+  local ghosts = sl.surface.find_entities_filtered{position = sl.position,
+                                                   ghost_name = d.searchlightSignalInterfaceName,
+                                                   force = sl.force,
+                                                   limit = 1}
 
-  local i = sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
-                                     position = pos,
-                                     force = sl.force,
-                                     create_build_effect_smoke = false}
+  if ghosts and ghosts[1] and ghosts[1].valid then
+    -- The revived entity should be returned as the 2nd return value, or nil if that fails
+    return ghosts[1].revive{raise_revive = false}[2]
+  end
+
+  return nil
+end
+
+
+function FindSignalInterfacePrebuilt(sl)
+  local prebs = sl.surface.find_entities_filtered{position = sl.position,
+                                                  name = d.searchlightSignalInterfaceName,
+                                                  force = sl.force,
+                                                  limit = 1}
+
+  if prebs and prebs[1] and prebs[1].valid then
+    return prebs[1]
+  end
+
+  return nil
+end
+
+function FindSignalInterface(sl)
+  -- If there's already a ghost / ghost-built signal interface,
+  -- just create / use it instead
+  local i = FindSignalInterfaceGhosts(sl)
+  if i then
+    return i
+  end
+
+  i = FindSignalInterfacePrebuilt(sl)
+  if i then
+    return i
+  end
+
+  return sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
+                                  position = sl.position,
+                                  force = sl.force,
+                                  create_build_effect_smoke = false}
+end
+
+
+function SpawnSignalInterface(sl)
+  local i = FindSignalInterface(sl)
 
   i.destructible = false
   i.operable = false

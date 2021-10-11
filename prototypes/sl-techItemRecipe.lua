@@ -21,6 +21,16 @@ item.icon_size = icon.icon_size
 item.stack_size = 50
 
 
+local ciItem = {}
+ciItem.type = "item"
+ciItem.name = d.searchlightSignalInterfaceName
+ciItem.place_result = d.searchlightSignalInterfaceName
+ciItem.flags = {"hidden"}
+ciItem.icon = icon.filename
+ciItem.icon_size = icon.icon_size
+ciItem.stack_size = 50
+
+
 local recipe = {}
 recipe.type = "recipe"
 recipe.name = d.searchlightRecipeName
@@ -64,4 +74,4 @@ t.order = "s-o-a"
 
 
 -- Add definitions to game
-data:extend{item, recipe, t}
+data:extend{item, ciItem, recipe, t}
