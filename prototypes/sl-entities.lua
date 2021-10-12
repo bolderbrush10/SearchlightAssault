@@ -143,7 +143,7 @@ sl_s.icon = "__Searchlights__/graphics/spotlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
-sl_s.selection_box = {{-.8, -.2}, {.8, .7}}
+sl_s.selection_box = {{-.8, -0.1}, {.8, 0.7}}
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
@@ -163,13 +163,13 @@ local wirePos =
 {
   wire =
   {
-    red = {0.35, .2},
-    green = {-0.35, .2},
+    red = {0.35, .45},
+    green = {-0.35, .45},
   },
   shadow =
   {
-    red = {0.35 + .4, .2 + .4},
-    green = {-0.35 + .4, .2 + .4},
+    red = {0.35 + .4, .45 + .4},
+    green = {-0.35 + .4, .45 + .4},
   }
 }
 sl_s.circuit_wire_connection_points =

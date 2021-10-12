@@ -1,5 +1,8 @@
 ## Current Task:
 
+- After a foe is defeated, spotlights with a circuit command don't resume the commanded position
+
+
 ## Next Tasks:
 
 - Test multiplayer online
@@ -8,13 +11,11 @@
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
 - Mod ourselves into a couple of main-menu screens
-    - Probably want a scene with an SL getting built by a robot, which enables turrets to attack a biter base
-    - Probably want a scene with a jail break that succeeds
-    - Probably want a scene with a jail break that fails
+    - Probably want a scene with several SLs getting built by robot, which enables turrets to attack a far biter base
+    - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
+    - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
 
 - Move "A neat trick to see if a string ends with a given suffix" somewhere common
-
-- Make a thumbnail.png
 
 - Spotlight emits detection info to circuit network
 
@@ -88,6 +89,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 ### Feature: Graphics Polish
 
 -- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
+
+-- TODO Spawn metal & dirt particles when spawning / despawning control units
 
 -- TODO Leave remnants when destroyed (doesn't even have to be custom, pick another entity's if you must)
 
@@ -181,6 +184,10 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - When time runs out, an unstoppable wave of biters should surge and chase everyone down
   Maybe just make some offshore pollution machines to slowly ramp up their evolution lol
   And make an indestrucible one by the rocket
+
+- There should be a rocket launcher and ammo you can craft to shoot spotlights / turrets
+  (Just bear in mind, those same spotlights will also be helping fend off the biter swarms,
+   costing you time if you destroy them)
 
 
 ### Advertising

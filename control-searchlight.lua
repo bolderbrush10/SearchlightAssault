@@ -241,7 +241,7 @@ function CloseWatchCircle(gIDFoeMap)
     local tPos = g.turtle.position
     local foe = u.GetNearestEntFromList(tPos, foeList)
 
-    if foe then
+    if foe and foe.valid then
       -- Case: Foe spotted successfully
       maps_addFoe(foe, g)
 
