@@ -20,6 +20,8 @@
 
 - Spotlight emits detection info to circuit network
 
+- Uphold that promise about the multiplayer map from the mod description
+
 
 ## Known Bugs:
 

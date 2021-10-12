@@ -43,7 +43,7 @@ local function MakeBoost(currTable, newRange)
     local boostedName = GetBoostName(turret, currTable)
     if boostedName then
 
-      local boostSuccess = true
+      local boostSuccess = false
 
       local boostCopy = table.deepcopy(currTable[turret.name])
 
@@ -71,6 +71,8 @@ local function MakeBoost(currTable, newRange)
       if boostCopy.attack_parameters
         and boostCopy.attack_parameters.cooldown then
         boostCopy.attack_parameters.cooldown = boostCopy.attack_parameters.cooldown * d.attackCooldownPenalty
+        -- If we can't increase a turret's cooldown, we probably don't want to give it massive range
+        boostSuccess = true
       end
 
 
