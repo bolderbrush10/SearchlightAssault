@@ -2,8 +2,6 @@
 
 ## Next Tasks:
 
-- Lights are absoultely invisible during the day now, fix that
-
 - Test multiplayer online
 
 - Make a config option to take in the names of turrets that players DON'T
@@ -89,10 +87,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ### Feature: Graphics Polish
 
--- TODO make the spotlight effect a 'heat shimmer' animation, so it looks awesome during the day
-
--- TODO maybe do a subtle shaft of light effect as the beam's body?
-
 -- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
 
 -- TODO Leave remnants when destroyed (doesn't even have to be custom, pick another entity's if you must)
@@ -103,6 +97,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 
 ### Feature: Professionalism Polish
+
+-- TODO Collect more in-game screenshots and gifs for the mod portal page
 
 -- TODO clean up unused junk across all files
 

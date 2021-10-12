@@ -32,6 +32,23 @@ export.layerTransparentAnimation =
   direction_count = 1,
 }
 
+local slFrameCount = 60
+local slStaticFrameSeq = {}
+
+for index = 1, slFrameCount do
+  table.insert(slStaticFrameSeq, 1)
+end
+
+export.layerTransparentAnimation_Seq =
+{
+  filename = "__Searchlights__/graphics/transparent-pixel.png",
+  width = 1,
+  height = 1,
+  direction_count = 1,
+  frame_count = slFrameCount,
+  frame_sequence = slStaticFrameSeq,
+}
+
 
 ------------------------------------------------------------
 -- Control Unit Sprite and Light
@@ -204,12 +221,38 @@ export.spotlightMaskAnimation = make_spotlight{filename="sl-mask", flags=maskFla
 ------------------------------------------------------------
 -- Spotlight Beam Layers
 
+local Light_Layer_Spotlight_DayHaze =
+{
+  filename = "__Searchlights__/graphics/spotlight-haze.png",
+  line_length = 2,
+  frame_count = slFrameCount,
+  frame_sequence = {
+                    1,1,1,1,1,1,1,1,1,1,1,1,
+                    2,2,2,2,2,2,2,2,2,2,2,2,
+                    3,3,3,3,3,3,3,3,3,3,3,3,
+                    4,4,4,4,4,4,4,4,4,4,4,4,
+                    2,2,2,2,2,2,2,2,2,2,2,2,
+                    },
+  width = 200,
+  height = 200,
+  scale = 1,
+  blend_mode = "additive",
+  tint = {r=230/255, g=150/255, b=0, a=1},
+  -- flags = { "light" },
+}
+
+local Light_Layer_Spotlight_AlarmHaze = table.deepcopy(Light_Layer_Spotlight_DayHaze)
+Light_Layer_Spotlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
+
+
 local Light_Layer_SpotLight_NormLight =
 {
   filename = "__Searchlights__/graphics/spotlight-r.png",
   width = 200,
   height = 200,
   scale = 2,
+  frame_count = slFrameCount,
+  frame_sequence = slStaticFrameSeq,
   flags = { "light" },
 }
 
@@ -230,7 +273,6 @@ Light_Layer_SpotLight_StartLight_Red.scale = 0.6
 Light_Layer_SpotLight_StartLight_Red.tint = redTint
 
 local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
-
 
 ------------------------------------------------------------
 -- Spotlight Beams
@@ -261,14 +303,16 @@ local SpotlightBeamPassive =
       }
     }
   },
-  head = export.layerTransparentPixel,
-  tail = export.layerTransparentPixel,
-  body = export.layerTransparentPixel,
+  ending = Light_Layer_Spotlight_DayHaze,
+  tail = export.layerTransparentAnimation_Seq,
+  head = export.layerTransparentAnimation_Seq,
+  body = export.layerTransparentAnimation_Seq,
 }
 
 
 local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
 SpotlightBeamAlarm.name = "spotlight-beam-alarm"
+SpotlightBeamAlarm.ending = Light_Layer_Spotlight_AlarmHaze
 SpotlightBeamAlarm.ground_light_animations =
 {
   start =
