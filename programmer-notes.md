@@ -1,7 +1,6 @@
 ## Current Task:
 
 
-
 ## Next Tasks:
 
 - Test multiplayer online
@@ -13,8 +12,6 @@
     - Probably want a scene with several SLs getting built by robot, which enables turrets to attack a far biter base
     - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
     - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
-
-- Move "A neat trick to see if a string ends with a given suffix" somewhere common
 
 - Uphold that promise about the multiplayer map from the mod description
 

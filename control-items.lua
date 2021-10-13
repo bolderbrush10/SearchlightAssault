@@ -1,4 +1,5 @@
 local d = require "sl-defines"
+local u = require "sl-util"
 
 
 local function SwapToBaseEntityType(itemStack)
@@ -9,7 +10,7 @@ local function SwapToBaseEntityType(itemStack)
   for index, e in pairs(old) do
     if e.name == d.searchlightAlarmName  then
       e.name = d.searchlightBaseName
-    elseif e.name:sub(-#d.boostSuffix) == d.boostSuffix then
+    elseif u.EndsWith(e.name, d.boostSuffix) then
       e.name = e.name:gsub(d.boostSuffix, "")
     end
     table.insert(new, e)
@@ -24,8 +25,7 @@ local function SwapToBaseEntityType(itemStack)
     if icon.signal.type == "item" and icon.signal.name then
       if icon.signal.name == d.searchlightAlarmName then
         icon.signal.name = d.searchlightItemName
-      -- A neat trick to see if a string ends with a given suffix
-      elseif icon.signal.name:sub(-#d.boostSuffix) == d.boostSuffix then
+      elseif u.EndsWith(icon.signal.name, d.boostSuffix) then
         icon.signal.name = icon.signal.name:gsub(d.boostSuffix, "")
       end
     end

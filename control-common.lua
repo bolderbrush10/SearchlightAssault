@@ -116,8 +116,7 @@ local function boostTruth(turret)
   if game.entity_prototypes[turret.name .. d.boostSuffix] then
     boostInfo[turret] = false
     return false
-  -- A neat trick to see if a string ends with a given suffix
-  elseif turret.name:sub(-#d.boostSuffix) == d.boostSuffix then
+  elseif u.EndsWith(turret.name, d.boostSuffix) then
     boostInfo[turret] = true
     return true
   else

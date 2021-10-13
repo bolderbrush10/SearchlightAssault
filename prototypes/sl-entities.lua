@@ -51,7 +51,7 @@ sl_b.energy_source =
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
 sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}} -- Controls drawing-bounds in the info-panel
-sl_b.flags = {"placeable-player", "placeable-neutral", "placeable-enemy", "player-creation"}
+sl_b.flags = {"placeable-player", "player-creation"}
 sl_b.call_for_help_radius = 40
 sl_b.minable =
 {

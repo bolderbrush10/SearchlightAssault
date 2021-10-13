@@ -1,4 +1,5 @@
 local d = require "sl-defines"
+local u = require "sl-util"
 
 require "control-common"
 
@@ -36,8 +37,7 @@ end
 -- Everyone else should ignore it.
 function UpdateTForceRelationships(SpotlightForce)
 
-  -- A neat trick to see if a string ends with a given suffix
-  if SpotlightForce.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
+  if u.EndsWith(SpotlightForce.name, d.turtleForceSuffix) then
     return -- Don't recurse
   end
 
@@ -65,7 +65,7 @@ function UpdateTForceRelationships(SpotlightForce)
       ;
     elseif f.name == SpotlightForce.name then
       ;
-    elseif f.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
+    elseif u.EndsWith(f.name, d.turtleForceSuffix) then
       -- Turtles should always ignore other turtles
       -- (Otherwise, two turtles from allied forces might fight in the middle of nowhere)
       f.set_cease_fire(tForce, true)
@@ -92,7 +92,7 @@ end
 
 function MigrateTurtleForces(oldSLForce, newSLForce)
   -- Don't recurse when we migrate turtles
-  if oldSLForce.name:sub(-#d.turtleForceSuffix) == d.turtleForceSuffix then
+  if u.EndsWith(oldSLForce.name, d.turtleForceSuffix) then
     return
   end
 

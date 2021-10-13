@@ -22,6 +22,13 @@ DirectionToVector[defines.direction.east]      = {x =  1, y =  0}
 DirectionToVector[defines.direction.northeast] = {x =  1, y = -1}
 
 
+u.EndsWith =
+function(str, suffix)
+  -- A neat trick to see if a string ends with a given suffix
+  return str:sub(-#suffix) == suffix
+end
+
+
 -- Instead of using math.sqrt((a.x - b.x)^2 + (a.y - b.y)^2),
 -- it's usually faster to just square whatever we're comparing against
 u.lensquared =
@@ -243,18 +250,23 @@ function(oldT, newT)
 end
 
 
-u.GetNearestEntFromList =
+u.GetNearestShootableEntFromList =
 function(position, entityList)
   if entityList == nil then
     return nil
   end
 
-  if entityList[1] == nil then
+  local e1 = entityList[1]
+  if e1 == nil then
     return nil
   end
 
   if entityList[2] == nil then
-    return entityList[1]
+    if e1.valid and e1.is_entity_with_force and e1.destructible then
+      return e1
+    else
+      return nil
+    end
   end
 
   local bestDist = 999999
@@ -263,7 +275,7 @@ function(position, entityList)
   for _, e in pairs(entityList) do
     local dist = u.lensquared(position, e.position)
 
-    if dist < bestDist then
+    if dist < bestDist and e.valid and e.is_entity_with_force and e.destructible then
       bestDist = dist
       bestE = e
     end
