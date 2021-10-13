@@ -265,14 +265,10 @@ end
 
 
 function ResumeTargetingTurtle(foePosition, gestalt)
-  local turtle = gestalt.turtle
-  turtle.active = true
-  gestalt.turtleActive = true
-  Turtleport(turtle, foePosition, gestalt.base.position)
-  WanderTurtle(turtle, gestalt.base.position)
+  ResumeTurtleDuty(gestalt, foePosition)
 
   ClearAlarmLight(gestalt)
-  gestalt.base.shooting_target = turtle
+  gestalt.base.shooting_target = gestalt.turtle
 end
 
 

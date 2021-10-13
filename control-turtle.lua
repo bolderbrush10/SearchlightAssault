@@ -5,6 +5,35 @@ require "control-common"
 require "control-forces"
 
 
+local function IssueMoveCommand(turtle, waypoint)
+  turtle.set_command({type = defines.command.go_to_location,
+                      distraction = defines.distraction.by_enemy,
+                      destination = waypoint,
+                      pathfind_flags = {low_priority = true,
+                                        cache = false,
+                                        allow_destroy_friendly_entities = true,
+                                        allow_paths_through_own_entities = true},
+                      radius = 1
+                     })
+end
+
+
+function ResumeTurtleDuty(gestalt, turtlePositionToResume)
+  local turtle = gestalt.turtle
+
+  turtle.active = true
+  gestalt.turtleActive = true
+
+  Turtleport(turtle, turtlePositionToResume, gestalt.base.position)
+
+  if gestalt.turtleCoord == nil then
+    WanderTurtle(turtle, gestalt.base.position)
+  else
+    IssueMoveCommand(gestalt.turtle, gestalt.turtleCoord)
+  end
+end
+
+
 -- TODO Account for commandFailed
 function TurtleWaypointReached(unit_number, commandFailed)
   local g = global.unum_to_g[unit_number]
@@ -18,6 +47,7 @@ function TurtleWaypointReached(unit_number, commandFailed)
                          })
   end
 end
+
 
 function TurtleDistracted(unit_number, commandFailed)
   -- TODO if a turtle gets distracted, re-issue it's goto command n times,
@@ -69,16 +99,7 @@ function WanderTurtle(turtle, origin, waypoint)
   end
   turtle.speed = d.searchlightWanderSpeed
 
-  turtle.set_command({type = defines.command.go_to_location,
-                      -- TODO Do we want to make it an option to allow spotting non-military foe-built structures?
-                      distraction = defines.distraction.by_enemy,
-                      destination = waypoint,
-                      pathfind_flags = {low_priority = true,
-                                        cache = false,
-                                        allow_destroy_friendly_entities = true,
-                                        allow_paths_through_own_entities = true},
-                      radius = 1
-                     })
+  IssueMoveCommand(turtle, waypoint)
 end
 
 
@@ -146,14 +167,6 @@ function ManualTurtleMove(gestalt, coord)
     gestalt.turtleCoord = translatedCoord
 
     gestalt.turtle.speed = d.searchlightRushSpeed
-    gestalt.turtle.set_command({type = defines.command.go_to_location,
-                                distraction = defines.distraction.by_enemy,
-                                destination = gestalt.turtleCoord,
-                                pathfind_flags = {low_priority = true,
-                                                  cache = false,
-                                                  allow_destroy_friendly_entities = true,
-                                                  allow_paths_through_own_entities = true},
-                                radius = 1
-                               })
+    IssueMoveCommand(gestalt.turtle, gestalt.turtleCoord)
   end
 end

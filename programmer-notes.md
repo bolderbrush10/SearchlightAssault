@@ -1,6 +1,5 @@
 ## Current Task:
 
-- After a foe is defeated, spotlights with a circuit command don't resume the commanded position
 
 
 ## Next Tasks:
@@ -24,6 +23,9 @@
 
 ## Known Bugs:
 
+- [Cheat Mode] Mass-deconstructing alarm-mode spotlights and boosted turrets at
+  the same exact time causes the spotlights to re-boost turrets as they die,
+  causing duplicates of that turret to be spawned in and avoid being mass-deconstructed.
 
 ## Design Decisions & Discussion
 
