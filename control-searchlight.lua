@@ -10,6 +10,16 @@ local boostableArea =
   y = d.searchlightMaxNeighborDistance*2
 }
 
+local FoePositionXSlot = 1
+local FoePositionYSlot = 2
+local WarningSlot = 3
+local AlarmSlot = 4
+
+local signalX = {type="virtual", name="signal-X"}
+local signalY = {type="virtual", name="signal-Y"}
+local signalW = {type="virtual", name="signal-W"}
+local signalA = {type="virtual", name="signal-A"}
+
 ------------------------
 --  Aperiodic Events  --
 ------------------------
@@ -145,14 +155,32 @@ end
 function HandleCircuitConditions()
   for gID, g in pairs(global.gestalts) do
 
-    local x = g.signal.get_merged_signal({type="virtual", name="signal-X"})
-    local y = g.signal.get_merged_signal({type="virtual", name="signal-Y"})
+    local i = g.signal
 
-    if x ~= 0 or y ~= 0 then
-      local pos = {x=x, y=y}
-      ManualTurtleMove(g, pos)
+    if g.base.name == d.searchlightBaseName then
+      -- Set the warning signal to 0 if the turtle is active (no foes suspected right now)
+      -- or to 1 if the turtle is inactive (we suspected we spotted a foe so we deactivated the turtle)
+      i.get_control_behavior().set_signal(WarningSlot, {signal = signalW,
+                                                        count = (g.turtleActive and 0 or 1)})
+      i.get_control_behavior().set_signal(FoePositionXSlot, {signal = signalX, count = 0})
+      i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = 0})
+      i.get_control_behavior().set_signal(AlarmSlot, {signal = signalA, count = 0})
+
+      local x = i.get_merged_signal({type="virtual", name="signal-X"})
+      local y = i.get_merged_signal({type="virtual", name="signal-Y"})
+
+      if x ~= 0 or y ~= 0 then
+        local pos = {x=x, y=y}
+        ManualTurtleMove(g, pos)
+      else
+        g.turtleCoord = nil
+      end
     else
-      g.turtleCoord = nil
+      local pos = g.base.shooting_target.position
+      i.get_control_behavior().set_signal(FoePositionXSlot, {signal = signalX, count = pos.x})
+      i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = pos.y})
+      i.get_control_behavior().set_signal(WarningSlot, {signal = signalW, count = 0})
+      i.get_control_behavior().set_signal(AlarmSlot, {signal = signalA, count = 1})
     end
   end
 end
@@ -479,6 +507,11 @@ function SpawnSignalInterface(sl)
   i.destructible = false
   i.operable = false
   i.rotatable = false
+
+  i.get_control_behavior().set_signal(FoePositionXSlot, {signal = signalX, count = 0})
+  i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = 0})
+  i.get_control_behavior().set_signal(WarningSlot, {signal = signalW, count = 0})
+  i.get_control_behavior().set_signal(AlarmSlot, {signal = signalA, count = 0})
 
   return i
 end

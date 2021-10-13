@@ -16,8 +16,6 @@
 
 - Move "A neat trick to see if a string ends with a given suffix" somewhere common
 
-- Spotlight emits detection info to circuit network
-
 - Uphold that promise about the multiplayer map from the mod description
 
 
@@ -26,6 +24,7 @@
 - [Cheat Mode] Mass-deconstructing alarm-mode spotlights and boosted turrets at
   the same exact time causes the spotlights to re-boost turrets as they die,
   causing duplicates of that turret to be spawned in and avoid being mass-deconstructed.
+
 
 ## Design Decisions & Discussion
 
@@ -52,9 +51,6 @@
 - Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
   So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
   has a searchlight selected, I guess. Maybe play a little UI sound.
-
-- Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
-
 
 
 ### Feature: Sounds & Audio
@@ -201,30 +197,29 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 - Spotlight color controlled by circuit signals
 
-- Activate 'infrared mode' (target vehicles / player only) by sending a signal
+- 'Infrared mode' (target vehicles / player only) activated via circuit signal
 
 - Think about teleporting or somehow... hiding the entities we're replacing.
   It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
 
-- Can we possibly fix copy/paste/pipette on boosted turrets?
-
 - Further crop the mask sprite, figure out the offset it needs
-
-- Maybe create a little dirt-throw effect when the control unit spawns / despawns?
 
 - Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
 
 - Make a little 'dirt estucheon' for where the wires reach the ground
 
--- TODO Break apart into a 'boostable turrets' mod
-        Let people use mod settings to control what level the boosting is
-        How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
-        Or just make a stand-alone version of the mod and a non-standalone version?
+- Break apart into a 'boostable turrets' mod
+  Let people use mod settings to control what level the boosting is
+  How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
+  Or just make a stand-alone version of the mod and a non-standalone version?
+
+- Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
 
 ### STRETCH Feature: Traincar
 
 -- TODO Make a train wagon type with 2-4 searchlights mounted on it
+
 -- TODO Turret train -- put on a turret and let it wheel away
         (Did no one make this already?)
         This whole idea should probably be a whole different mod...

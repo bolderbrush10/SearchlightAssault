@@ -147,7 +147,7 @@ sl_s.selection_box = {{-.8, .2}, {.8, 1}}
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
-sl_s.item_slot_count = 2
+sl_s.item_slot_count = 8
 sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
 sl_s.circuit_wire_max_distance = 9
 sl_s.sprites = g.layerTransparentPixel
