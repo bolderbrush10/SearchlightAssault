@@ -182,8 +182,6 @@ script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndS
 
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
-  game.print("you did it")
-
   -- TODO filter this for searchlights
   --      make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
 end)

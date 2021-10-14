@@ -5,7 +5,7 @@ require "sl-entities"
 
 local icon =
 {
-  filename = "__Searchlights__/graphics/spotlight-icon.png",
+  filename = "__SearchlightAssault__/graphics/spotlight-icon.png",
   icon_size = 64, icon_mipmaps = 4,
 }
 

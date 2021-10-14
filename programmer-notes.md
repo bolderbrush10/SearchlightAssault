@@ -13,17 +13,6 @@
 
 - Uphold that promise about the multiplayer map from the mod description
 
-- We have competition:
-  "Searchlight"
-  https://www.youtube.com/watch?v=BYrpOn8xnLo
-  https://mods.factorio.com/mod/Searchlight/downloads
-  We'll need to rename our mod to something else...
-  "Targeted"?
-  "Spotted"?
-  "FoeSearchlight"?
-  "SearchlightEnhanced"?
-  "SearchlightsAdvanced"?
-
 
 ## Known Bugs:
 
@@ -90,7 +79,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Maybe we SHOULD fire those script___created/destroyed events...
 
--- TODO Test against the most popular mods (bobs, angels, sort by popular on the website)
+-- TODO Test against the most popular mods (bobs, angels, Rampant, sort by popular on the website)
 
 
 ### Feature: Graphics Polish
@@ -125,6 +114,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 --      We'll want to make a header / word template featuring a logo for the mod and stuff
 
 -- TODO Port this file into the bottom of the readme when complete
+
+-- TODO Prepare FAQ, explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 
 
 ### Feature: Mod-Uninstall Command

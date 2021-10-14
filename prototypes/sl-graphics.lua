@@ -18,7 +18,7 @@ local export = {}
 
 export.layerTransparentPixel =
 {
-  filename = "__Searchlights__/graphics/transparent-pixel.png",
+  filename = "__SearchlightAssault__/graphics/transparent-pixel.png",
   width = 1,
   height = 1,
 }
@@ -26,7 +26,7 @@ export.layerTransparentPixel =
 
 export.layerTransparentAnimation =
 {
-  filename = "__Searchlights__/graphics/transparent-pixel.png",
+  filename = "__SearchlightAssault__/graphics/transparent-pixel.png",
   width = 1,
   height = 1,
   direction_count = 1,
@@ -41,7 +41,7 @@ end
 
 export.layerTransparentAnimation_Seq =
 {
-  filename = "__Searchlights__/graphics/transparent-pixel.png",
+  filename = "__SearchlightAssault__/graphics/transparent-pixel.png",
   width = 1,
   height = 1,
   direction_count = 1,
@@ -67,7 +67,7 @@ local controlFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
 
 export.controlUnitSprite =
 {
-  filename = "__Searchlights__/graphics/sl-control.png",
+  filename = "__SearchlightAssault__/graphics/sl-control.png",
   priority = "high",
   axially_symmetrical = false,
   frame_count = 10,
@@ -78,7 +78,7 @@ export.controlUnitSprite =
   scale = 0.4,
   hr_version =
   {
-    filename = "__Searchlights__/graphics/sl-control-hr.png",
+    filename = "__SearchlightAssault__/graphics/sl-control-hr.png",
     priority = "high",
     axially_symmetrical = false,
     frame_count = 10,
@@ -111,7 +111,7 @@ local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
 export.spotlightBaseLayer =
 {
-  filename = "__Searchlights__/graphics/sl-base.png",
+  filename = "__SearchlightAssault__/graphics/sl-base.png",
   priority = "high",
   axially_symmetrical = false,
   frame_count = 1,
@@ -122,7 +122,7 @@ export.spotlightBaseLayer =
   scale = 0.66,
   hr_version =
   {
-    filename = "__Searchlights__/graphics/sl-base-hr.png",
+    filename = "__SearchlightAssault__/graphics/sl-base-hr.png",
     priority = "high",
     axially_symmetrical = false,
     frame_count = 1,
@@ -144,7 +144,7 @@ export.spotlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
 
 export.spotlightShadowLayer =
 {
-  filename = "__Searchlights__/graphics/sl-shadow.png",
+  filename = "__SearchlightAssault__/graphics/sl-shadow.png",
   priority = "high",
   axially_symmetrical = false,
   draw_as_shadow = true,
@@ -157,7 +157,7 @@ export.spotlightShadowLayer =
   shift = util.by_pixel(22, 28),
   hr_version =
   {
-    filename = "__Searchlights__/graphics/sl-shadow-hr.png",
+    filename = "__SearchlightAssault__/graphics/sl-shadow-hr.png",
     priority = "high",
     axially_symmetrical = false,
     draw_as_shadow = true,
@@ -182,7 +182,7 @@ local maskFlags = { "mask", "low-object" }
 local function make_spotlight(inputs)
 return
 {
-  filename = "__Searchlights__/graphics/" .. inputs.filename .. ".png",
+  filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. ".png",
   priority = "high",
   flags = (inputs.flags or {}),
   apply_runtime_tint = (inputs.runtimeTint or false),
@@ -195,7 +195,7 @@ return
   shift = util.by_pixel(0, -20),
   hr_version =
   {
-    filename = "__Searchlights__/graphics/" .. inputs.filename .. "-hr.png",
+    filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. "-hr.png",
     priority = "high",
     flags = (inputs.flags or {}),
     apply_runtime_tint = (inputs.runtimeTint or false),
@@ -223,7 +223,7 @@ export.spotlightMaskAnimation = make_spotlight{filename="sl-mask", flags=maskFla
 
 local Light_Layer_Spotlight_DayHaze =
 {
-  filename = "__Searchlights__/graphics/spotlight-haze.png",
+  filename = "__SearchlightAssault__/graphics/spotlight-haze.png",
   line_length = 2,
   frame_count = slFrameCount,
   frame_sequence = {
@@ -247,7 +247,7 @@ Light_Layer_Spotlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
 
 local Light_Layer_SpotLight_NormLight =
 {
-  filename = "__Searchlights__/graphics/spotlight-r.png",
+  filename = "__SearchlightAssault__/graphics/spotlight-r.png",
   width = 200,
   height = 200,
   scale = 2,
@@ -263,7 +263,7 @@ local Light_Layer_SpotLight_StartLight = table.deepcopy(Light_Layer_SpotLight_No
 Light_Layer_SpotLight_StartLight.scale = 0.6
 
 local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_DimLight.filename = "__Searchlights__/graphics/spotlight-r-less-dim.png"
+Light_Layer_SpotLight_DimLight.filename = "__SearchlightAssault__/graphics/spotlight-r-less-dim.png"
 
 local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
 Light_Layer_SpotLight_NormLight_Red.tint = redTint
