@@ -3,8 +3,6 @@
 
 ## Next Tasks:
 
-- Test multiplayer online
-
 - Make a config option to take in the names of turrets that players DON'T
   want the searchlights to boost, so they can fix mod incompatibility issues themselves
 
@@ -15,12 +13,25 @@
 
 - Uphold that promise about the multiplayer map from the mod description
 
+- We have competition:
+  "Searchlight"
+  https://www.youtube.com/watch?v=BYrpOn8xnLo
+  https://mods.factorio.com/mod/Searchlight/downloads
+  We'll need to rename our mod to something else...
+  "Targeted"?
+  "Spotted"?
+  "FoeSearchlight"?
+  "SearchlightEnhanced"?
+  "SearchlightsAdvanced"?
+
 
 ## Known Bugs:
 
 - [Cheat Mode] Mass-deconstructing alarm-mode spotlights and boosted turrets at
   the same exact time causes the spotlights to re-boost turrets as they die,
   causing duplicates of that turret to be spawned in and avoid being mass-deconstructed.
+
+- Boosted turrets have trouble shooting at something if it has its force set every tick
 
 
 ## Design Decisions & Discussion
@@ -40,7 +51,6 @@
 
 
 ## TODO's
-
 
 
 ### Feature: Rotate searchlight to rotate turtle waypoint
@@ -63,6 +73,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 
 ### Testing
+
+-- TODO Test multiplayer online, even if just against yourself
 
 -- TODO Get people to play test the balance
 
@@ -134,10 +146,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
--- TODO energy_glow_animation on turrets flickers badly, but not when you use draw_as_light, so that's probably a bug
-        Related? https://forums.factorio.com/viewtopic.php?p=421477
-                 https://forums.factorio.com/viewtopic.php?p=522051
-
 -- TODO When editing an already-saved blueprint's contents by selecting a new area,
         the on_player_setup_blueprint event is fired,
         but the replacement contents don't show up in the player's blueprint or cursor blueprint stack
@@ -148,6 +156,12 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
         and hope you can find the right blueprint,
         AND also deal with the problem of the blueprint being nested in a book...
         Related? https://forums.factorio.com/viewtopic.php?t=99845
+
+-- DONE energy_glow_animation on turrets flickers badly, so that's probably a bug
+        Related? https://forums.factorio.com/viewtopic.php?p=421477
+                 https://forums.factorio.com/viewtopic.php?p=522051
+        Dev responded and agreed to solve:
+        https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
 
 
 ### Map modes / play
