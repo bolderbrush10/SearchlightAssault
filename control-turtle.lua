@@ -50,9 +50,8 @@ end
 
 
 function TurtleDistracted(unit_number, commandFailed)
-  -- TODO if a turtle gets distracted, re-issue it's goto command n times,
-  --      or figure out what entity it was trying to attack and manually fire the
-  --      attack_trigger event there and remove the turtle
+  -- TODO if a turtle is having trouble attacking something,
+  --      just manually spawn a spotter for it
 
   -- TODO Start tracking the turtle in global[] + count of failed commands
   --      We'll want to check every tick in control-searchlight
@@ -147,6 +146,13 @@ end
 
 
 function ManualTurtleMove(gestalt, coord)
+  local turtle = gestalt.turtle
+
+  -- Don't interrupt a turtle that's trying to attack a foe
+  if turtle.distraction_command then
+    return
+  end
+
   local bufferedRange = d.searchlightRange - 5
 
   -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
@@ -166,7 +172,7 @@ function ManualTurtleMove(gestalt, coord)
 
     gestalt.turtleCoord = translatedCoord
 
-    gestalt.turtle.speed = d.searchlightRushSpeed
-    IssueMoveCommand(gestalt.turtle, gestalt.turtleCoord)
+    turtle.speed = d.searchlightRushSpeed
+    IssueMoveCommand(turtle, gestalt.turtleCoord)
   end
 end

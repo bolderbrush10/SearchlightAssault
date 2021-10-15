@@ -3,10 +3,9 @@
 
 ## Next Tasks:
 
-- Mod ourselves into a couple of main-menu screens
-    - Probably want a scene with several SLs getting built by robot, which enables turrets to attack a far biter base
-    - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
-    - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
+- Control units with no power shouldn't let their turrets operate
+
+- Red spotted hexhaze is still too hard to see
 
 - Uphold that promise about the multiplayer map from the mod description
 
@@ -219,6 +218,11 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - Spawn metal & dirt particles when spawning / despawning control units
 
 - Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
+
+- Create more main-menu simulations
+  (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
+    - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
+    - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
 
 
 ### STRETCH Feature: Traincar

@@ -48,25 +48,26 @@ d.searchlightControlEnergyUsage = "900kW"
 
 -- Radius at which the searchlight beam detects foes
 -- Setting vision distance too low can cause turtles to get stuck in their foes
--- Actual search radius will be reduced to 80% to make moving foes slightly harder to spot
+-- Actual search radius will be increased by 10% to make detection more reliable
 d.searchlightSpotRadius = 3
 
 -- Speed at which searchlight beam wanders
 -- There is a maximum speed which you cannot exceed or else the turtle
 -- has a high chance to run inside the collision box of an enemy before
--- it has a chance to fire its attack. This results in the turtle getting
--- 'stuck' without attacking, and thus results in us having to rely on the
+-- it has a chance to fire its attack. (About 0.3 is too fast)
+-- This results in the turtle getting 'stuck' without attacking,
+-- and thus results in us having to rely on the
 -- ai_command_complete event fired when the distraction attack-event is done
 -- (which is a process that is seemingly-impossible to speed up)
 d.searchlightWanderSpeed = 0.1
 
-d.searchlightRushSpeed = 0.3
+d.searchlightRushSpeed = 0.15
 
 -- Amount of time in milliseconds from when a searchlight becomes suspicious
 -- until the searchlight confirms it has spotted a foe
 -- (Setting this too low will cause conflicts with landmine arming-time)
 -- (game runs at 60 ticks per second)
-d.searchlightSpotTime_ms = 1.5 * 60
+d.searchlightSpotTime_ms = 1.1 * 60
 
 
 -------------------------------------------------

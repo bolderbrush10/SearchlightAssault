@@ -229,12 +229,12 @@ t.has_belt_immunity = true
 t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
-t.max_pursue_distance = 5
+t.max_pursue_distance = 3
 t.vision_distance = d.searchlightSpotRadius
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
-t.collision_box = {{0, 0}, {0, 0}} -- enable noclip
-t.collision_mask = {} -- enable noclip for pathfinding too
+t.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
+t.collision_mask = {} -- enable noclip for pathfinding
 t.ai_settings =
 {
   allow_try_return_to_spawner = false,
@@ -244,11 +244,10 @@ t.ai_settings =
 t.attack_parameters =
 {
   range = d.searchlightSpotRadius - 2,
-  min_attack_distance = 6,
   type = "projectile",
   cooldown = 60, -- measured in ticks
   animation = g.layerTransparentAnimation,
-  range_mode = "center-to-center",
+  range_mode = "bounding-box-to-bounding-box",
   movement_slow_down_factor = 0,
   movement_slow_down_cooldown = 0,
   activation_type = "activate",
@@ -273,8 +272,8 @@ t.attack_parameters =
 }
 
 
--- After a turtle has 'found' a foe, use the spotter to chase them down
--- so the foe has a chance to escape
+-- After a turtle has 'found' a foe, have the spotter warm up
+-- before firing so the foe has a chance to escape
 local spotter = {}
 spotter.name = d.spotterName
 spotter.type = "land-mine"
@@ -302,7 +301,7 @@ spotter.action =
       action =
       {
         type = "area",
-        radius = d.searchlightSpotRadius,
+        radius = d.searchlightSpotRadius * 1.1,
         force = "enemy",
         action_delivery =
         {
