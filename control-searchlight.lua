@@ -184,7 +184,7 @@ function HandleCircuitConditions()
       else
         g.turtleCoord = nil
       end
-    else
+    elseif g.base.shooting_target and g.base.shooting_target.valid then
       local pos = g.base.shooting_target.position
       i.get_control_behavior().set_signal(FoePositionXSlot, {signal = signalX, count = pos.x})
       i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = pos.y})

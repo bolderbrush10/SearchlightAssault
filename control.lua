@@ -182,18 +182,53 @@ for index, e in pairs
   end)
 end
 
--- TODO Handle these cases where we probably need to delete a bunch of gesalts
---      (Don't forget to handle the case where a gestalt straddles one or more chunks
---       because of gesalt entities like turtles & turrets)
--- on_pre_surface_cleared
--- surface_index :: uint
 
--- on_pre_surface_deleted
--- surface_index :: uint
+for index, e in pairs
+({
+  defines.events.on_pre_surface_cleared,
+  defines.events.on_pre_surface_deleted,
+}) do
+  script.on_event(e,
+  function(event)
+    local entities = game.surfaces[event.surface_index].find_entities_filtered{name = {d.searchlightBaseName,
+                                                                                       d.searchlightAlarmName}}
+    for _, e in pairs(entities) do
+      SearchlightRemoved(e)
+    end
+  end)
+end
 
--- on_pre_chunk_deleted
--- surface_index :: uint
--- positions :: array[ChunkPosition]: The chunks to be deleted.
+
+script.on_event(defines.events.on_pre_chunk_deleted,
+function(event)
+  local s = game.surfaces[event.surface_index]
+
+  -- Since we're iterating by chunk, we have to be more surgical
+  for _, chunkPos in pairs(event.positions) do
+    -- Since this is the only handy way to get all entities on a chunk,
+    -- we have to iterate for each force
+    for _, force in pairs(game.forces) do
+      local entities = s.get_entities_with_force(chunkPos, force)
+
+      for _, e in pairs(entities) do
+        if e.name == d.searchlightBaseName or e.name == d.searchlightAlarmName then
+          SearchlightRemoved(e)
+        elseif e.name == d.turtleName
+          or e.name == d.spotterName
+          or e.name == d.searchlightControllerName then
+
+           -- Just blow up the searchlight as collateral damage
+          SearchlightRemoved(e)
+          e.destroy()
+
+        elseif e.unit_number then
+          TurretRemoved(e) -- Should ignore non-turrets properly
+        end
+      end
+    end
+  end
+end)
+
 
 --
 -- BLUEPRINTS & GHOSTS
