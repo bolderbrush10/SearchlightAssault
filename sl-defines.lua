@@ -14,7 +14,7 @@ local d = {}
 --  since the searchlight is built from a radar)
 d.searchlightRange = 100
 
--- Max distance at which the spotlight boosts the range of same-force turrets (using a square grid)
+-- Max distance at which the searchlight boosts the range of same-force turrets (using a square grid)
 -- At 3, this range is virtually 'adjacent-only'
 d.searchlightMaxNeighborDistance = 3
 
@@ -46,12 +46,12 @@ d.searchlightControlEnergyUsage = "900kW"
 -- Things that aren't interesting to mess with --
 -------------------------------------------------
 
--- Radius at which the spotlight beam detects foes
+-- Radius at which the searchlight beam detects foes
 -- Setting vision distance too low can cause turtles to get stuck in their foes
 -- Actual search radius will be reduced to 80% to make moving foes slightly harder to spot
 d.searchlightSpotRadius = 3
 
--- Speed at which spotlight beam wanders
+-- Speed at which searchlight beam wanders
 -- There is a maximum speed which you cannot exceed or else the turtle
 -- has a high chance to run inside the collision box of an enemy before
 -- it has a chance to fire its attack. This results in the turtle getting
@@ -62,8 +62,8 @@ d.searchlightWanderSpeed = 0.1
 
 d.searchlightRushSpeed = 0.3
 
--- Amount of time in milliseconds from when a spotlight becomes suspicious
--- until the spotlight confirms it has spotted a foe
+-- Amount of time in milliseconds from when a searchlight becomes suspicious
+-- until the searchlight confirms it has spotted a foe
 -- (Setting this too low will cause conflicts with landmine arming-time)
 -- (game runs at 60 ticks per second)
 d.searchlightSpotTime_ms = 1.5 * 60
@@ -90,7 +90,7 @@ d.turtleName = "searchlight-turtle"
 d.spottedEffectID = "searchlight-spotted-effect"
 d.confirmedSpottedEffectID = "searchlight-confirm-spotted-effect"
 
--- Force name-suffix, to be appended to the name of the force that owns a spotlight
+-- Force name-suffix, to be appended to the name of the force that owns a searchlight
 d.turtleForceSuffix = "_SLTurtle"
 
 -- Identifies range boosted versions of turrets

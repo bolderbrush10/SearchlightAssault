@@ -36,7 +36,7 @@ local sl_b = {}
 sl_b.name = d.searchlightBaseName
 sl_b.type = "electric-turret"
 sl_b.max_health = 250
-sl_b.icon = "__SearchlightAssault__/graphics/spotlight-icon.png"
+sl_b.icon = "__SearchlightAssault__/graphics/searchlight-icon.png"
 sl_b.icon_size = 64
 sl_b.icon_mipmaps = 4
 sl_b.alert_when_attacking = false
@@ -59,14 +59,14 @@ sl_b.minable =
   result = d.searchlightItemName,
 }
 sl_b.shoot_in_prepare_state = true
-sl_b.folded_animation      = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation, g.spotlightShadowLayer}}
-sl_b.prepared_animation    = {layers = {g.spotlightHeadAnimation, g.spotlightMaskAnimation, g.spotlightShadowLayer}}
-sl_b.energy_glow_animation = g.spotlightGlowAnimation
+sl_b.folded_animation      = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
+sl_b.prepared_animation    = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
+sl_b.energy_glow_animation = g.searchlightGlowAnimation
 sl_b.glow_light_intensity = 1.0
 sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
-sl_b.base_picture = g.spotlightBaseLayer
+sl_b.base_picture = g.searchlightBaseLayer
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap
 local attackCooldownDuration = 25
@@ -88,7 +88,7 @@ sl_b.attack_parameters =
       action_delivery =
       {
         type = "beam",
-        beam = "spotlight-beam-passive",
+        beam = "searchlight-beam-passive",
         max_length = d.searchlightRange,
         duration = attackCooldownDuration,
       }
@@ -101,9 +101,9 @@ sl_b.attack_parameters =
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = d.searchlightAlarmName
 sl_a.alert_when_attacking = true
-sl_a.base_picture = g.spotlightBaseAnimated
-sl_a.energy_glow_animation = g.spotlightAlarmGlowAnimation
-sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "spotlight-beam-alarm"
+sl_a.base_picture = g.searchlightBaseAnimated
+sl_a.energy_glow_animation = g.searchlightAlarmGlowAnimation
+sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "searchlight-beam-alarm"
 sl_a.placeable_by = {item = d.searchlightItemName, count = 1}
 
 
@@ -139,7 +139,7 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 local sl_s = {}
 sl_s.type = "constant-combinator"
 sl_s.name = d.searchlightSignalInterfaceName
-sl_s.icon = "__SearchlightAssault__/graphics/spotlight-icon.png"
+sl_s.icon = "__SearchlightAssault__/graphics/searchlight-icon.png"
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
@@ -181,7 +181,7 @@ sl_s.circuit_wire_connection_points =
 }
 
 
--- The Spotlight's beam lights up the turtle's location
+-- The Searchlight's beam lights up the turtle's location
 -- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
 -- Many of the values are the product of hours of trial-and-error
 -- Do not tweak them without careful observation

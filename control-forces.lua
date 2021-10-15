@@ -4,18 +4,18 @@ local u = require "sl-util"
 require "control-common"
 
 -- The 'turtle' force exists to hold an imaginary target (The 'Turtle')
--- for spotlights to 'shoot' while they scan around for enemy units.
+-- for searchlights to 'shoot' while they scan around for enemy units.
 
--- This turtle force also needs to 'attack' any foes of the spotlight's owner
+-- This turtle force also needs to 'attack' any foes of the searchlight's owner
 -- to trigger a function call that will let us know we've spotted an enemy.
 
 -- For multiplayer compatiblity, we create a turtle force for any force
--- that builds a spotlight and update relationships accordingly.
+-- that builds a searchlight and update relationships accordingly.
 
 
--- Called when a new spotlight is created
-function PrepareTurtleForce(SpotlightForce)
-  local turtleForceName = SpotlightForce.name .. d.turtleForceSuffix
+-- Called when a new searchlight is created
+function PrepareTurtleForce(SearchlightForce)
+  local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] then
     return turtleForceName -- We've already initialized this force, nothing to do
@@ -24,7 +24,7 @@ function PrepareTurtleForce(SpotlightForce)
   game.create_force(turtleForceName)
   global.sl_force_init[turtleForceName] = true
 
-  UpdateTForceRelationships(SpotlightForce)
+  UpdateTForceRelationships(SearchlightForce)
 
   return turtleForceName
 end
@@ -32,16 +32,16 @@ end
 
 -- When something (another mod, most likely) creates a new force,
 -- or updates a relationship, reflect those relations in the turtle force.
--- The turtle force should ignore the spotlight's friends and attack its enemies.
--- Only the spotlight owner should have cease_fire = false with its turtle.
+-- The turtle force should ignore the searchlight's friends and attack its enemies.
+-- Only the searchlight owner should have cease_fire = false with its turtle.
 -- Everyone else should ignore it.
-function UpdateTForceRelationships(SpotlightForce)
+function UpdateTForceRelationships(SearchlightForce)
 
-  if u.EndsWith(SpotlightForce.name, d.turtleForceSuffix) then
+  if u.EndsWith(SearchlightForce.name, d.turtleForceSuffix) then
     return -- Don't recurse
   end
 
-  local turtleForceName = SpotlightForce.name .. d.turtleForceSuffix
+  local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] == nil then
     return -- Don't recurse
@@ -50,20 +50,20 @@ function UpdateTForceRelationships(SpotlightForce)
   local tForce = game.forces[turtleForceName]
 
   -- The owner force needs to have cease_fire == false toward the turtle force.
-  -- Otherwise, spotlights won't target turtles under any circumstances
+  -- Otherwise, searchlights won't target turtles under any circumstances
   -- (Make the turtle itself invulnerable and things will ignore it by default,
-  --  then we can use .set_shooting_target to get the spotlight to attack)
-  SpotlightForce.set_cease_fire(tForce, false)
-  SpotlightForce.set_friend(tForce, false)
-  -- Turtles, naturally, shouldn't attack their spotlight-owner force
-  tForce.set_cease_fire(SpotlightForce, true)
-  tForce.set_friend(SpotlightForce, false)
+  --  then we can use .set_shooting_target to get the searchlight to attack)
+  SearchlightForce.set_cease_fire(tForce, false)
+  SearchlightForce.set_friend(tForce, false)
+  -- Turtles, naturally, shouldn't attack their searchlight-owner force
+  tForce.set_cease_fire(SearchlightForce, true)
+  tForce.set_friend(SearchlightForce, false)
 
   for _, f in pairs(game.forces) do
 
     if f.name == turtleForceName then
       ;
-    elseif f.name == SpotlightForce.name then
+    elseif f.name == SearchlightForce.name then
       ;
     elseif u.EndsWith(f.name, d.turtleForceSuffix) then
       -- Turtles should always ignore other turtles
@@ -80,8 +80,8 @@ function UpdateTForceRelationships(SpotlightForce)
 
       -- Since friend relationships overrule cease_fire = false,
       -- we need to mirror them as well.
-      tForce.set_friend(f, SpotlightForce.get_friend(f))
-      tForce.set_cease_fire(f, SpotlightForce.get_cease_fire(f))
+      tForce.set_friend(f, SearchlightForce.get_friend(f))
+      tForce.set_cease_fire(f, SearchlightForce.get_cease_fire(f))
 
     end
 

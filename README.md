@@ -11,13 +11,13 @@ Usage of the term "Turtle" is a reference to the rendering mechanism of some old
 
 The idea is to imagine a turtle with a marker held in its tail, and wherever this turtle goes, it leaves behind a line. You'd write a program specifiying distances & directions for the turtle to follow. And thus, you'd control the turtle to control rendering a picture.
 
-And in this mod, our turtle, instead of drawing a line, will render a spotlight effect.
+And in this mod, our turtle, instead of drawing a line, will render a searchlight effect.
 
 
 ### Primary issues inflating SLOC:
 0. No mechanism in the API to modify shooting range during runtime
 0. Missing details in on_player_setup_blueprint event for some blueprint use cases
-0. Unsophisticated technique to "fire" the spotlight effect when
+0. Unsophisticated technique to "fire" the searchlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
@@ -31,7 +31,7 @@ _sl-defines.lua_ - miscellaneous static definitions such as turret range, colors
 _control.lua_             - handles event registrations & filtering, calls behavior from the control-*.lua files
 
 _control-searchlight.lua_ - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-* files.
-_control-turtle.lua_      - behaviors for the dummy-entity that the spotlight "attacks" to render a light at surface locations
+_control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
 _control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
 _control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them

@@ -69,7 +69,7 @@ end
 
 
 function TurretAdded(turret)
-  -- Search for spotlights in vicinity and add self as a boostable
+  -- Search for searchlights in vicinity and add self as a boostable
   local searchlights = turret.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(turret.position),
                                                              name={d.searchlightBaseName, d.searchlightAlarmName},
                                                              force=turret.force}
@@ -111,9 +111,9 @@ function FoeSuspected(turtle, foe)
   -- we'll sound the alarm and target it
   local s = SpawnSpotter(g, foe)
 
-  -- If the spotlight hasn't found anything by the given tick, we'll close its circle
+  -- If the searchlight hasn't found anything by the given tick, we'll close its circle
   -- (note that it takes quite a few extra ticks for the landmine to do its business,
-  --  but we still want to make sure the circle is closed by the time the spotlight
+  --  but we still want to make sure the circle is closed by the time the searchlight
   --  would spawn a new spotter and be 'rearmed')
   OpenWatchCircle(s, nil, game.tick - 10 + d.searchlightSpotTime_ms * 2)
 end

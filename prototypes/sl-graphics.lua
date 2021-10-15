@@ -100,7 +100,7 @@ export.controlUnitLight =
 
 
 ------------------------------------------------------------
--- Spotlight Model & Glow
+-- Searchlight Model & Glow
 
 local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                       1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
@@ -109,7 +109,7 @@ local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                       2,2,3,3,4,4,5,5,6,6,7,7,8,}
 
 
-export.spotlightBaseLayer =
+export.searchlightBaseLayer =
 {
   filename = "__SearchlightAssault__/graphics/sl-base.png",
   priority = "high",
@@ -135,14 +135,14 @@ export.spotlightBaseLayer =
 }
 
 
-export.spotlightBaseAnimated = table.deepcopy(export.spotlightBaseLayer)
-export.spotlightBaseAnimated.frame_count = 8
-export.spotlightBaseAnimated.frame_sequence = baseFrameSeq
-export.spotlightBaseAnimated.hr_version.frame_count = 8
-export.spotlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
+export.searchlightBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
+export.searchlightBaseAnimated.frame_count = 8
+export.searchlightBaseAnimated.frame_sequence = baseFrameSeq
+export.searchlightBaseAnimated.hr_version.frame_count = 8
+export.searchlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
 
 
-export.spotlightShadowLayer =
+export.searchlightShadowLayer =
 {
   filename = "__SearchlightAssault__/graphics/sl-shadow.png",
   priority = "high",
@@ -179,7 +179,7 @@ local maskFlags = { "mask", "low-object" }
 
 -- args:
 -- filename, (optional) flags, (optional) drawAsGlow, (optional) runtimeTint
-local function make_spotlight(inputs)
+local function make_searchlight(inputs)
 return
 {
   filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. ".png",
@@ -212,18 +212,18 @@ return
 end
 
 
-export.spotlightHeadAnimation = make_spotlight{filename="sl-head"}
-export.spotlightGlowAnimation = make_spotlight{filename="sl-glow", flags={"light"}, drawAsGlow=true}
-export.spotlightAlarmGlowAnimation = make_spotlight{filename="sl-alarm", flags={"light"}, drawAsGlow=true}
-export.spotlightMaskAnimation = make_spotlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
+export.searchlightHeadAnimation = make_searchlight{filename="sl-head"}
+export.searchlightGlowAnimation = make_searchlight{filename="sl-glow", flags={"light"}, drawAsGlow=true}
+export.searchlightAlarmGlowAnimation = make_searchlight{filename="sl-alarm", flags={"light"}, drawAsGlow=true}
+export.searchlightMaskAnimation = make_searchlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
 
 
 ------------------------------------------------------------
--- Spotlight Beam Layers
+-- Searchlight Beam Layers
 
-local Light_Layer_Spotlight_DayHaze =
+local Light_Layer_Searchlight_DayHaze =
 {
-  filename = "__SearchlightAssault__/graphics/spotlight-haze.png",
+  filename = "__SearchlightAssault__/graphics/searchlight-haze.png",
   line_length = 2,
   frame_count = slFrameCount,
   frame_sequence = {
@@ -241,13 +241,13 @@ local Light_Layer_Spotlight_DayHaze =
   -- flags = { "light" },
 }
 
-local Light_Layer_Spotlight_AlarmHaze = table.deepcopy(Light_Layer_Spotlight_DayHaze)
-Light_Layer_Spotlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
+local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight_DayHaze)
+Light_Layer_Searchlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
 
 
-local Light_Layer_SpotLight_NormLight =
+local Light_Layer_Searchlight_NormLight =
 {
-  filename = "__SearchlightAssault__/graphics/spotlight-r.png",
+  filename = "__SearchlightAssault__/graphics/searchlight-r.png",
   width = 200,
   height = 200,
   scale = 2,
@@ -259,28 +259,28 @@ local Light_Layer_SpotLight_NormLight =
 
 local redTint = {r=0.9, g=0.1, b=0.1, a=1}
 
-local Light_Layer_SpotLight_StartLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_StartLight.scale = 0.6
+local Light_Layer_Searchlight_StartLight = table.deepcopy(Light_Layer_Searchlight_NormLight)
+Light_Layer_Searchlight_StartLight.scale = 0.6
 
-local Light_Layer_SpotLight_DimLight = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_DimLight.filename = "__SearchlightAssault__/graphics/spotlight-r-less-dim.png"
+local Light_Layer_Searchlight_DimLight = table.deepcopy(Light_Layer_Searchlight_NormLight)
+Light_Layer_Searchlight_DimLight.filename = "__SearchlightAssault__/graphics/searchlight-r-less-dim.png"
 
-local Light_Layer_SpotLight_NormLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_NormLight_Red.tint = redTint
+local Light_Layer_Searchlight_NormLight_Red = table.deepcopy(Light_Layer_Searchlight_NormLight)
+Light_Layer_Searchlight_NormLight_Red.tint = redTint
 
-local Light_Layer_SpotLight_StartLight_Red = table.deepcopy(Light_Layer_SpotLight_NormLight)
-Light_Layer_SpotLight_StartLight_Red.scale = 0.6
-Light_Layer_SpotLight_StartLight_Red.tint = redTint
+local Light_Layer_Searchlight_StartLight_Red = table.deepcopy(Light_Layer_Searchlight_NormLight)
+Light_Layer_Searchlight_StartLight_Red.scale = 0.6
+Light_Layer_Searchlight_StartLight_Red.tint = redTint
 
-local Light_Layer_SpotLight_DimLight_Red = table.deepcopy(Light_Layer_SpotLight_DimLight)
+local Light_Layer_Searchlight_DimLight_Red = table.deepcopy(Light_Layer_Searchlight_DimLight)
 
 ------------------------------------------------------------
--- Spotlight Beams
+-- Searchlight Beams
 
-local SpotlightBeamPassive =
+local SearchlightBeamPassive =
 {
   type = "beam",
-  name = "spotlight-beam-passive",
+  name = "searchlight-beam-passive",
   flags = {"not-on-map"},
   width = 1,
   damage_interval = 1,
@@ -291,49 +291,49 @@ local SpotlightBeamPassive =
     {
       layers =
       {
-        Light_Layer_SpotLight_StartLight,
+        Light_Layer_Searchlight_StartLight,
       }
     },
     ending =
     {
       layers =
       {
-        Light_Layer_SpotLight_NormLight,
-        Light_Layer_SpotLight_DimLight,
+        Light_Layer_Searchlight_NormLight,
+        Light_Layer_Searchlight_DimLight,
       }
     }
   },
-  ending = Light_Layer_Spotlight_DayHaze,
+  ending = Light_Layer_Searchlight_DayHaze,
   tail = export.layerTransparentAnimation_Seq,
   head = export.layerTransparentAnimation_Seq,
   body = export.layerTransparentAnimation_Seq,
 }
 
 
-local SpotlightBeamAlarm = table.deepcopy(SpotlightBeamPassive)
-SpotlightBeamAlarm.name = "spotlight-beam-alarm"
-SpotlightBeamAlarm.ending = Light_Layer_Spotlight_AlarmHaze
-SpotlightBeamAlarm.ground_light_animations =
+local SearchlightBeamAlarm = table.deepcopy(SearchlightBeamPassive)
+SearchlightBeamAlarm.name = "searchlight-beam-alarm"
+SearchlightBeamAlarm.ending = Light_Layer_Searchlight_AlarmHaze
+SearchlightBeamAlarm.ground_light_animations =
 {
   start =
   {
     layers =
     {
-      Light_Layer_SpotLight_StartLight_Red,
+      Light_Layer_Searchlight_StartLight_Red,
     }
   },
   ending =
   {
     layers =
     {
-      Light_Layer_SpotLight_NormLight_Red,
-      Light_Layer_SpotLight_DimLight_Red,
+      Light_Layer_Searchlight_NormLight_Red,
+      Light_Layer_Searchlight_DimLight_Red,
     }
   }
 }
 
 
-data:extend{SpotlightBeamPassive, SpotlightBeamAlarm}
+data:extend{SearchlightBeamPassive, SearchlightBeamAlarm}
 
 
 return export

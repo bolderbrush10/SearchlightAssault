@@ -3,9 +3,6 @@
 
 ## Next Tasks:
 
-- Global find & replace "spotlight" to "searchlight"
-  (Don't forget to do this two to three times with various case-sensitivity)
-
 - Mod ourselves into a couple of main-menu screens
     - Probably want a scene with several SLs getting built by robot, which enables turrets to attack a far biter base
     - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
@@ -16,8 +13,8 @@
 
 ## Known Bugs:
 
-- [Cheat Mode] Mass-deconstructing alarm-mode spotlights and boosted turrets at
-  the same exact time causes the spotlights to re-boost turrets as they die,
+- [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
+  the same exact time causes the searchlights to re-boost turrets as they die,
   causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
@@ -171,9 +168,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ### Map modes / play
 
--- TODO Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling spotlights,
+-- TODO Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling searchlights,
 --      and ~100 other players are convicts.
---      Convicts try to gather resources and escape, wardens unlock more spotlights as they recapture convicts
+--      Convicts try to gather resources and escape, wardens unlock more searchlights as they recapture convicts
 --      (Captured convicts can play a minigame of some kind to re-escape from their cells)
 --      We'll figure out the win / lose conditions later.
 --      Maybe prisoners break into the warden's office and steal underpants or something.
@@ -199,8 +196,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
   Maybe just make some offshore pollution machines to slowly ramp up their evolution lol
   And make an indestrucible one by the rocket
 
-- There should be a rocket launcher and ammo you can craft to shoot spotlights / turrets
-  (Just bear in mind, those same spotlights will also be helping fend off the biter swarms,
+- There should be a rocket launcher and ammo you can craft to shoot searchlights / turrets
+  (Just bear in mind, those same searchlights will also be helping fend off the biter swarms,
    costing you time if you destroy them)
 
 
@@ -211,7 +208,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ## STRETCH GOALS
 
-- Spotlight color controlled by circuit signals
+- Searchlight color controlled by circuit signals
 
 - 'Infrared mode' (target vehicles / player only) activated via circuit signal
 
@@ -229,7 +226,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
   How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
   Or just make a stand-alone version of the mod and a non-standalone version?
 
-- Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
+- Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
@@ -246,9 +243,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 A
 ```
-Huge performance problem with ~100 spotlights, even if there are no turtles spawned
+Huge performance problem with ~100 searchlights, even if there are no turtles spawned
 
-Presently losing 10 ups at 150 spotlights. Best results when you pace out how slowly you spawn them.
+Presently losing 10 ups at 150 searchlights. Best results when you pace out how slowly you spawn them.
 Made a save file in the game to test performace with 150, and a commit here in git.
 
 Tried doing a version of searchlights no find_entity calls, still dropped 5 ups around 180 searchlights.

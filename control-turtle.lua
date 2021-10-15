@@ -61,7 +61,7 @@ function TurtleDistracted(unit_number, commandFailed)
 end
 
 
--- location is expected to be the spotlight's last shooting target,
+-- location is expected to be the searchlight's last shooting target,
 -- if it was targeting something.
 function SpawnTurtle(baseSL, surface, location)
   if location == nil then
@@ -105,7 +105,7 @@ end
 
 function MakeWanderWaypoint(origin)
   -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
-  -- too close to the max range of the spotlight
+  -- too close to the max range of the searchlight
   local bufferedRange = d.searchlightRange - 5
    -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
   local angle = math.random()
