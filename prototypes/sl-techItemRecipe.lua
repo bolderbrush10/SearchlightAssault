@@ -41,7 +41,7 @@ recipe.enabled = false
 recipe.ingredients =
 {
   {"radar",1},
-  {"small-lamp",5},
+  {"small-lamp",6},
   {"decider-combinator",2},
 }
 

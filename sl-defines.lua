@@ -39,7 +39,7 @@ d.searchlightCapacitorStartable =  2500000 -- joules
 
 -- How much electricity the searchlight consumes
 -- (I think it's cute to have its usage be the sum of its parts)
-d.searchlightEnergyUsage = "327kW"
+d.searchlightEnergyUsage = "332kW"
 d.searchlightControlEnergyUsage = "900kW"
 
 -------------------------------------------------
@@ -75,28 +75,28 @@ d.searchlightSpotTime_ms = 1.5 * 60
 
 -- Player-Visible entity, item, recipe names
 -- Any updates to these names must be reflected in the locale config.cfg files
-d.searchlightItemName = "searchlight"
-d.searchlightRecipeName = "searchlight"
-d.searchlightTechnologyName = "searchlight"
+d.searchlightItemName = "searchlight-assault"
+d.searchlightRecipeName = "searchlight-assault"
+d.searchlightTechnologyName = "searchlight-assault"
 
-d.searchlightBaseName = "searchlight-base"
-d.searchlightAlarmName = "searchlight-alarm"
-d.searchlightSignalInterfaceName = "searchlight-signal-interface"
-d.searchlightControllerName = "searchlight-control"
+d.searchlightBaseName = "searchlight-assault-base"
+d.searchlightAlarmName = "searchlight-assault-alarm"
+d.searchlightSignalInterfaceName = "searchlight-assault-signal-interface"
+d.searchlightControllerName = "searchlight-assault-control"
 
 -- Non-Visible entity / effect names
-d.spotterName = "searchlight-spotter"
-d.turtleName = "searchlight-turtle"
-d.spottedEffectID = "searchlight-spotted-effect"
-d.confirmedSpottedEffectID = "searchlight-confirm-spotted-effect"
+d.spotterName = "searchlight-assault-spotter"
+d.turtleName = "searchlight-assault-turtle"
+d.spottedEffectID = "searchlight-assault-spotted-effect"
+d.confirmedSpottedEffectID = "searchlight-assault-confirm-spotted-effect"
 
 -- Force name-suffix, to be appended to the name of the force that owns a searchlight
-d.turtleForceSuffix = "_SLTurtle"
+d.turtleForceSuffix = "_SLATurtle"
 
 -- Identifies range boosted versions of turrets
-d.boostSuffix = "-sl_boosted"
+d.boostSuffix = "-sla_boosted"
 
 -- Mod settings keys
-d.ignoreEntriesList = "searchlight-setting-ignore-entries-list"
+d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 
 return d
