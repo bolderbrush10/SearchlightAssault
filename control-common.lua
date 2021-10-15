@@ -75,6 +75,19 @@ function InitTables()
 
   -- Map: game tick -> Map: gID -> [foes]
   global.watch_circles = {}
+
+  ------------------
+  --  Boost List  --
+  ------------------
+
+  -- Map: turret name -> true
+  global.blockList = {}
+
+  -- Map: turret name -> true / false / "nil"
+  --    (boosted, unboosted, not boostable)
+  global.boostInfo = {}
+
+  UpdateBoostInfo(global.blockList)
 end
 
 
@@ -96,32 +109,22 @@ end
 
 
 local function makeGestalt(sl, sigInterface, turtle)
-  return {gID = newGID(), base = sl, signal = sigInterface, spotter = nil, turtle = turtle, turtleActive = true, tunions = {}}
+  return {gID = newGID(),
+          base = sl,
+          signal = sigInterface,
+          spotter = nil,
+          turtle = turtle,
+          turtleActive = true,
+          tunions = {}}
 end
 
 
--- Memoize; don't need to track this in global, save memory by recalculating across save/loads
-local boostInfo = {}
-
 local function boostTruth(turret)
-  local info = boostInfo[turret]
-  if info then
-    if info == "nil" then
-      return nil
-    else
-      return info
-    end
-  end
-
-  if game.entity_prototypes[turret.name .. d.boostSuffix] then
-    boostInfo[turret] = false
-    return false
-  elseif u.EndsWith(turret.name, d.boostSuffix) then
-    boostInfo[turret] = true
-    return true
+  local result = global.boostInfo[turret.name]
+  if result == "nil" then
+    return nil
   else
-    boostInfo[turret] = "nil"
-    return nil -- Not a boostable / boosted turret, ignore it
+    return result
   end
 end
 
@@ -178,9 +181,75 @@ local function removeGestaltfromFoes(gID)
   end
 end
 
+
+local function concatKeys(table)
+  local result = ""
+
+  -- factorio API guarantees deterministic iteration
+  for key, value in pairs(table) do
+    result = result .. key
+  end
+
+  return result
+end
+
+
 -------------------------------------------------------------------------------
 -- Public
 -------------------------------------------------------------------------------
+
+
+function UpdateBoostInfo(blockList)
+  local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
+
+  for _, turret in pairs(protos) do
+    if blockList[turret.name] then
+      global.boostInfo[turret.name] = "nil"
+
+      if not global.blockList[turret.name] then
+        game.print("Searchlight Assault: Now ignoring " .. turret.name)
+      end
+    elseif game.entity_prototypes[turret.name .. d.boostSuffix] then
+      global.boostInfo[turret.name] = false
+    elseif u.EndsWith(turret.name, d.boostSuffix) then
+      global.boostInfo[turret.name] = true
+    else
+      global.boostInfo[turret.name] = "nil"
+    end
+  end
+end
+
+
+function UpdateBlockList()
+  local settingStr = settings.global[d.ignoreEntriesList].value
+  local newBlockList = {}
+
+  -- Tokenize semi-colon delimited strings
+  for token in string.gmatch(settingStr, "[^;]+") do
+    local trim = token:gsub("%s+", "")
+
+    if game.entity_prototypes[trim] then
+      newBlockList[trim] = true
+    else
+      local result = "Unable to add misspelled or nonexistent turret " ..
+                     "name to Searchlight Assault ignore list: " .. token
+
+      game.print(result)
+    end
+  end
+
+  -- Quick & dirty way to compare table equality for our use case
+  if concatKeys(global.blockList) == concatKeys(newBlockList) then
+    game.print("Searchlight Assault: No turrets affected by settings change")
+
+    return
+  end
+
+  UpdateBoostInfo(newBlockList)
+
+  global.blockList = newBlockList
+end
+
 
 function maps_addGestalt(sl, sigInterface, turtle, turretList)
   local g = makeGestalt(sl, sigInterface, turtle)

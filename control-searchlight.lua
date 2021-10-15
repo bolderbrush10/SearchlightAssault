@@ -91,6 +91,15 @@ function TurretRemoved(turret)
 end
 
 
+function UnboostBlockedTurrets()
+  for tuID, tu in pairs(global.tunions) do
+    if global.blockList[tu.turret.name:gsub(d.boostSuffix, "")] then
+      UnBoost(tu, true)
+    end
+  end
+end
+
+
 function FoeSuspected(turtle, foe)
   local g = maps_getGestalt(turtle)
 
@@ -366,7 +375,7 @@ end
 
 
 function Boost(tunion, foe)
-  if tunion.boosted then
+  if tunion.boosted or global.blockList[tunion.turret.name] then
     return
   end
 
@@ -402,18 +411,22 @@ function Boost(tunion, foe)
 end
 
 
-function UnBoost(tunion)
+function UnBoost(tunion, forceUnboost)
   if not tunion.boosted then
     return
   end
 
-  -- Before unboosting, see if there's another searchlight with a target for us
-  for gID, _ in pairs(tunion.lights) do
-    local g = global.gestalts[gID]
-    if g.shooting_target and global.foes[g.shooting_target.unit_number] then
-      tunion.turret.shooting_target = g.shooting_target
-      return tunion.turret
+  if not forceUnboost then
+
+    -- Before unboosting, see if there's another searchlight with a target for us
+    for gID, _ in pairs(tunion.lights) do
+      local g = global.gestalts[gID]
+      if g.shooting_target and global.foes[g.shooting_target.unit_number] then
+        tunion.turret.shooting_target = g.shooting_target
+        return tunion.turret
+      end
     end
+
   end
 
   local turret = tunion.turret

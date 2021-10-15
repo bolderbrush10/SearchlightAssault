@@ -3,8 +3,8 @@
 
 ## Next Tasks:
 
-- Make a config option to take in the names of turrets that players DON'T
-  want the searchlights to boost, so they can fix mod incompatibility issues themselves
+- Global find & replace "spotlight" to "searchlight"
+  (Don't forget to do this two to three times with various case-sensitivity)
 
 - Mod ourselves into a couple of main-menu screens
     - Probably want a scene with several SLs getting built by robot, which enables turrets to attack a far biter base
@@ -18,17 +18,31 @@
 
 - [Cheat Mode] Mass-deconstructing alarm-mode spotlights and boosted turrets at
   the same exact time causes the spotlights to re-boost turrets as they die,
-  causing duplicates of that turret to be spawned in and avoid being mass-deconstructed.
+  causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
 
 ## Design Decisions & Discussion
 
-- Maybe require players to connect their light with wire to the turrets they want it to affect?
-  Connect it to a beacon to have the light auto-boost in a radius?
+- What if we just draw a searchlight effect ourselves manually move it around every tick?
+
+  This is extremely performance intensive.
+  It's vastly more efficient to have the game create an entity, shoot at it,
+  and let the engine do pathfinding and rendering calls for us.
+
+
+- What if we used TargetMasks to protect turtles from being attacked,
+  instead of giving them their own force?
+
+  Unfortunately, capsule robots and other non-turret entities
+  don't seem to respect the TargetMasks.
+
+
+- What if we required players to connect their light with wire to the turrets they want it to affect?
+  Connect searchlights to a beacon to have the light auto-boost in a radius?
   Have another version that takes a beacon as an ingredient to auto-boost?
-  Have a version that takes a radar for a really big boost?
+  Have a version that takes a radar / rocket control unit for a really big boost?
 
   Nah. Imagine what the wube devs would do.
   There'd just be ONE version of a turret, and it'd be straightforward to use.
@@ -217,6 +231,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 - Spotlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
+- Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
 ### STRETCH Feature: Traincar
 

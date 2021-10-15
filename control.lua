@@ -18,6 +18,7 @@ script.on_init(
 function(event)
 
   InitTables()
+  UpdateBlockList()
 
 end)
 
@@ -26,9 +27,22 @@ end)
 script.on_load(
 function(event)
 
-  -- TODO Is there anything unsaved we need to recalculate every load here?
-  --      Anything we can recalculate, to save disk space?
+  -- UpdateBlockList()
+  -- on_load doesn't provide access to game.* functions
+  -- maybe we'll find a workaround later
+  -- For now, players will just have to update
+  -- their settings in game
 
+end)
+
+
+-- On Mod Settings Changed
+script.on_event(defines.events.on_runtime_mod_setting_changed,
+function(event)
+  if event.setting == d.ignoreEntriesList then
+    UpdateBlockList()
+    UnboostBlockedTurrets()
+  end
 end)
 
 
@@ -168,6 +182,18 @@ for index, e in pairs
   end)
 end
 
+-- TODO Handle these cases where we probably need to delete a bunch of gesalts
+--      (Don't forget to handle the case where a gestalt straddles one or more chunks
+--       because of gesalt entities like turtles & turrets)
+-- on_pre_surface_cleared
+-- surface_index :: uint
+
+-- on_pre_surface_deleted
+-- surface_index :: uint
+
+-- on_pre_chunk_deleted
+-- surface_index :: uint
+-- positions :: array[ChunkPosition]: The chunks to be deleted.
 
 --
 -- BLUEPRINTS & GHOSTS

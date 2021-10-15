@@ -96,4 +96,7 @@ d.turtleForceSuffix = "_SLTurtle"
 -- Identifies range boosted versions of turrets
 d.boostSuffix = "-sl_boosted"
 
+-- Mod settings keys
+d.ignoreEntriesList = "searchlight-setting-ignore-entries-list"
+
 return d
