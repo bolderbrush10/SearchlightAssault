@@ -5,9 +5,9 @@
 
 - Control units with no power shouldn't let their turrets operate
 
-- Red spotted hexhaze is still too hard to see
-
 - Uphold that promise about the multiplayer map from the mod description
+
+- Handle distraction command
 
 
 ## Known Bugs:
@@ -187,7 +187,7 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
 
 
-## STRETCH GOALS
+## Stretch Goals
 
 - Searchlight color controlled by circuit signals
 
@@ -223,9 +223,11 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
   (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
     - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
     - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
+    - There's probably a good few default ones that would suit being changed to night time and having
+      some searchlights thrown into
 
 
-### STRETCH Feature: Traincar
+### Stretch Feature: Traincar
 
 -- TODO Make a train wagon type with 2-4 searchlights mounted on it
 

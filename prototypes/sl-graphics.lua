@@ -287,8 +287,7 @@ local Light_Layer_Searchlight_DayHaze =
   height = 200,
   scale = 1,
   blend_mode = "additive",
-  tint = {r=230/255, g=150/255, b=0, a=1},
-  -- flags = { "light" },
+  tint = {r=230/255, g=150/255, b=0, a=0.1},
 }
 
 local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight_DayHaze)
