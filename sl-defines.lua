@@ -87,6 +87,7 @@ d.searchlightControllerName = "searchlight-assault-control"
 -- Non-Visible entity / effect names
 d.spotterName = "searchlight-assault-spotter"
 d.turtleName = "searchlight-assault-turtle"
+d.remnantsName = "searchlight-assault-remnants"
 d.spottedEffectID = "searchlight-assault-spotted-effect"
 d.confirmedSpottedEffectID = "searchlight-assault-confirm-spotted-effect"
 

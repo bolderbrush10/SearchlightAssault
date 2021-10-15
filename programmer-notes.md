@@ -53,13 +53,6 @@
 ## TODO's
 
 
-### Feature: Rotate searchlight to rotate turtle waypoint
-
-- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
-  So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
-  has a searchlight selected, I guess. Maybe play a little UI sound.
-
-
 ### Feature: Sounds & Audio
 
 -- TODO Sounds and audio
@@ -80,6 +73,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Test blueprints construction / mass deconstruction
 
+-- TODO Test non-high resolution graphics
+
 
 ### Feature: Mod Compatability
 
@@ -93,24 +88,9 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 -- TODO Test against the most popular mods (bobs, angels, Rampant, sort by popular on the website)
 
 
-### Feature: Graphics Polish
-
--- TODO add onhit particle effects (for when the searchlight is damaged so little chunks fly off)
-
--- TODO Spawn metal & dirt particles when spawning / despawning control units
-
--- TODO Leave remnants when destroyed (doesn't even have to be custom, pick another entity's if you must)
-
--- TODO Test non-high resolution graphics
-
--- TODO Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
-
-
 ### Feature: Professionalism Polish
 
 -- TODO Collect more in-game screenshots and gifs for the mod portal page
-
--- TODO clean up unused junk across all files
 
 -- TODO So, apparently, binding variables and functions to local speeds them up.
 --      We should go through all of our code and make sure that anything which can be made local, is made local.
@@ -128,6 +108,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Prepare FAQ, explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 
+-- TODO final sweep on other TODOs
+
 
 ### Feature: Mod-Uninstall Command
 
@@ -138,12 +120,12 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 --      Don't forget to update the mod description and readme to mention the uninstall command
 
 
-### Bugs to Report / Features to Request
+### Bugs to Report / Mod Interface Features to Request
 
--- TODO Write a bug report against the usage of trigger_type_mask and how non-turrets just totally ignore it.
---      And how it's seemingly-impossible to set up a blacklist for an entity that you don't want even-just-turrets to attack.
+-- TODO Write up how non-turrets just totally ignore trigger_type_mask
+--      And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
 
--- TODO Ask a developer on the forums for an 'on_save' event, or for a way in general to make sure that uninstalling our mod will give people back their original turrets.
+-- TODO 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
 --      (Alternatively, ask for the simple ability to increase turret range during run time)
 
 -- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
@@ -229,6 +211,15 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
+
+- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
+  So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
+  has a searchlight selected, I guess. Maybe play a little UI sound.
+
+- Spawn metal & dirt particles when spawning / despawning control units
+
+- Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
+
 
 ### STRETCH Feature: Traincar
 

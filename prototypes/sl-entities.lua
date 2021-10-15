@@ -1,6 +1,9 @@
 local d = require "sl-defines"
 local g = require "sl-graphics"
 
+local sounds = require("__base__/prototypes/entity/sounds")
+local hit_effects = require ("__base__/prototypes/entity/hit-effects")
+
 require "util" -- for table.deepcopy
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
@@ -31,12 +34,15 @@ local hiddenEntityFlags = table.deepcopy(baseHiddenEntityFlags)
 table.insert(hiddenEntityFlags, "not-blueprintable")
 
 
+local baseIcon = "__SearchlightAssault__/graphics/searchlight-icon.png"
+local controlIcon = "__SearchlightAssault__/graphics/control-icon.png"
+
 -- Searchlight Base Entity
 local sl_b = {}
 sl_b.name = d.searchlightBaseName
 sl_b.type = "electric-turret"
 sl_b.max_health = 250
-sl_b.icon = "__SearchlightAssault__/graphics/searchlight-icon.png"
+sl_b.icon = baseIcon
 sl_b.icon_size = 64
 sl_b.icon_mipmaps = 4
 sl_b.alert_when_attacking = false
@@ -66,6 +72,10 @@ sl_b.glow_light_intensity = 1.0
 sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
+sl_b.damaged_trigger_effect = hit_effects.entity()
+sl_b.corpse = d.remnantsName
+sl_b.dying_explosion = "laser-turret-explosion"
+sl_b.vehicle_impact_sound = sounds.generic_impact
 sl_b.base_picture = g.searchlightBaseLayer
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap
@@ -107,13 +117,33 @@ sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "searchlight-beam
 sl_a.placeable_by = {item = d.searchlightItemName, count = 1}
 
 
+-- Searchlight Remnants Entity
+local sl_r = {}
+sl_r.name = d.remnantsName
+sl_r.type = "corpse"
+sl_r.icon = baseIcon
+sl_r.icon_size = 64
+sl_r.icon_mipmaps = 4
+sl_r.flags = {"placeable-neutral", "not-on-map"}
+sl_r.subgroup = "defensive-structure-remnants"
+sl_r.order = "a-d-a"
+sl_r.selection_box = {{-1, -1}, {1, 1}}
+sl_r.tile_width = 2
+sl_r.tile_height = 2
+sl_r.selectable_in_game = false
+sl_r.time_before_removed = 60 * 60 * 15 -- 15 minutes, same as laser-turret remnants
+sl_r.final_render_layer = "remnants"
+sl_r.remove_on_tile_placement = false
+sl_r.animation = g.searchlightRemnants
+
+
 -- Searchlight Control Entity
 local sl_c = {}
 sl_c.name = d.searchlightControllerName
 sl_c.type = "electric-energy-interface"
 sl_c.animation = g.controlUnitSprite
 sl_c.light   = g.controlUnitLight
-sl_c.icon = "__SearchlightAssault__/graphics/control-icon.png"
+sl_c.icon = controlIcon
 sl_c.icon_size = 64
 sl_c.icon_mipmaps = 4
 sl_c.continuous_animation = true
@@ -139,7 +169,7 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 local sl_s = {}
 sl_s.type = "constant-combinator"
 sl_s.name = d.searchlightSignalInterfaceName
-sl_s.icon = "__SearchlightAssault__/graphics/searchlight-icon.png"
+sl_s.icon = baseIcon
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
@@ -290,4 +320,4 @@ spotter.action =
 
 
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, sl_c, sl_s, spotter, t}
+data:extend{sl_a, sl_b, sl_c, sl_r, sl_s, spotter, t}

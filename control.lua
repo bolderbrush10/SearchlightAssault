@@ -217,7 +217,7 @@ function(event)
           or e.name == d.spotterName
           or e.name == d.searchlightControllerName then
 
-           -- Just blow up the searchlight as collateral damage
+          -- Just destroy the searchlight as collateral damage
           SearchlightRemoved(e)
           e.destroy()
 

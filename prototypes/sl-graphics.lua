@@ -118,8 +118,8 @@ export.searchlightBaseLayer =
   line_length = 4,
   width = 75,
   height = 53,
-  shift = util.by_pixel(0, 15),
   scale = 0.66,
+  shift = util.by_pixel(0, 15),
   hr_version =
   {
     filename = "__SearchlightAssault__/graphics/sl-base-hr.png",
@@ -216,6 +216,56 @@ export.searchlightHeadAnimation = make_searchlight{filename="sl-head"}
 export.searchlightGlowAnimation = make_searchlight{filename="sl-glow", flags={"light"}, drawAsGlow=true}
 export.searchlightAlarmGlowAnimation = make_searchlight{filename="sl-alarm", flags={"light"}, drawAsGlow=true}
 export.searchlightMaskAnimation = make_searchlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
+
+
+------------------------------------------------------------
+-- Searchlight Remants
+
+export.searchlightRemnants = {layers =
+{{
+  filename = "__SearchlightAssault__/graphics/sl-remnants.png",
+  priority = "high",
+  axially_symmetrical = false,
+  direction_count = 1,
+  width = 85,
+  height = 112,
+  scale = 0.66,
+  shift = util.by_pixel(0, -5),
+  hr_version =
+  {
+    filename = "__SearchlightAssault__/graphics/sl-remnants-hr.png",
+    priority = "high",
+    axially_symmetrical = false,
+    direction_count = 1,
+    width = 170,
+    height = 224,
+    scale = 0.33,
+    shift = util.by_pixel(0, -5),
+  }
+},
+{
+  filename = "__SearchlightAssault__/graphics/sl-remnants-shadow.png",
+  priority = "high",
+  draw_as_shadow = true,
+  axially_symmetrical = false,
+  direction_count = 1,
+  width = 137,
+  height = 52,
+  scale = 0.64,
+  shift = util.by_pixel(22, 25),
+  hr_version =
+  {
+    filename = "__SearchlightAssault__/graphics/sl-remnants-shadow-hr.png",
+    priority = "high",
+    draw_as_shadow = true,
+    axially_symmetrical = false,
+    direction_count = 1,
+    width = 273,
+    height = 104,
+    scale = 0.32,
+    shift = util.by_pixel(22, 25),
+  }
+}}}
 
 
 ------------------------------------------------------------
