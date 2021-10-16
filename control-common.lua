@@ -8,13 +8,13 @@ function InitTables()
   -------------------------
   --[[ Gestalt:
   {
-    gID = int (gID),
-    base = BaseSearchlight,
-    signal = SignalInterface,
+    gID     = int (gID),
+    base    = Searchlight,
+    signal  = SignalInterface,
     spotter = nil / Spotter,
-    turtle = Turtle,
+    turtle  = Turtle,
     turtleActive = true/false, -- Used to 'latch' active state during power outages
-    turtleCoord = nil / {x, y}
+    turtleCoord  = nil / {x, y}
     tunions = Map: tuID -> true
   }
   ]]--

@@ -3,8 +3,6 @@
 
 ## Next Tasks:
 
-- Control units with no power shouldn't let their turrets operate
-
 - Uphold that promise about the multiplayer map from the mod description
 
 - Handle distraction command

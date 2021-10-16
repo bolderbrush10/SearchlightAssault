@@ -156,6 +156,17 @@ function CheckElectricNeeds()
     end
 
   end
+
+  for _, tuID in pairs(global.boosted_to_tuID) do
+
+    local tu = global.tunions[tuID]
+    if tu.control.energy == 0 then
+      tu.turret.active = false
+    else
+      tu.turret.active = true
+    end
+
+  end
 end
 
 
