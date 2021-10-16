@@ -26,6 +26,12 @@ local signalA = {type="virtual", name="signal-A"}
 
 
 function SearchlightAdded(sl)
+  -- Don't allow building searchlights while uninstallation is being attempted
+  if settings.global[d.uninstallMod].value then
+    sl.destroy()
+    return
+  end
+
   local friends = sl.surface.find_entities_filtered{area=GetBoostableAreaFromPosition(sl.position),
                                                     type={"fluid-turret", "electric-turret", "ammo-turret"},
                                                     force=sl.force}
@@ -160,9 +166,9 @@ function CheckElectricNeeds()
   for _, tuID in pairs(global.boosted_to_tuID) do
 
     local tu = global.tunions[tuID]
-    if tu.control.energy == 0 then
+    if tu.control.energy < d.searchlightCapacitorCutoff then
       tu.turret.active = false
-    else
+    elseif tu.control.energy > d.searchlightCapacitorStartable then
       tu.turret.active = true
     end
 
@@ -171,7 +177,8 @@ end
 
 
 -- Checked every tick
--- Probably a good candidate to sign this up for every_n_tick, maybe once a second?
+-- TODO Probably a good candidate to sign this up for every_n_tick, maybe once a second?
+-- TODO Some parts of this could be broken out and then called from Raise/ClearAlarmLight
 function HandleCircuitConditions()
   for gID, g in pairs(global.gestalts) do
 
@@ -206,8 +213,8 @@ function HandleCircuitConditions()
 end
 
 
--- Checked every tick, but the heavy logic is only while a foe is spotted,
--- so not too performance-impacting
+-- Checked every tick,
+-- but the heavy logic only runs while a foe is spotted, so not too performance-impacting
 function TrackSpottedFoes()
   -- Skip function if tables empty (which should be the case most of the time)
   -- TODO How much faster would it be to maintain table size variables?

@@ -100,5 +100,6 @@ d.boostSuffix = "-sla_boosted"
 
 -- Mod settings keys
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
+d.uninstallMod = "searchlight-assault-uninstall"
 
 return d

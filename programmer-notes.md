@@ -3,21 +3,22 @@
 
 ## Next Tasks:
 
+-- Sounds and audio
+https://wiki.factorio.com/Prototype/Entity#working_sound
+
+- Maybe we want kind of an audible hum, like a bass-boosted flouresent light...
+- And some quiet background morse-code kinda sounds...
+- prototype: turtle.walking_sound to an electric hum / sizzle ?
+- attack_parameters.CyclicSound: Metal-Gear-Solid style "Alert noise" for turtle ?
+- attack_parameters.CyclicSound: Alarm klaxon for Alarm Mode searchlight ?
+
+
 - Uphold that promise about the multiplayer map from the mod description
-
-
-## Known Bugs:
-
-- [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
-  the same exact time causes the searchlights to re-boost turrets as they die,
-  causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
-
-- Boosted turrets have trouble shooting at something if it has its force set every tick
 
 
 ## Design Decisions & Discussion
 
-- What if we just draw a searchlight effect ourselves manually move it around every tick?
+- What if we just draw a searchlight effect ourselves and manual move & search around it every tick?
 
   This is extremely performance intensive.
   It's vastly more efficient to have the game create an entity, shoot at it,
@@ -40,97 +41,87 @@
   There'd just be ONE version of a turret, and it'd be straightforward to use.
 
 
-- Indicate / Decorate Boostable Radius / Terrain?
+- Indicate boostable radius / decorate terrain of boostable region?
 
-  No longer necessary, decided to just boost adjacent turrets
+  No longer necessary, decided to just boost adjacent turrets.
+  It was very painful to try to figure out a way to get turret range and
+  radius_visualization to coexist.
+
+
+## Known Bugs:
+
+- [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
+  the same exact time causes the searchlights to re-boost turrets as they die,
+  causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
+
+- Boosted turrets have trouble shooting at something if it has its force set every tick
 
 
 ## TODO's
 
 
-### Feature: Sounds & Audio
-
--- TODO Sounds and audio
-https://wiki.factorio.com/Prototype/Entity#working_sound
-
-- Maybe we want kind of an audible hum, like a bass-boosted flouresent light...
-- And some quiet background morse-code kinda sounds...
-- prototype: turtle.walking_sound to an electric hum / sizzle ?
-- attack_parameters.CyclicSound: Metal-Gear-Solid style "Alert noise" for turtle ?
-- attack_parameters.CyclicSound: Alarm klaxon for Alarm Mode searchlight ?
-
-
 ### Testing
 
--- TODO Test multiplayer online, even if just against yourself
+- Test multiplayer online, even if just against yourself
 
--- TODO Get people to play test the balance
+- Get people to play test the balance
 
 
 ### Feature: Mod Compatability
 
--- TODO Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
+- Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
 
--- TODO Maybe instead of creating & destroying range-boosted versions of turrets,
-        we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
+- Maybe instead of creating & destroying range-boosted versions of turrets,
+  we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
 
--- TODO Maybe we SHOULD fire those script___created/destroyed events...
+- Maybe we SHOULD fire those script___created/destroyed events...
 
--- TODO Test against the most popular mods (bobs, angels, Rampant, sort by popular on the website)
+- Test against the most popular mods (bobs, angels, Rampant, sort by popular on the website)
 
 
 ### Feature: Professionalism Polish
 
--- TODO Collect more in-game screenshots and gifs for the mod portal page
+- Collect more in-game screenshots and gifs for the mod portal page
 
--- TODO So, apparently, binding variables and functions to local speeds them up.
---      We should go through all of our code and make sure that anything which can be made local, is made local.
---      DOUBLE CHECK for variables to make local inside of loops, etc
+- So, apparently, binding variables and even functions to local speeds them up.
+- We should go through all of our code and make sure that anything which can be made local, is made local.
+- DOUBLE CHECK for variables to make local inside of loops, etc
 
--- TODO Even binding next() increases performance, eg, local next = next
---      So be sure to bind any functions called in repetitive places
+- Even binding next() increases performance, eg, local next = next
+- So be sure to bind any functions called in repetitive places
 
--- TODO Final sweep over README.md
+- It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
+- We'll want to make a header / word template featuring a logo for the mod and stuff
 
--- TODO It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
---      We'll want to make a header / word template featuring a logo for the mod and stuff
+- Port this file into the bottom of the readme when complete
 
--- TODO Port this file into the bottom of the readme when complete
+- Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 
--- TODO Prepare FAQ, explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
+- Final sweep on other TODOs
 
--- TODO final sweep on other TODOs
-
-
-### Feature: Mod-Uninstall Command
-
--- TODO should probably un-boost all turrets when a game is being saved, just in case they uninstall the mod. We can make the searchlights disappear, but it's probably unfair to also remove other random turrets.
---      So, there's not really a way to tell when this happens. And it doesn't look like the migration files will help either.
---      I think the best thing we can do is add a function that the player can call via command that 'disables' the mod so they can save & uninstall
---      And then we'll make a FAQ / User Manual to explain that if they don't want to risk random turrets disappearing, here's the steps they need to follow
---      Don't forget to update the mod description and readme to mention the uninstall command
+- Final sweep over README.md
 
 
 ### Bugs to Report / Mod Interface Features to Request
 
--- TODO Write up how non-turrets just totally ignore trigger_type_mask
---      And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
+- Write up how non-turrets just totally ignore trigger_type_mask
+- And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
 
--- TODO 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
---      (Alternatively, ask for the simple ability to increase turret range during run time)
+- 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
+- (Alternatively, ask for the simple ability to increase turret range during run time)
 
--- TODO Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
+- Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
--- TODO When editing an already-saved blueprint's contents by selecting a new area,
-        the on_player_setup_blueprint event is fired,
-        but the replacement contents don't show up in the player's blueprint or cursor blueprint stack
-        (cursor_stack.is_blueprint is true, but is_blueprint_setup() is false,
-         get_blueprint_entities() returns nothing, and get_blueprint_entity_count() is zero)
-        Where it does show up is in the blueprint from the player's inventory,
-        which means you have to iterate through the whole inventory
-        and hope you can find the right blueprint,
-        AND also deal with the problem of the blueprint being nested in a book...
-        Related? https://forums.factorio.com/viewtopic.php?t=99845
+- When editing an already-saved blueprint's contents by selecting a new area,
+  the on_player_setup_blueprint event is fired,
+  but the replacement contents don't show up in the player's blueprint or cursor blueprint stack
+  (cursor_stack.is_blueprint is true, but is_blueprint_setup() is false,
+   get_blueprint_entities() returns nothing, and get_blueprint_entity_count() is zero)
+  Where it does show up is in the blueprint from the player's inventory,
+  which means you have to iterate through the whole inventory
+  and hope you can find the right blueprint,
+  AND also deal with the problem of the blueprint being nested in a book...
+  Related? https://forums.factorio.com/viewtopic.php?t=99845
 
 -- DONE energy_glow_animation on turrets flickers badly, so that's probably a bug
         Related? https://forums.factorio.com/viewtopic.php?p=421477
@@ -141,12 +132,12 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ### Map modes / play
 
--- TODO Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling searchlights,
---      and ~100 other players are convicts.
---      Convicts try to gather resources and escape, wardens unlock more searchlights as they recapture convicts
---      (Captured convicts can play a minigame of some kind to re-escape from their cells)
---      We'll figure out the win / lose conditions later.
---      Maybe prisoners break into the warden's office and steal underpants or something.
+- Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling searchlights,
+  and ~100 other players are convicts.
+  Convicts try to gather resources and escape, wardens unlock more searchlights as they recapture convicts
+  (Captured convicts can play a minigame of some kind to re-escape from their cells)
+  We'll figure out the win / lose conditions later.
+  Maybe prisoners break into the warden's office and steal underpants or something.
 
 - Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?
   So, we discovered that making a map doesn't come with triggers and other dynamic things
@@ -176,40 +167,30 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 ### Advertising
 
--- TODO Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
+- Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
 
 
 ## Stretch Goals
+
+- Spawn metal & dirt particles when spawning / despawning control units
+
+- Further crop the mask sprite, figure out the offset it needs
+
+- Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
+
+- Make a little 'dirt estucheon' for where the wires reach the ground
+
+- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
 
 - Searchlight color controlled by circuit signals
 
 - 'Infrared mode' (target vehicles / player only) activated via circuit signal
 
-- Think about teleporting or somehow... hiding the entities we're replacing.
-  It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
-
-- Further crop the mask sprite, figure out the offset it needs
-
-- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
-
-- Make a little 'dirt estucheon' for where the wires reach the ground
-
-- Break apart into a 'boostable turrets' mod
-  Let people use mod settings to control what level the boosting is
-  How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
-  Or just make a stand-alone version of the mod and a non-standalone version?
-
 - Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
-
-- Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
 - Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
   So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
   has a searchlight selected, I guess. Maybe play a little UI sound.
-
-- Spawn metal & dirt particles when spawning / despawning control units
-
-- Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
 
 - Create more main-menu simulations
   (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
@@ -218,14 +199,15 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
     - There's probably a good few default ones that would suit being changed to night time and having
       some searchlights thrown into
 
+- Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
-### Stretch Feature: Traincar
+- Think about teleporting or somehow... hiding the entities we're replacing.
+  It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
 
--- TODO Make a train wagon type with 2-4 searchlights mounted on it
-
--- TODO Turret train -- put on a turret and let it wheel away
-        (Did no one make this already?)
-        This whole idea should probably be a whole different mod...
+- Break apart into a 'boostable turrets' mod
+  Let people use mod settings to control what level the boosting is
+  How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
+  Or just make a stand-alone version of the mod and a non-standalone version?
 
 
 ## Performance reports:

@@ -9,6 +9,8 @@ require "util" -- for table.deepcopy
 -- local g = require "graphics"
 -- myEntity.animation = g[someAnimation]
 
+-- TODO Could probably knock off a hundred lines with a MakeHR() function
+
 
 local export = {}
 
@@ -23,15 +25,10 @@ export.layerTransparentPixel =
   height = 1,
 }
 
+export.layerTransparentAnimation = table.deepcopy(export.layerTransparentPixel)
+export.layerTransparentAnimation.direction_count = 1
 
-export.layerTransparentAnimation =
-{
-  filename = "__SearchlightAssault__/graphics/transparent-pixel.png",
-  width = 1,
-  height = 1,
-  direction_count = 1,
-}
-
+-- Builder for the searchlight framesequence
 local slFrameCount = 60
 local slStaticFrameSeq = {}
 

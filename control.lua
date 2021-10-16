@@ -42,6 +42,12 @@ function(event)
   if event.setting == d.ignoreEntriesList then
     UpdateBlockList()
     UnboostBlockedTurrets()
+  elseif event.setting == d.uninstallMod and settings.global[d.uninstallMod].value then
+    for _, g in pairs(global.gestalts) do
+      local b = g.base;
+      maps_removeGestaltAndDestroyHiddenEnts(g);
+      b.destroy()
+    end
   end
 end)
 
