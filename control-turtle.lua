@@ -34,10 +34,7 @@ function ResumeTurtleDuty(gestalt, turtlePositionToResume)
 end
 
 
--- TODO Account for commandFailed
-function TurtleWaypointReached(unit_number, commandFailed)
-  local g = global.unum_to_g[unit_number]
-
+function TurtleWaypointReached(g)
   if g.turtleCoord == nil then
     WanderTurtle(g.turtle, g.base.position)
     g.base.shooting_target = g.turtle -- retarget turtle just in case something happened
@@ -46,17 +43,6 @@ function TurtleWaypointReached(unit_number, commandFailed)
                           distraction = defines.distraction.by_anything,
                          })
   end
-end
-
-
-function TurtleDistracted(unit_number, commandFailed)
-  -- TODO if a turtle is having trouble attacking something,
-  --      just manually spawn a spotter for it
-
-  -- TODO Start tracking the turtle in global[] + count of failed commands
-  --      We'll want to check every tick in control-searchlight
-  --      if it's left its searchlight radius,
-  --      and we'll want to check if we need to manually-kick off a WatchCircle
 end
 
 

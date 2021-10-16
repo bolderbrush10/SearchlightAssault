@@ -67,7 +67,7 @@ script.on_event(defines.events.on_script_trigger_effect,
 function(event)
   if event.source_entity and event.target_entity then
     if event.effect_id == d.spottedEffectID then
-      FoeSuspected(event.source_entity, event.target_entity)
+      FoeSuspected(event.source_entity)
     elseif event.effect_id == d.confirmedSpottedEffectID then
       OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
     end
@@ -79,13 +79,17 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  if global.unum_to_g[event.unit_number] then
-    if not event.was_distracted then
-      TurtleWaypointReached(event.unit_number, event.result == defines.behavior_result.fail)
-    else
-      -- TODO Will this trigger before or after the distraction starts/finishes?
-      TurtleDistracted(event.unit_number, event.result == defines.behavior_result.fail)
-    end
+  local g = global.unum_to_g[event.unit_number]
+  if not g then
+    return
+  end
+
+  -- Triggers after the distraction finishes or command finishes failing
+  -- If a turtle is having trouble attacking something, we'll manually spawn a spotter for it
+  if event.was_distracted or event.result == defines.behavior_result.fail then
+    FoeSuspected(g.turtle)
+  else
+    TurtleWaypointReached(g)
   end
 
 end)

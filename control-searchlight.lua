@@ -100,7 +100,7 @@ function UnboostBlockedTurrets()
 end
 
 
-function FoeSuspected(turtle, foe)
+function FoeSuspected(turtle)
   local g = maps_getGestalt(turtle)
 
   -- Turn off the turtle. We'll turn it back it on after the foe is gone
@@ -109,7 +109,7 @@ function FoeSuspected(turtle, foe)
 
   -- If there's a foe in the spotter's radius after a few moments,
   -- we'll sound the alarm and target it
-  local s = SpawnSpotter(g, foe)
+  local s = SpawnSpotter(g)
 
   -- If the searchlight hasn't found anything by the given tick, we'll close its circle
   -- (note that it takes quite a few extra ticks for the landmine to do its business,
@@ -549,7 +549,7 @@ function SpawnSignalInterface(sl)
 end
 
 
-function SpawnSpotter(g, foe)
+function SpawnSpotter(g)
   local spotter = g.turtle.surface.create_entity{name = d.spotterName,
                                                  position = g.turtle.position,
                                                  force = g.turtle.force,

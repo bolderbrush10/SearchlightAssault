@@ -5,8 +5,6 @@
 
 - Uphold that promise about the multiplayer map from the mod description
 
-- Handle distraction command
-
 
 ## Known Bugs:
 
