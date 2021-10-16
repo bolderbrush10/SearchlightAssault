@@ -447,13 +447,21 @@ end
 
 
 function SpawnControl(turret)
-  pos = turret.selection_box.right_bottom
-  minX = turret.selection_box.left_top.x
+  local width = turret.bounding_box.right_bottom.x - turret.bounding_box.left_top.x
+  local pos  = turret.bounding_box.right_bottom
 
-  -- Slightly randomizing the position to add visual interest
-  -- (math.random(x, y) doesn't return a float, so we add our product to math.random() which does)
-  pos.x = math.random(minX + 1, pos.x - 1) + math.random() - 0.5
-  pos.y = pos.y - 0.3 - math.random()/2
+  -- Slightly randomizing the position to add visual interest,
+  -- staying near the bottom edge of the entity, varying around ~80% of the width.
+  -- (math.random(x, y) doesn't return a float, so we'll add our product to math.random() which does)
+  -- (math.random(x, y) crashes when given positions too close so check variance before using)
+  local xVar = math.abs((0) - (width - 0.2))
+  local xRand = 0
+  if xVar >= 1 then
+    xRand = math.random((0),  (width - 0.2))
+  end
+
+  pos.x = pos.x - 0.2 - xRand
+  pos.y = pos.y - 0.1 + math.random()/8
 
   local control = turret.surface.create_entity{name = d.searchlightControllerName,
                                                position = pos,

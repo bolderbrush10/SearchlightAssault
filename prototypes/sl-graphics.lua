@@ -73,8 +73,8 @@ export.controlUnitSprite =
   frame_count = 10,
   frame_sequence = controlFrameSeq,
   line_length = 5,
-  width = 90,
-  height = 120,
+  width = 45,
+  height = 60,
   scale = 0.4,
   hr_version =
   {

@@ -70,10 +70,6 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 -- TODO Get people to play test the balance
 
--- TODO Test blueprints construction / mass deconstruction
-
--- TODO Test non-high resolution graphics
-
 
 ### Feature: Mod Compatability
 
