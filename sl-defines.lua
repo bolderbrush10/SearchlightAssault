@@ -1,6 +1,11 @@
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
 
+-- It's not strictly necessary to declare functions locally like this, outside the data stage...
+-- But, using local reduces the amount of calls to the global table lua has to perform,
+-- speeding up performance greatly (Sometimes as much as ~30%, per lua.org/gems/sample.pdf)
+-- So, throughout this codebase we'll use this convention to export local values as a matter of habit.
+
 local d = {}
 
 
@@ -14,8 +19,9 @@ local d = {}
 --  since the searchlight is built from a radar)
 d.searchlightRange = 100
 
--- Max distance at which the searchlight boosts the range of same-force turrets (using a square grid)
--- At 3, this range is virtually 'adjacent-only'
+-- Max distance at which the searchlight looks for same-force turrets to boost the range of
+-- This should mostly only be able to capture adjacent turrets of up to 3x3 size
+-- We can try making this bigger to capture bigger / non-square turrets
 d.searchlightMaxNeighborDistance = 3
 
 -- Range boost effect provided to friendly turrets so they can attack the distant foe the searchlight spotted
@@ -29,13 +35,8 @@ d.rangeBoostAmount = d.searchlightRange + d.searchlightMaxNeighborDistance*2
 -- Range-boosted turrets fire this many times slower
 d.attackCooldownPenalty = 50
 
--- Capacitor size (electric energy buffer) for the searchlight
--- (The searchlight requires a partial-buffer to start operating, and turns back off when the buffer is below the cutoff)
--- ((We use this to reduce pathological "flickering" cases when a factory is in low power,
---   and we'd otherwise need to constantly enable / disable the hidden entities that make the searchlight work))
+-- Electric energy buffer size for the searchlight
 d.searchlightCapacitorSize      = "5MJ"
-d.searchlightCapacitorCutoff    =   250000 -- joules
-d.searchlightCapacitorStartable =  2500000 -- joules
 
 -- How much electricity the searchlight consumes
 -- (I think it's cute to have its usage be the sum of its parts)

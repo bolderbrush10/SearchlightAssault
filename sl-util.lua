@@ -1,10 +1,13 @@
 local d = require "sl-defines"
 
--- It's not strictly necessary to declare functions locally like this, outside the data stage...
--- But, using local reduces the amount of calls to the global table lua has to perform
+
 local u = {}
 
--- We don't need to these put in the globals, since it's fine to recalulate them on game load
+
+local pairs = pairs
+
+
+-- We don't need to these put in the globals, since it's fine to recalulate them after game load
 local firing_arcs = {}
 local firing_range = {}
 local DirectionToVector = {}
@@ -42,6 +45,24 @@ function(a)
   return a*a
 end
 
+local boostableArea =
+{
+  x = d.searchlightMaxNeighborDistance*2,
+  y = d.searchlightMaxNeighborDistance*2
+}
+
+
+u.GetBoostableAreaFromPosition =
+function(position)
+  local adjusted = {left_top = {x, y}, right_bottom = {x, y}}
+  adjusted.left_top.x     = position.x - boostableArea.x
+  adjusted.left_top.y     = position.y - boostableArea.y
+  adjusted.right_bottom.x = position.x + boostableArea.x
+  adjusted.right_bottom.y = position.y + boostableArea.y
+
+  return adjusted
+end
+
 
 u.WithinRadius =
 function(posA, posB, acceptable_radius)
@@ -58,7 +79,7 @@ end
 
 u.RectangeDistSquared =
 function(aTopLeftx, aTopLefty, aBottomRightx, aBottomRighty,
-                             bTopLeftx, bTopLefty, bBottomRightx, bBottomRighty)
+         bTopLeftx, bTopLefty, bBottomRightx, bBottomRighty)
     left = bBottomRightx < aTopLeftx
     right = aBottomRightx < bTopLeftx
     bottom = bBottomRighty < aTopLefty

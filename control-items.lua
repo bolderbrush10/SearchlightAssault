@@ -2,6 +2,9 @@ local d = require "sl-defines"
 local u = require "sl-util"
 
 
+local export = {}
+
+
 local function SwapToBaseEntityType(itemStack)
   -- Step 1: Swap the items
   local old = itemStack.get_blueprint_entities()
@@ -51,7 +54,7 @@ local function SeekBlueprints(inventory)
 end
 
 
-function ScanBP_StacksAndSwapToBaseType(event)
+export.ScanBP_StacksAndSwapToBaseType = function(event)
   local player = game.players[event.player_index]
   local cstack = player.cursor_stack
   local pstack = player.blueprint_to_setup
@@ -64,3 +67,6 @@ function ScanBP_StacksAndSwapToBaseType(event)
     SeekBlueprints(player.get_main_inventory())
   end
 end
+
+
+return export

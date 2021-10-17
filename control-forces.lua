@@ -1,7 +1,17 @@
 local d = require "sl-defines"
 local u = require "sl-util"
 
-require "control-common"
+
+local export = {}
+
+
+export.InitTables_Forces = function()
+
+  -- Map: Turtle Force Name -> true
+  global.sl_force_init = {}
+
+end
+
 
 -- The 'turtle' force exists to hold an imaginary target (The 'Turtle')
 -- for searchlights to 'shoot' while they scan around for enemy units.
@@ -14,7 +24,7 @@ require "control-common"
 
 
 -- Called when a new searchlight is created
-function PrepareTurtleForce(SearchlightForce)
+export.PrepareTurtleForce = function(SearchlightForce)
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] then
@@ -24,7 +34,7 @@ function PrepareTurtleForce(SearchlightForce)
   game.create_force(turtleForceName)
   global.sl_force_init[turtleForceName] = true
 
-  UpdateTForceRelationships(SearchlightForce)
+  export.UpdateTForceRelationships(SearchlightForce)
 
   return turtleForceName
 end
@@ -35,7 +45,7 @@ end
 -- The turtle force should ignore the searchlight's friends and attack its enemies.
 -- Only the searchlight owner should have cease_fire = false with its turtle.
 -- Everyone else should ignore it.
-function UpdateTForceRelationships(SearchlightForce)
+export.UpdateTForceRelationships = function(SearchlightForce)
 
   if u.EndsWith(SearchlightForce.name, d.turtleForceSuffix) then
     return -- Don't recurse
@@ -90,7 +100,7 @@ function UpdateTForceRelationships(SearchlightForce)
 end
 
 
-function MigrateTurtleForces(oldSLForce, newSLForce)
+export.MigrateTurtleForces = function(oldSLForce, newSLForce)
   -- Don't recurse when we migrate turtles
   if u.EndsWith(oldSLForce.name, d.turtleForceSuffix) then
     return
@@ -104,9 +114,12 @@ function MigrateTurtleForces(oldSLForce, newSLForce)
   end
 
   global.sl_force_init[oldtForceName] = nil
-  local newtForceName = PrepareTurtleForce(newSLForce)
+  local newtForceName = export.PrepareTurtleForce(newSLForce)
 
   -- The API says nested merge_forces will happen next tick,
   -- but that should be fine, I think...
   game.merge_forces(oldtForceName, newtForceName)
 end
+
+
+return export

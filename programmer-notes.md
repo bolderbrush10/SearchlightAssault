@@ -1,68 +1,25 @@
 ## Current Task:
 
--- Sounds and audio
+- Check if turrets need to be unboosted after being rotated
 
--- So, trying to get the scanner noise to stick with the actual unit there
-   has been a challenge. Trying to use nested effects in the searchlight beam
-   just results in the sound only being played once.
-   So, using a 'working sound' seems ideal.
-   Almost all entities, even beam itself! have a working sound.
-   Unfortunately, the beam plays it's working sound at its center.
+- Kind of wish the spotter would chase ya a little.. just slowly maybe
+  there's no REAL reason it has to be a landmine, right?
+  Maybe we can make the vision range or something smaller, or that destination radius
+  Probably also want to try making the turtle's vision radius bigger
 
-   Maybe we want to create a sticker effect and put it on the entity being scanned,
-   and play a working sound from there?
-   We'll have to figure out how to remove the sticker as targets are switched...
-   So, stickers can't stick to buildings.. I guess that's not the biggest loss,
-   but still a dissapointment
+- Turtle isn't chasing spotted foes properly after the alarm is raised
 
-   Maybe we'll just assign the turtle to follow the target and keep its working sound on...
-   The problem with that is the biter's pathfinding to follow entities really sucks.
-   It'll follow whatever crazy path you take unless it can see you...
-   I guess if we set its max speed to ~110% of the target's max speed though, it can't be too bad.
-   Maybe we'll even try using prefer_straight_paths and see how that does
-
-   Note that if we run out of power, and disable the turtle, we'll need to make sure that
-   if it's been commanded to follow an entity, that it won't still want to chase that entity
-   out of range when the power comes back on
-
-
--- TODO remember that we removed the 'warning' circuit signal
-
--- TODO Thinking about doing another big refactor
-        I think what I want is to have more .lua files for each entity,
-        and make an sl-gestalt to tie them together properly.
-        control.lua should do all the work through that,
-        instead of talking to sl-turtle and sl-searchlight individually
-        We might wind up removing control-common, and I'm ok with that.
-        This might also make it easier to make a gestalt array for each force
-        and stuff like that.
-
-
--- TODO A working sound for the spotter?
+- A working sound for the spotter?
 
 
 ## Next Tasks:
 
-- There's still issues with distracted biters and circuit signals
-- I think the biter's vision range is still too big, too
-
-- In save test-20, if you make a searchlight target a searchlight, then deconstruct that searchlight,
-  the script crashes inside TrackSpottedFoes (about to call ResumeTargetingTurtle)
-  Probably because the foe with the foe position is no longer valid.
-  (We should consider refactoring the whole logical layout of tracking foes)
-- I'm pretty sure this is because onFoeDied doesn't get called when someone deconstructs their buildings.
+- onFoeDied doesn't get called when someone deconstructs their buildings.
   Should probably fix that. (Also note that radars will need to be checked for, too)
 
 - Fix the click in sl-scan.ogg (probably just needs a fade-in & fade-out)
 
 - Test vs other mods
-
-- So, apparently, binding variables and even functions to local speeds them up.
-- We should go through all of our code and make sure that anything which can be made local, is made local.
-- DOUBLE CHECK for variables to make local inside of loops, etc
-
-- Even binding next() increases performance, eg, local next = next
-- So be sure to bind any functions called in repetitive places
 
 - Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 
@@ -125,6 +82,8 @@
 
 - Get people to play test the balance
 
+- 3x3 and larger turrets
+
 
 ### Feature: Mod Compatability
 
@@ -151,6 +110,8 @@
 
 
 ### Bugs to Report / Mod Interface Features to Request
+
+- OnPowerLost/Restored mod interface request (So we don't have to check power manually in onTick)
 
 - Write up how non-turrets just totally ignore trigger_type_mask
 - And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
@@ -238,12 +199,20 @@
 
 - Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
 
+- Don't show searchlights in the turret coverage map mode
+
 - Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
   So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
   has a searchlight selected, I guess. Maybe play a little UI sound.
 
 - Create more main-menu simulations
   (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
+    - We can probably chain the turtle to follow another turtle to give its tragetory more of a curve...
+      Also probably want to vary up the grass a bit
+    - Actually, it looks like we can do some real magic in menu-simulations.lua init,
+      registering stuff to happen in on_nth_tick. "Chase" is a great example.
+      Let's make use of that.
+    - (Maybe even launch something at the turtle so the spotlight will "fire" when the turtle dies?)
     - Probably want a scene with a jail break that succeeds (tank that busts through wall, bunch of people on foot follow)
     - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
     - There's probably a good few default ones that would suit being changed to night time and having

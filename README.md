@@ -81,11 +81,21 @@ In this mod, a 'gestalt' refers to the collection of a Searchlight, the list of 
 and several hidden entities which each are essential to making features work.
 
 
+### Contact
+
+You are welcome to contact me via email: bolderbrush10@gmail.com
+I am willing to consider releasing this software under alternate licenses,
+if the present one is somehow not permissive enough for your purpose.
+
+
 ### Technical Details
 
 #### Primary issues inflating SLOC:
+While I enjoyed the challenge of making this mod with as few changes to the base game as possible,
+it is undeniable that this codebase would be drastically smaller if these issues weren't in place:
+
 0. No mechanism in the API to modify shooting range during runtime
-0. Missing details in on_player_setup_blueprint event for some blueprint use cases
+0. API doesn't provide some info in on_player_setup_blueprint event for some blueprint use cases
 0. Unsophisticated technique to "fire" the searchlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc

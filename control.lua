@@ -1,10 +1,13 @@
 local d = require "sl-defines"
+local r = require "sl-relation"
 
-require "control-common"
-require "control-forces"
-require "control-items"
-require "control-searchlight"
-require "control-turtle"
+local cc = require "control-common"
+local cf = require "control-forces"
+local cg = require "control-gestalt"
+local ci = require "control-items"
+local cs = require "control-searchlight"
+local ct = require "control-turtle"
+local cu = require "control-tunion"
 
 
 --
@@ -17,51 +20,65 @@ require "control-turtle"
 script.on_init(
 function(event)
 
-  InitTables()
-  UpdateBlockList()
+  cc.InitTables()
 
 end)
 
 
--- On Load
-script.on_load(
-function(event)
+local function handleUninstall()
+  if settings.global[d.uninstallMod].value then
+    for _, g in pairs(global.gestalts) do
+      local b = g.light;
+      cg.SearchlightRemoved(b);
+      b.destroy()
+    end
 
-  -- UpdateBlockList()
-  -- on_load doesn't provide access to game.* functions
-  -- maybe we'll find a workaround later
-  -- For now, players will just have to update
-  -- their settings in game
+    -- The above loop SHOULD have cleaned this out,
+    -- but it can't hurt to be careful
+    for _, tID in pairs(global.boosted_to_tunion) do
+      cu.UnBoost(global.tunions[tID])
+    end
 
-end)
+    global.boosted_to_tunion = {}
+    global.tunions = {}
+  end
+end
+
+
+local function handleModSettingsChanges(event)
+  if not event or event.setting == d.ignoreEntriesList then
+    cu.UpdateBlockList()
+    cu.UnboostBlockedTurrets()
+  end
+  handleUninstall()
+end
 
 
 -- On Mod Settings Changed
-script.on_event(defines.events.on_runtime_mod_setting_changed,
-function(event)
-  if event.setting == d.ignoreEntriesList then
-    UpdateBlockList()
-    UnboostBlockedTurrets()
-  elseif event.setting == d.uninstallMod and settings.global[d.uninstallMod].value then
-    for _, g in pairs(global.gestalts) do
-      local b = g.base;
-      maps_removeGestaltAndDestroyHiddenEnts(g);
-      b.destroy()
-    end
-  end
-end)
+script.on_event(defines.events.on_runtime_mod_setting_changed, handleModSettingsChanges)
+-- (Doesn't handle runtime changes or changes from the main menu, unless another mod is enabled/diabled)
+script.on_configuration_changed(handleModSettingsChanges)
+-- script.on_load()
+-- on_load doesn't provide access to game.* functions,
+-- and mod settings changed at the main menu don't seem to persist
+-- onto already-created games anyway... So, don't bother.
 
 
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
 
-  CheckElectricNeeds()
-  HandleCircuitConditions()
-  TrackSpottedFoes()
+  -- Run seperate loops for gestalts vs turrets since they
+  -- could possibly be in seperate electric networks
+  cg.CheckElectricNeeds()
+  cu.CheckElectricNeeds()
+
+  cg.CheckGestaltFoes()
+
+  cs.CheckCircuitConditions()
 
   if global.watch_circles[event.tick] then
-    CloseWatchCircle(global.watch_circles[event.tick])
+    cg.CloseWatchCircle(global.watch_circles[event.tick])
     global.watch_circles[event.tick] = nil
   end
 
@@ -73,9 +90,9 @@ script.on_event(defines.events.on_script_trigger_effect,
 function(event)
   if event.source_entity and event.target_entity then
     if event.effect_id == d.spottedEffectID then
-      FoeSuspected(event.source_entity)
+      cg.FoeSuspected(event.source_entity, event.target_entity.position)
     elseif event.effect_id == d.confirmedSpottedEffectID then
-      OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
+      cg.OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
     end
   end
 end)
@@ -93,12 +110,22 @@ function(event)
   -- Triggers after the distraction finishes or command finishes failing
   -- If a turtle is having trouble attacking something, we'll manually spawn a spotter for it
   if event.was_distracted or event.result == defines.behavior_result.fail then
-    FoeSuspected(g.turtle)
+    cg.FoeSuspected(g.turtle, g.turtle.position)
   else
-    TurtleWaypointReached(g)
+    ct.TurtleWaypointReached(g)
   end
 
 end)
+
+
+-- on_player_rotated_entity
+
+-- Called when the player rotates an entity. This event is only fired when the entity actually changes its orientation -- pressing the rotate key on an entity that can't be rotated won't fire this event.
+
+-- Contains
+-- entity :: LuaEntity: The rotated entity.
+-- previous_direction :: defines.direction: The previous direction
+-- player_index :: uint
 
 
 --
@@ -124,9 +151,9 @@ for index, e in pairs
     end
 
     if entity.name == d.searchlightBaseName then
-      SearchlightAdded(entity)
+      cg.SearchlightAdded(entity)
     else
-      TurretAdded(entity)
+      cu.TurretAdded(entity)
     end
 
   end, {
@@ -140,9 +167,9 @@ script.on_event(defines.events.on_trigger_created_entity,
 function(event)
 
   if event.entity.name == d.searchlightBaseName then
-    SearchlightAdded(event.entity)
+    cg.SearchlightAdded(event.entity)
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
-    TurretAdded(event.entity)
+    cu.TurretAdded(event.entity)
   end
 
 end)
@@ -153,6 +180,8 @@ end)
 --
 
 
+-- TODO Check for Radars, Turrets, etc which were foes
+--      (A searchlight can also be a foe, so consider that too)
 for index, e in pairs
 ({
   defines.events.on_pre_player_mined_item,
@@ -162,10 +191,12 @@ for index, e in pairs
   function(event)
 
     if event.entity.name == d.searchlightBaseName or event.entity.name == d.searchlightAlarmName then
-      SearchlightRemoved(event.entity)
+      cg.SearchlightRemoved(event.entity)
     else
-      TurretRemoved(event.entity)
+      cu.TurretRemoved(event.entity)
     end
+
+    -- TODO Just use the same function as on_entity_died so we can check if a deconstructed turret was a foe
 
   end, {
     {filter = "turret"}
@@ -181,12 +212,17 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    if event.entity.name == d.searchlightBaseName or event.entity.name == d.searchlightAlarmName then
-      SearchlightRemoved(event.entity)
-    elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
-      TurretRemoved(event.entity)
-    elseif event.entity.unit_number and global.foes[event.entity.unit_number] then
-      FoeDied(event.entity)
+    local ent = event.entity
+
+    if ent.name == d.searchlightBaseName or ent.name == d.searchlightAlarmName then
+      cg.SearchlightRemoved(ent)
+    elseif ent.type:match "-turret" and ent.type ~= "artillery-turret" then
+      cu.TurretRemoved(ent)
+    end
+
+    -- It's possible that one searchlight's friend is another's foe...
+    if ent.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, ent.unit_number)) then
+      cg.FoeDied(ent)
     end
 
   end)
@@ -203,7 +239,7 @@ for index, e in pairs
     local entities = game.surfaces[event.surface_index].find_entities_filtered{name = {d.searchlightBaseName,
                                                                                        d.searchlightAlarmName}}
     for _, e in pairs(entities) do
-      SearchlightRemoved(e)
+      cg.SearchlightRemoved(e)
     end
   end)
 end
@@ -222,17 +258,17 @@ function(event)
 
       for _, e in pairs(entities) do
         if e.name == d.searchlightBaseName or e.name == d.searchlightAlarmName then
-          SearchlightRemoved(e)
+          cg.SearchlightRemoved(e)
         elseif e.name == d.turtleName
           or e.name == d.spotterName
           or e.name == d.searchlightControllerName then
 
           -- Just destroy the searchlight as collateral damage
-          SearchlightRemoved(e)
+          cg.SearchlightRemoved(e)
           e.destroy()
 
         elseif e.unit_number then
-          TurretRemoved(e) -- Should ignore non-turrets properly
+          cu.TurretRemoved(e) -- Should ignore non-turrets properly
         end
       end
     end
@@ -248,8 +284,9 @@ end)
 -- When the player sets up / configures a blueprint,
 -- convert any boosted / alarm-mode entities
 -- back to their base entity type
-script.on_event(defines.events.on_player_setup_blueprint, ScanBP_StacksAndSwapToBaseType)
-script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndSwapToBaseType)
+script.on_event(defines.events.on_player_setup_blueprint,      ci.ScanBP_StacksAndSwapToBaseType)
+script.on_event(defines.events.on_player_configured_blueprint, ci.ScanBP_StacksAndSwapToBaseType)
+
 
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
@@ -310,7 +347,7 @@ for index, e in pairs
   script.on_event(e,
   function(event)
 
-    UpdateTForceRelationships(event.force)
+    cf.UpdateTForceRelationships(event.force)
 
   end)
 end
@@ -320,6 +357,6 @@ end
 script.on_event(defines.events.on_forces_merging,
 function(event)
 
-  MigrateTurtleForces(event.source, event.destination)
+  cf.MigrateTurtleForces(event.source, event.destination)
 
 end)
