@@ -1,4 +1,5 @@
 local d = require "sl-defines"
+local a = require "audio.sl-audio"
 
 require "util" -- for table.deepcopy
 

@@ -67,7 +67,7 @@ d.searchlightRushSpeed = 0.15
 -- until the searchlight confirms it has spotted a foe
 -- (Setting this too low will cause conflicts with landmine arming-time)
 -- (game runs at 60 ticks per second)
-d.searchlightSpotTime_ms = 1.1 * 60
+d.searchlightSpotTime_ms = 0.8 * 60
 
 
 -------------------------------------------------

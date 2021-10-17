@@ -28,6 +28,7 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 - Searchlights automatically scan their territory for foes
 - Searchlights may boost the range of neighboring turrets and direct them to snipe spotted foes
 - Animated graphics including remnants, custom light effects, and high-res integration
+- Custom audio effects
 - Optimized to allow running several thousand searchlights
 - Searchlights can be connected to the circuit network
   - Takes inputs of coordinates to search

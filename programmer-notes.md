@@ -1,19 +1,76 @@
 ## Current Task:
 
+-- Sounds and audio
+
+-- So, trying to get the scanner noise to stick with the actual unit there
+   has been a challenge. Trying to use nested effects in the searchlight beam
+   just results in the sound only being played once.
+   So, using a 'working sound' seems ideal.
+   Almost all entities, even beam itself! have a working sound.
+   Unfortunately, the beam plays it's working sound at its center.
+
+   Maybe we want to create a sticker effect and put it on the entity being scanned,
+   and play a working sound from there?
+   We'll have to figure out how to remove the sticker as targets are switched...
+   So, stickers can't stick to buildings.. I guess that's not the biggest loss,
+   but still a dissapointment
+
+   Maybe we'll just assign the turtle to follow the target and keep its working sound on...
+   The problem with that is the biter's pathfinding to follow entities really sucks.
+   It'll follow whatever crazy path you take unless it can see you...
+   I guess if we set its max speed to ~110% of the target's max speed though, it can't be too bad.
+   Maybe we'll even try using prefer_straight_paths and see how that does
+
+   Note that if we run out of power, and disable the turtle, we'll need to make sure that
+   if it's been commanded to follow an entity, that it won't still want to chase that entity
+   out of range when the power comes back on
+
+
+-- TODO remember that we removed the 'warning' circuit signal
+
+-- TODO Thinking about doing another big refactor
+        I think what I want is to have more .lua files for each entity,
+        and make an sl-gestalt to tie them together properly.
+        control.lua should do all the work through that,
+        instead of talking to sl-turtle and sl-searchlight individually
+        We might wind up removing control-common, and I'm ok with that.
+        This might also make it easier to make a gestalt array for each force
+        and stuff like that.
+
+
+-- TODO A working sound for the spotter?
+
 
 ## Next Tasks:
 
--- Sounds and audio
-https://wiki.factorio.com/Prototype/Entity#working_sound
+- There's still issues with distracted biters and circuit signals
+- I think the biter's vision range is still too big, too
 
-- Maybe we want kind of an audible hum, like a bass-boosted flouresent light...
-- And some quiet background morse-code kinda sounds...
-- prototype: turtle.walking_sound to an electric hum / sizzle ?
-- attack_parameters.CyclicSound: Metal-Gear-Solid style "Alert noise" for turtle ?
-- attack_parameters.CyclicSound: Alarm klaxon for Alarm Mode searchlight ?
+- In save test-20, if you make a searchlight target a searchlight, then deconstruct that searchlight,
+  the script crashes inside TrackSpottedFoes (about to call ResumeTargetingTurtle)
+  Probably because the foe with the foe position is no longer valid.
+  (We should consider refactoring the whole logical layout of tracking foes)
+- I'm pretty sure this is because onFoeDied doesn't get called when someone deconstructs their buildings.
+  Should probably fix that. (Also note that radars will need to be checked for, too)
 
+- Fix the click in sl-scan.ogg (probably just needs a fade-in & fade-out)
+
+- Test vs other mods
+
+- So, apparently, binding variables and even functions to local speeds them up.
+- We should go through all of our code and make sure that anything which can be made local, is made local.
+- DOUBLE CHECK for variables to make local inside of loops, etc
+
+- Even binding next() increases performance, eg, local next = next
+- So be sure to bind any functions called in repetitive places
+
+- Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
+
+- Final sweep on other TODOs
 
 - Uphold that promise about the multiplayer map from the mod description
+
+- Use curves to deepen the lines on the sl-glow
 
 
 ## Design Decisions & Discussion
@@ -56,6 +113,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
+- Changing mod settings from the main menu instead of during runtime doesn't really stick
+
 
 ## TODO's
 
@@ -83,21 +142,10 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 
 - Collect more in-game screenshots and gifs for the mod portal page
 
-- So, apparently, binding variables and even functions to local speeds them up.
-- We should go through all of our code and make sure that anything which can be made local, is made local.
-- DOUBLE CHECK for variables to make local inside of loops, etc
-
-- Even binding next() increases performance, eg, local next = next
-- So be sure to bind any functions called in repetitive places
-
 - It would be good to create some professional diagrams and documents to explain the underlying strategies of the mod
 - We'll want to make a header / word template featuring a logo for the mod and stuff
 
 - Port this file into the bottom of the readme when complete
-
-- Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
-
-- Final sweep on other TODOs
 
 - Final sweep over README.md
 
@@ -181,6 +229,8 @@ https://wiki.factorio.com/Prototype/Entity#working_sound
 - Make a little 'dirt estucheon' for where the wires reach the ground
 
 - Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
+
+- water_reflection
 
 - Searchlight color controlled by circuit signals
 

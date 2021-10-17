@@ -40,7 +40,7 @@ function TurtleWaypointReached(g)
     g.base.shooting_target = g.turtle -- retarget turtle just in case something happened
   else
     g.turtle.set_command({type = defines.command.stop,
-                          distraction = defines.distraction.by_anything,
+                          distraction = defines.distraction.by_enemy,
                          })
   end
 end

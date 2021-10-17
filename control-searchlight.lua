@@ -141,7 +141,7 @@ end
 ----------------------
 
 
--- TODO This onTick() function is a good candidate to convert to branchless instructions.
+-- TODO The loop contents in this onTick() function are a good candidate to convert to branchless instructions.
 --      Could speed up execution a minor amount, depending on what's bottlenecked.
 --      (Embedding some C code directly into lua could also help, see:
 --       https://www.cs.usfca.edu/~galles/cs420/lecture/LuaLectures/LuaAndC.html )
@@ -154,15 +154,15 @@ function CheckElectricNeeds()
   for gID, g in pairs(global.gestalts) do
 
     if g.base.energy < d.searchlightCapacitorCutoff then
-      -- TODO Disable any boosted turrets
       g.turtle.active = false
     elseif g.base.energy > d.searchlightCapacitorStartable and g.turtleActive then
-      -- TODO Reenable any boosted turrets
       g.turtle.active = true
     end
 
   end
 
+  -- Run a seperate loop for the boosted turrets since they
+  -- could possibly be in a seperate electric network
   for _, tuID in pairs(global.boosted_to_tuID) do
 
     local tu = global.tunions[tuID]

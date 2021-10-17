@@ -1,5 +1,6 @@
 local d = require "sl-defines"
 local g = require "sl-graphics"
+local a = require "audio.sl-audio"
 
 local sounds = require("__base__/prototypes/entity/sounds")
 local hit_effects = require ("__base__/prototypes/entity/hit-effects")
@@ -64,7 +65,7 @@ sl_b.minable =
   mining_time = 0.5,
   result = d.searchlightItemName,
 }
-sl_b.shoot_in_prepare_state = true
+sl_b.base_picture = g.searchlightBaseLayer
 sl_b.folded_animation      = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
 sl_b.prepared_animation    = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
 sl_b.energy_glow_animation = g.searchlightGlowAnimation
@@ -73,10 +74,11 @@ sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
 sl_b.damaged_trigger_effect = hit_effects.entity()
-sl_b.corpse = d.remnantsName
 sl_b.dying_explosion = "laser-turret-explosion"
+sl_b.corpse = d.remnantsName
 sl_b.vehicle_impact_sound = sounds.generic_impact
-sl_b.base_picture = g.searchlightBaseLayer
+sl_b.working_sound = a.working
+sl_b.shoot_in_prepare_state = true
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap
 local attackCooldownDuration = 25
@@ -220,6 +222,7 @@ t.name = d.turtleName
 t.type = "unit"
 t.movement_speed = d.searchlightWanderSpeed -- Can update during runtime for wander vs track mode
 t.run_animation = g.layerTransparentAnimation
+t.working_sound = a.scan
 t.distance_per_frame = 1 -- speed at which the run animation plays, in tiles per frame
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
@@ -229,7 +232,7 @@ t.has_belt_immunity = true
 t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
-t.max_pursue_distance = 3
+t.max_pursue_distance = 1
 t.vision_distance = d.searchlightSpotRadius
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
@@ -254,7 +257,7 @@ t.attack_parameters =
   ammo_type =
   {
     category= "melee",
-    target_type = "entity",
+    target_type = "position",
     action =
     {
       type = "direct",
@@ -305,11 +308,18 @@ spotter.action =
         force = "enemy",
         action_delivery =
         {
-          type = "instant",
-          target_effects =
           {
-            type = "script",
-            effect_id = d.confirmedSpottedEffectID,
+            type = "instant",
+            target_effects =
+            {
+              type = "script",
+              effect_id = d.confirmedSpottedEffectID,
+            },
+            source_effects =
+            {
+              type = "play-sound",
+              sound = a.spotted,
+            }
           }
         }
       }
