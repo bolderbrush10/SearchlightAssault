@@ -156,6 +156,7 @@ local function RaiseAlarm(g, spottedFoe)
   g.light.shooting_target = spottedFoe
   g.turtle.teleport(spottedFoe.position)
   ct.TurtleChase(g, spottedFoe)
+  cs.SetAlarmRaiseSignals(g)
 
   BoostFriends(g, spottedFoe)
 end
@@ -164,6 +165,7 @@ end
 local function ClearAlarm(g, escapedFoe)
   SpawnBaseLight(g)
   ResumeTargetingTurtle(g, escapedFoe.position)
+  cs.SetAlarmClearSignals(g)
 end
 
 

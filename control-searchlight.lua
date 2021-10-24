@@ -22,34 +22,6 @@ local signalA = {type="virtual", name="signal-A"}
 --------------------
 
 
-local function OutputCircuitSignals(g)
-  local i = g.signal
-  local c = i.get_control_behavior()
-
-  if g.light.name == d.searchlightBaseName then
-    c.set_signal(FoePositionXSlot, {signal = signalX, count = 0})
-    c.set_signal(FoePositionYSlot, {signal = signalY, count = 0})
-    c.set_signal(AlarmSlot,        {signal = signalA, count = 0})
-    c.set_signal(WarningSlot,      {signal = signalW, count = (g.turtle.distraction_command and 1 or 0)})
-
-    local x = i.get_merged_signal({type="virtual", name="signal-X"})
-    local y = i.get_merged_signal({type="virtual", name="signal-Y"})
-
-    if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
-      ct.ManualTurtleMove(g, {x=x, y=y})
-    elseif g.tState ~= ct.FOLLOW then
-      g.tState = ct.WANDER
-    end
-  elseif g.light.shooting_target and g.light.shooting_target.valid then
-    local pos = g.light.shooting_target.position
-    c.set_signal(FoePositionXSlot, {signal = signalX, count = pos.x})
-    c.set_signal(FoePositionYSlot, {signal = signalY, count = pos.y})
-    c.set_signal(AlarmSlot,        {signal = signalA, count = 1})
-    c.set_signal(WarningSlot,      {signal = signalW, count = 0})
-  end
-end
-
-
 local function FindSignalInterfaceGhosts(sl)
   local ghosts = sl.surface.find_entities_filtered{position = sl.position,
                                                    ghost_name = d.searchlightSignalInterfaceName,
@@ -99,19 +71,65 @@ local function FindSignalInterface(sl)
 end
 
 
+local function OutputCircuitSignals(g)
+  if g.light.name == d.searchlightBaseName then
+    export.SetAlarmClearSignals(g)
+  else
+    export.SetAlarmRaiseSignals(g)
+  end
+end
+
+
 --------------------
 --     Events     --
 --------------------
 
--- Checked every tick
--- TODO Probably a good candidate to sign this up for on_nth_tick, maybe twice a second?
+-- Checked only a few times a second
 export.CheckCircuitConditions = function()
   for gID, g in pairs(global.gestalts) do
-    -- TODO See if checking get_circuit_network(red/green) offers any speedup or not
-    if g.light.energy > 0 then
+    if     g.light.energy > 0
+       and (g.signal.get_circuit_network(defines.wire_type.red)
+         or g.signal.get_circuit_network(defines.wire_type.green)) then
       OutputCircuitSignals(g)
     end
   end
+end
+
+
+-- Called by CheckCircuitConditions, but also when an alarm is cleared
+export.SetAlarmClearSignals = function(g)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  c.set_signal(FoePositionXSlot, {signal = signalX, count = 0})
+  c.set_signal(FoePositionYSlot, {signal = signalY, count = 0})
+  c.set_signal(AlarmSlot,        {signal = signalA, count = 0})
+  c.set_signal(WarningSlot,      {signal = signalW, count = (g.turtle.distraction_command and 1 or 0)})
+
+  local x = i.get_merged_signal({type="virtual", name="signal-X"})
+  local y = i.get_merged_signal({type="virtual", name="signal-Y"})
+
+  if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
+    ct.ManualTurtleMove(g, {x=x, y=y})
+  elseif g.tState ~= ct.FOLLOW then
+    g.tState = ct.WANDER
+  end
+end
+
+
+-- Called by CheckCircuitConditions, but also when an alarm is raised
+export.SetAlarmRaiseSignals = function(g)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  if g.light.shooting_target and g.light.shooting_target.valid then
+    local pos = g.light.shooting_target.position
+    c.set_signal(FoePositionXSlot, {signal = signalX, count = pos.x})
+    c.set_signal(FoePositionYSlot, {signal = signalY, count = pos.y})
+  end
+
+  c.set_signal(AlarmSlot,        {signal = signalA, count = 1})
+  c.set_signal(WarningSlot,      {signal = signalW, count = 0})
 end
 
 

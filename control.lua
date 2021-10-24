@@ -92,12 +92,19 @@ function(event)
 
   cg.CheckGestaltFoes()
 
-  cs.CheckCircuitConditions()
-
   if global.watch_circles[event.tick] then
     cg.CloseWatchCircle(global.watch_circles[event.tick])
     global.watch_circles[event.tick] = nil
   end
+
+end)
+
+
+-- Run twice a second (at 60 ups)
+script.on_nth_tick(30,
+function(event)
+
+  cs.CheckCircuitConditions()
 
 end)
 
