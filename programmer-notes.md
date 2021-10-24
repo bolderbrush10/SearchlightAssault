@@ -1,16 +1,10 @@
 ## Current Task:
 
-- Check if turrets need to be unboosted after being rotated
-
-- A working sound for the spotter?
-
 
 ## Next Tasks:
 
 - onFoeDied doesn't get called when someone deconstructs their buildings.
   Should probably fix that. (Also note that radars will need to be checked for, too)
-
-- Fix the click in sl-scan.ogg (probably just needs a fade-in & fade-out)
 
 - Test vs other mods
 
@@ -219,6 +213,8 @@
     - Probably want a scene with a jail break that fails (car crashes into wall, explodes, people spill out get caught)
     - There's probably a good few default ones that would suit being changed to night time and having
       some searchlights thrown into
+
+- Working sound for the spotter
 
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 

@@ -125,14 +125,21 @@ function(event)
 end)
 
 
--- on_player_rotated_entity
+-- On Player Rotated
+script.on_event(defines.events.on_player_rotated_entity,
+function(event)
+  local e = event.entity
+  local tu = global.boosted_to_tunion[e.unit_number]
+  if not tu then
+    return
+  end
 
--- Called when the player rotates an entity. This event is only fired when the entity actually changes its orientation -- pressing the rotate key on an entity that can't be rotated won't fire this event.
+  if    not e.shooting_target
+     or not next(r.getRelationLHS(global.FoeGestaltRelations, e.unit_number)) then
+    cu.UnBoost(tu)
+  end
 
--- Contains
--- entity :: LuaEntity: The rotated entity.
--- previous_direction :: defines.direction: The previous direction
--- player_index :: uint
+end)
 
 
 --
