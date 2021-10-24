@@ -1,10 +1,8 @@
 ## Current Task:
 
 
-## Next Tasks:
 
-- onFoeDied doesn't get called when someone deconstructs their buildings.
-  Should probably fix that. (Also note that radars will need to be checked for, too)
+## Next Tasks:
 
 - Test vs other mods
 
@@ -67,6 +65,9 @@
 
 - It's possible to 'fake out' the turtle near the edge of the searchlight range
   and desync the searchlight from attacking its turtle or make the turtle "lock up"
+
+- Two searchlights have trouble targeting each other
+  (Possibly because of raise / clear alarm "destroying" their targets)
 
 
 ## TODO's

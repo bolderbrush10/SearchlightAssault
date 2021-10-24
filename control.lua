@@ -10,6 +10,23 @@ local ct = require "control-turtle"
 local cu = require "control-tunion"
 
 
+-- Reference: https://wiki.factorio.com/Military_units_and_structures
+local militaryFilter =
+{
+  {filter = "turret"},
+  {filter = "type", type = "character"},
+  {filter = "type", type = "combat-robot"},
+  {filter = "type", type = "construction-robot"},
+  {filter = "type", type = "logistic-robot"},
+  {filter = "type", type = "land-mine"},
+  {filter = "type", type = "unit"},
+  {filter = "type", type = "artillery-turret"},
+  {filter = "type", type = "radar"},
+  {filter = "type", type = "unit-spawner"},
+  {filter = "type", type = "player-port"},
+  {filter = "type", type = "simple-entity-with-force"},
+}
+
 --
 -- In the case where multiple event defines could ostensibly handle the same entity being created or destroyed,
 -- we'll register for the event definition which happens 'soonest'
@@ -130,6 +147,7 @@ script.on_event(defines.events.on_player_rotated_entity,
 function(event)
   local e = event.entity
   local tu = global.boosted_to_tunion[e.unit_number]
+
   if not tu then
     return
   end
@@ -193,28 +211,28 @@ end)
 -- DESTRUCTIONS
 --
 
+local function onDeath(event)
+  local entity = event.entity
 
--- TODO Check for Radars, Turrets, etc which were foes
---      (A searchlight can also be a foe, so consider that too)
+  if entity.name == d.searchlightBaseName or entity.name == d.searchlightAlarmName then
+    cg.SearchlightRemoved(entity)
+  elseif entity.type:match "-turret" and entity.type ~= "artillery-turret" then
+    cu.TurretRemoved(entity)
+  end
+
+  -- It's possible that one searchlight's friend is another's foe...
+  if entity.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, entity.unit_number)) then
+    cg.FoeDied(entity)
+  end
+end
+
+
 for index, e in pairs
 ({
   defines.events.on_pre_player_mined_item,
   defines.events.on_robot_pre_mined,
 }) do
-  script.on_event(e,
-  function(event)
-
-    if event.entity.name == d.searchlightBaseName or event.entity.name == d.searchlightAlarmName then
-      cg.SearchlightRemoved(event.entity)
-    else
-      cu.TurretRemoved(event.entity)
-    end
-
-    -- TODO Just use the same function as on_entity_died so we can check if a deconstructed turret was a foe
-
-  end, {
-    {filter = "turret"}
-  })
+  script.on_event(e, onDeath, militaryFilter)
 end
 
 
@@ -223,23 +241,7 @@ for index, e in pairs
   defines.events.on_entity_died,
   defines.events.script_raised_destroy,
 }) do
-  script.on_event(e,
-  function(event)
-
-    local ent = event.entity
-
-    if ent.name == d.searchlightBaseName or ent.name == d.searchlightAlarmName then
-      cg.SearchlightRemoved(ent)
-    elseif ent.type:match "-turret" and ent.type ~= "artillery-turret" then
-      cu.TurretRemoved(ent)
-    end
-
-    -- It's possible that one searchlight's friend is another's foe...
-    if ent.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, ent.unit_number)) then
-      cg.FoeDied(ent)
-    end
-
-  end)
+  script.on_event(e, onDeath)
 end
 
 
