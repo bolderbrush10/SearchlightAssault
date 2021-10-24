@@ -172,6 +172,8 @@ end)
 --
 
 
+-- Instead of doing this loop, you could pass in an array of events.
+-- But you can't use filters with such an array, so loop we shall.
 for index, e in pairs
 ({
   defines.events.on_built_entity,
@@ -191,12 +193,15 @@ for index, e in pairs
 
     if entity.name == d.searchlightBaseName then
       cg.SearchlightAdded(entity)
+    elseif entity.name == d.searchlightSignalInterfaceName then
+      ci.CheckSignalInterfaceHasSearchlight(entity)
     else
       cu.TurretAdded(entity)
     end
 
   end, {
-    {filter = "turret"}
+    {filter = "turret"},
+    {filter = "name", name = d.searchlightSignalInterfaceName}
   })
 end
 
@@ -207,6 +212,8 @@ function(event)
 
   if event.entity.name == d.searchlightBaseName then
     cg.SearchlightAdded(event.entity)
+  elseif entity.name == d.searchlightSignalInterfaceName then
+    ci.CheckSignalInterfaceHasSearchlight(entity)
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
     cu.TurretAdded(event.entity)
   end

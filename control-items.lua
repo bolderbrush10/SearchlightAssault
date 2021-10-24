@@ -69,4 +69,23 @@ export.ScanBP_StacksAndSwapToBaseType = function(event)
 end
 
 
+-- It's possible for the player to right click to destroy a searchlight ghost,
+-- but leave behind the signal interface ghost from a blueprint.
+-- The best we can do is detect when such ghosts are built and destroy them
+-- after the fact, since there doesn't seem to be an event to detect when
+-- the player manually clears a ghost via right click.
+export.CheckSignalInterfaceHasSearchlight = function(i)
+  local sLight = i.surface.find_entities_filtered{name={d.searchlightBaseName,d.searchlightAlarmName},
+                                                  position = i.position}
+
+  local slGhost = i.surface.find_entities_filtered{ghost_name={d.searchlightBaseName},
+                                                   position = i.position}
+
+  if not ((sLight  and sLight[1])
+       or (slGhost and slGhost[1])) then
+    i.destroy()
+  end
+end
+
+
 return export

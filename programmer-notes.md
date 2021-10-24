@@ -1,26 +1,23 @@
 ## Current Task:
 
 
-
 ## Next Tasks:
 
 - Test vs other mods
 
 - Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 
-- Final sweep on other TODOs
-
 - Uphold that promise about the multiplayer map from the mod description
-
 
 
 ## Design Decisions & Discussion
 
-- What if we just draw a searchlight effect ourselves and manual move & search around it every tick?
+- What if we just draw a searchlight effect ourselves and manually move & search around it every tick?
 
-  This is extremely performance intensive.
+  This is extremely performance intensive, after a few dozen of these you noticably lose fps.
   It's vastly more efficient to have the game create an entity, shoot at it,
   and let the engine do pathfinding and rendering calls for us.
+  (Even with all the rigmarole associated with maintaining that entity...)
 
 
 - What if we used TargetMasks to protect turtles from being attacked,
@@ -35,11 +32,11 @@
   Have another version that takes a beacon as an ingredient to auto-boost?
   Have a version that takes a radar / rocket control unit for a really big boost?
 
-  Nah. Imagine what the wube devs would do.
+  Imagine what the wube devs would do:
   There'd just be ONE version of a turret, and it'd be straightforward to use.
 
 
-- Indicate boostable radius / decorate terrain of boostable region?
+- Should we indicate the boostable radius / decorate terrain of boostable region?
 
   No longer necessary, decided to just boost adjacent turrets.
   It was very painful to try to figure out a way to get turret range and
@@ -48,21 +45,19 @@
 
 ## Known Bugs:
 
+- [Mitigated] Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
+
+- [Mitigated] It's possible to 'fake out' the turtle near the edge of the searchlight range
+  and desync the searchlight from attacking its turtle or make the turtle "lock up"
+
 - [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
   the same exact time causes the searchlights to re-boost turrets as they die,
   causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
-- Changing mod settings from the main menu instead of during runtime doesn't really stick
-
-- It's possible to 'fake out' the turtle near the edge of the searchlight range
-  and desync the searchlight from attacking its turtle or make the turtle "lock up"
-
-- Two searchlights have trouble targeting each other
-  (Possibly because of raise / clear alarm "destroying" their targets)
-
-- Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
+- Two searchlights have trouble targeting each other at the same time
+  (Probably because of raise / clear alarm "destroying" their targets)
 
 
 ## TODO's
@@ -103,13 +98,19 @@
 
 ### Bugs to Report / Mod Interface Features to Request
 
-- OnPowerLost/Restored mod interface request (So we don't have to check power manually in onTick)
+- [DONE] energy_glow_animation on turrets flickers badly, so that's probably a bug
+         Related? https://forums.factorio.com/viewtopic.php?p=421477
+                  https://forums.factorio.com/viewtopic.php?p=522051
+         Dev responded and agreed to solve:
+         https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
+
+- OnPowerLost/Restored event mod interface request (So we don't have to check power manually in onTick)
 
 - Write up how non-turrets just totally ignore trigger_type_mask
-- And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
+  And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
 
 - 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
-- (Alternatively, ask for the simple ability to increase turret range during run time)
+  (Alternatively, ask for the simple ability to increase turret range during run time)
 
 - Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
@@ -123,12 +124,6 @@
   and hope you can find the right blueprint,
   AND also deal with the problem of the blueprint being nested in a book...
   Related? https://forums.factorio.com/viewtopic.php?t=99845
-
--- DONE energy_glow_animation on turrets flickers badly, so that's probably a bug
-        Related? https://forums.factorio.com/viewtopic.php?p=421477
-                 https://forums.factorio.com/viewtopic.php?p=522051
-        Dev responded and agreed to solve:
-        https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
 
 
 ### Map modes / play
@@ -210,7 +205,7 @@
     - There's probably a good few default ones that would suit being changed to night time and having
       some searchlights thrown into
 
-- Working sound for the spotter
+- working_sound for the spotter
 
 - Shadow layer cleanup:
   I think I need to go into photoshop and make it so that any pixels from the base layer
