@@ -10,8 +10,6 @@ require "util" -- for table.deepcopy
 -- local g = require "graphics"
 -- myEntity.animation = g[someAnimation]
 
--- TODO Could probably knock off a hundred lines with a MakeHR() function
-
 
 local export = {}
 

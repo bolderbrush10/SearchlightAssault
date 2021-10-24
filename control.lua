@@ -304,11 +304,18 @@ script.on_event(defines.events.on_player_setup_blueprint,      ci.ScanBP_StacksA
 script.on_event(defines.events.on_player_configured_blueprint, ci.ScanBP_StacksAndSwapToBaseType)
 
 
+-- Make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
-  -- TODO filter this for searchlights
-  --      make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
-end)
+  local signal = event.ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
+                                                            position   = event.ghost.position,}
+  for _, s in pairs(signal) do
+    s.destroy()
+  end
+end,
+{
+  {filter = "ghost_name", name = d.searchlightBaseName}
+})
 
 
 -- When a turret dies, check to see if we need to swap its ghost to a base type

@@ -12,13 +12,6 @@
 
 - Uphold that promise about the multiplayer map from the mod description
 
-- Use curves to deepen the lines on the sl-glow
-
-- Shadow layer cleanup:
-  I think I need to go into photoshop and make it so that any pixels from the base layer
-  exclude pixels from the shadow layer
-
-- I also want to go into the remnants and make those innerbulbs a little more uniform
 
 
 ## Design Decisions & Discussion
@@ -68,6 +61,8 @@
 
 - Two searchlights have trouble targeting each other
   (Possibly because of raise / clear alarm "destroying" their targets)
+
+- Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
 
 
 ## TODO's
@@ -217,6 +212,10 @@
 
 - Working sound for the spotter
 
+- Shadow layer cleanup:
+  I think I need to go into photoshop and make it so that any pixels from the base layer
+  exclude pixels from the shadow layer
+
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
 - Think about teleporting or somehow... hiding the entities we're replacing.
@@ -261,4 +260,12 @@ Done with the full enemy detection & retasking logic rework.
 At 4.5k searchlights, we're seeing an average of 36 fps (while running youtube and a bunch of other background processes)
 No drop noticable until almost 3k searchlights deep.
 Seems pretty good to me.
+```
+
+D
+```
+After all the refactoring, we're seeing an average of about 24.5 at 1.5k searchlights.
+(while running youtube and a bunch of other background processes)
+No drop noticable until about 500 searchlights deep, with ~43fps the norm at 1k.
+Obviously this isn't the greatest, but the codebase is considerably more feature heavy so it'll have to do.
 ```
