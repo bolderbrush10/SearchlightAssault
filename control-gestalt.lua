@@ -198,12 +198,16 @@ export.CheckGestaltFoes = function()
           or g.light.shooting_target == nil
           or g.light.shooting_target.unit_number ~= fun then
 
-        ClearAlarm(g, foe)
+        if foe.valid then
+          ClearAlarm(g, foe)
+        else
+          ClearAlarm(g, g.turtle)
+        end
 
         -- In lua, it's usually safe to remove from a table while iterating
         -- (But not safe to add into a table)
         r.removeRelation(fgRelations, fun, gID)
-        cu.FoeGestaltRelationRemoved(foe, g)
+        cu.FoeGestaltRelationRemoved(g)
 
       else
         BoostFriends(g, foe)
@@ -226,7 +230,7 @@ export.FoeDied = function(foe)
 
   for gID, _ in pairs(gIDs) do
     ClearAlarm(gestalts[gID], foe)
-    cu.FoeGestaltRelationRemoved(foe, gestalts[gID])
+    cu.FoeGestaltRelationRemoved(gestalts[gID])
   end
 
 end
@@ -281,7 +285,7 @@ export.SearchlightRemoved = function(sl)
   else
     r.removeRelationRHS(global.FoeGestaltRelations, g.gID)
     local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
-    cu.FoeGestaltRelationRemoved(g.light.shooting_target, g, tIDs)
+    cu.FoeGestaltRelationRemoved(g, tIDs)
   end
 
   global.gestalts[g.gID] = nil
@@ -290,6 +294,10 @@ end
 
 export.FoeSuspected = function(turtle, foePos)
   local g = global.unum_to_g[turtle.unit_number]
+
+  if g.tState == ct.FOLLOW then
+    return
+  end
 
   -- If there's a foe in the spotter's radius after a few moments,
   -- we'll sound the alarm and target it

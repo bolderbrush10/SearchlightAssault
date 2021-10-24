@@ -107,9 +107,16 @@ function(event)
     return
   end
 
+  -- In an edge case, it's possible to unlink the searchlight from shooting at the turtle
+  -- if someone aggros the turtle near the searchlight max range and pulls it away from the sl
+  -- In that case, we'll retarget the turtle as soon as we get an event to let us know
+  -- this possibly happened: here.
+  ct.CheckForTurtleEscape(g)
+
   -- Triggers after the distraction finishes or command finishes failing
   -- If a turtle is having trouble attacking something, we'll manually spawn a spotter for it
-  if event.was_distracted or event.result == defines.behavior_result.fail then
+  local failed = event.result == defines.behavior_result.fail
+  if event.was_distracted or failed then
     cg.FoeSuspected(g.turtle, g.turtle.position)
   else
     ct.TurtleWaypointReached(g)

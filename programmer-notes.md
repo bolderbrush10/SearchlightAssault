@@ -2,13 +2,6 @@
 
 - Check if turrets need to be unboosted after being rotated
 
-- Kind of wish the spotter would chase ya a little.. just slowly maybe
-  there's no REAL reason it has to be a landmine, right?
-  Maybe we can make the vision range or something smaller, or that destination radius
-  Probably also want to try making the turtle's vision radius bigger
-
-- Turtle isn't chasing spotted foes properly after the alarm is raised
-
 - A working sound for the spotter?
 
 
@@ -28,6 +21,12 @@
 - Uphold that promise about the multiplayer map from the mod description
 
 - Use curves to deepen the lines on the sl-glow
+
+- Shadow layer cleanup:
+  I think I need to go into photoshop and make it so that any pixels from the base layer
+  exclude pixels from the shadow layer
+
+- I also want to go into the remnants and make those innerbulbs a little more uniform
 
 
 ## Design Decisions & Discussion
@@ -71,6 +70,9 @@
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
 - Changing mod settings from the main menu instead of during runtime doesn't really stick
+
+- It's possible to 'fake out' the turtle near the edge of the searchlight range
+  and desync the searchlight from attacking its turtle or make the turtle "lock up"
 
 
 ## TODO's

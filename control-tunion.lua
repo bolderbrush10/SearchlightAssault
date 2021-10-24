@@ -208,7 +208,7 @@ end
 -- Foe left range (checked in gestalt.CheckGestaltFoes),
 -- Foe died (checked in gestalt.FoeDied),
 -- Searchlight deconstructed / died while targeting a Foe (checked in gestalt.SearchlightRemoved)
-export.FoeGestaltRelationRemoved = function(foe, g, tIDlist)
+export.FoeGestaltRelationRemoved = function(g, tIDlist)
 
   if tIDlist == nil then
     tIDlist = r.getRelationLHS(global.GestaltTunionRelations, g.gID)

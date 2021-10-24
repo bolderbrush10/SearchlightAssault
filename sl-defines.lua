@@ -50,7 +50,7 @@ d.searchlightControlEnergyUsage = "900kW"
 -- Radius at which the searchlight beam detects foes
 -- Setting vision distance too low can cause turtles to get stuck in their foes
 -- Actual search radius will be increased by 10% to make detection more reliable
-d.searchlightSpotRadius = 3
+d.searchlightSpotRadius = 5
 
 -- Speed at which searchlight beam wanders
 -- There is a maximum speed which you cannot exceed or else the turtle

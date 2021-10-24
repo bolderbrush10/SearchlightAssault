@@ -35,7 +35,7 @@ local function OutputCircuitSignals(g)
     local x = i.get_merged_signal({type="virtual", name="signal-X"})
     local y = i.get_merged_signal({type="virtual", name="signal-Y"})
 
-    if g.tState ~= ct.FOLLOW and x ~= 0 or y ~= 0 then
+    if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
       ct.ManualTurtleMove(g, {x=x, y=y})
     elseif g.tState ~= ct.FOLLOW then
       g.tState = ct.WANDER

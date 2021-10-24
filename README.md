@@ -101,6 +101,8 @@ it is undeniable that this codebase would be drastically smaller if these issues
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
 0. "Melee" attacks against non-colliding entities frequently fail
+0. Command complete events don't fire right when a distraction occurs,
+   you have to wait for the distraction to be over to know if your command was interrupted
 
 
 ### File Guide:

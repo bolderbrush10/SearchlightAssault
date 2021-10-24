@@ -30,7 +30,7 @@ local function makeMoveOrders(target, followingEntity, ignoreFoes)
                                      cache = false,
                                      allow_destroy_friendly_entities = true,
                                      allow_paths_through_own_entities = true},
-                   radius = 1 -- TODO Try making this a lot smaller,
+                   radius = 0.2
                   }
 
   if followingEntity then
@@ -70,7 +70,7 @@ local function Turtleport(turtle, origin, position)
     return
   end
 
-  local bufferedRange = d.searchlightRange - 2
+  local bufferedRange = d.searchlightRange - 3
 
   -- If position is too far from the origin for the searchlight to attack it,
   -- calculate a slightly-closer position with the same angle and use that
@@ -82,11 +82,12 @@ local function Turtleport(turtle, origin, position)
     position = u.ScreenOrientationToPosition(origin, theta, bufferedRange)
   end
 
+
   if not turtle.teleport(position) then
     -- The teleport failed for some reason, so respawn a fresh turtle and update maps
 
-    local g = global.turtle_to_gestalt[turtle.unit_number]
-    local newT = SpawnTurtle(g.light, g.light, g.light.surface)
+    local g = global.unum_to_g[turtle.unit_number]
+    local newT = export.SpawnTurtle(g.light, g.light.surface, nil)
 
     g.turtle = newT
     global.unum_to_g[newT.unit_number] = g
@@ -105,6 +106,16 @@ end
 ------------------------
 --  Aperiodic Events  --
 ------------------------
+
+
+export.CheckForTurtleEscape = function(g)
+  if not u.WithinRadius(g.turtle.position, g.light.position, d.searchlightRange - 0.2) then
+    Turtleport(g.turtle, g.light.position, g.turtle.position)
+  end
+  if g.light.name == d.searchlightBaseName then
+    g.light.shooting_target = g.turtle
+  end
+end
 
 
 export.TurtleWaypointReached = function(g)
