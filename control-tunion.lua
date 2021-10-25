@@ -230,7 +230,10 @@ end
 
 
 export.Boost = function(tunion, foe)
-  if tunion.boosted or global.blockList[tunion.turret.name] then
+  if  tunion.boosted
+     or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
+     or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
+     or global.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
     return
   end
 

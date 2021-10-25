@@ -294,11 +294,12 @@ function(position, entityList)
   local bestE = nil
 
   for _, e in pairs(entityList) do
-    local dist = u.lensquared(position, e.position)
-
-    if dist < bestDist and e.valid and e.is_entity_with_force and e.destructible then
-      bestDist = dist
-      bestE = e
+    if e.valid and e.is_entity_with_force and e.destructible then
+      local dist = u.lensquared(position, e.position)
+      if dist < bestDist then
+        bestDist = dist
+        bestE = e
+      end
     end
   end
 

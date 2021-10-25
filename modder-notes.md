@@ -3,11 +3,9 @@
 
 ## Next Tasks:
 
-- Test vs other mods
+- Uphold that promise about the multiplayer map from the mod description
 
 - Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
-
-- Uphold that promise about the multiplayer map from the mod description
 
 
 ## Design Decisions & Discussion
@@ -62,28 +60,6 @@
 
 ## TODO's
 
-
-### Testing
-
-- Test multiplayer online, even if just against yourself
-
-- Get people to play test the balance
-
-- 3x3 and larger turrets
-
-
-### Feature: Mod Compatability
-
-- Test compatibility for 'boosting' friendly turrets with something complicated like the water gun mod.
-
-- Maybe instead of creating & destroying range-boosted versions of turrets,
-  we can ask other mod authors if it's ok to teleport back and forth from a hidden surface layer?
-
-- Maybe we SHOULD fire those script___created/destroyed events...
-
-- Test against the most popular mods (bobs, angels, Rampant, sort by popular on the website)
-
-
 ### Feature: Professionalism Polish
 
 - Collect more in-game screenshots and gifs for the mod portal page
@@ -99,8 +75,6 @@
 ### Bugs to Report / Mod Interface Features to Request
 
 - [DONE] energy_glow_animation on turrets flickers badly, so that's probably a bug
-         Related? https://forums.factorio.com/viewtopic.php?p=421477
-                  https://forums.factorio.com/viewtopic.php?p=522051
          Dev responded and agreed to solve:
          https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
 
@@ -174,9 +148,10 @@
 
 - Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
 
-- Make a little 'dirt estucheon' for where the wires reach the ground
+- Make a little 'dirt estucheon' for where wires reach into the ground
 
-- Maybe re-render everything with some kind of smudge / blur post-processing effect (transparent pixels locked, use obj data)
+- Re-render everything with some kind of smudge / blur post-processing effect
+  so it can blend in better with the base game
 
 - water_reflection
 
@@ -188,9 +163,9 @@
 
 - Don't show searchlights in the turret coverage map mode
 
-- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself
+- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself.
   So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
-  has a searchlight selected, I guess. Maybe play a little UI sound.
+  has a searchlight selected. Maybe play a little UI sound.
 
 - Create more main-menu simulations
   (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
@@ -205,16 +180,15 @@
     - There's probably a good few default ones that would suit being changed to night time and having
       some searchlights thrown into
 
-- working_sound for the spotter
-
 - Shadow layer cleanup:
-  I think I need to go into photoshop and make it so that any pixels from the base layer
+  I think I need to go into photoshop or blender and rig it so that any pixels from the base layer
   exclude pixels from the shadow layer
 
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
-- Think about teleporting or somehow... hiding the entities we're replacing.
+- Look more into teleporting or somehow... hiding the entities we're replacing.
   It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
+  Initial research doesn't look promising.
 
 - Break apart into a 'boostable turrets' mod
   Let people use mod settings to control what level the boosting is

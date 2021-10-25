@@ -107,7 +107,7 @@ it is undeniable that this codebase would be drastically smaller if these issues
 
 ### File Guide:
 
-_sl-defines.lua_ - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
+_sl-defines.lua_          - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
 
 _control.lua_             - handles event registrations & filtering, calls behavior from the control-*.lua files
 
@@ -117,7 +117,7 @@ _control-forces.lua_      - sets up the forces assigned to hidden entities and h
 _control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
 
-_sl-util.lua_ - math functions, copying functions, and other miscellaneous functions
+_sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
 
 _info.json_        - information to display in the mod portal webpage, plus version / mod dependency information
 _data.lua_         - lists which files the mod manager should read to build & modify prototypes
@@ -132,3 +132,5 @@ Prototypes contain the definitions for a unit's graphics, animations, and stats 
 _prototypes/sl-entities.lua_       - prototypes for the searchlight and the turtle
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
+
+_modder-notes.md_ - Useful notes for modders detailing design decisions, known bugs, and TODOs
