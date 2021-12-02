@@ -185,9 +185,29 @@ function export.TurretRemoved(turret)
     tu.control = nil
   end
 
-  global.tunions[tu.tuID] = nil
   global.tun_to_tunion[turret.unit_number] = nil
   global.boosted_to_tunion[turret.unit_number] = nil
+  global.tunions[tu.tuID] = nil
+end
+
+
+-- Gestalt removed
+function export.GestaltRemoved(tuID)
+  -- Check if we still have a relationship with anything before removing this tunion
+  if next(r.getRelationRHS(global.GestaltTunionRelations, tuID)) then
+    return
+  end
+
+  local tu = global.tunions[tuID]
+
+  if tu.control then
+    tu.control.destroy()
+    tu.control = nil
+  end
+
+  global.tun_to_tunion[tu.turret.unit_number] = nil
+  global.boosted_to_tunion[tu.turret.unit_number] = nil
+  global.tunions[tu.tuID] = nil
 end
 
 

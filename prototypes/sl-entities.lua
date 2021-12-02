@@ -70,6 +70,7 @@ sl_b.folded_animation      = {layers = {g.searchlightHeadAnimation, g.searchligh
 sl_b.prepared_animation    = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
 sl_b.energy_glow_animation = g.searchlightGlowAnimation
 sl_b.glow_light_intensity = 1.0
+sl_b.energy_glow_animation_flicker_strength = 0
 sl_b.preparing_animation = nil
 sl_b.folding_animation   = nil
 sl_b.attacking_animation = nil
@@ -224,6 +225,7 @@ t.movement_speed = d.searchlightWanderSpeed -- Can update during runtime for wan
 t.run_animation = g.layerTransparentAnimation
 t.working_sound = a.scan
 t.distance_per_frame = 1 -- speed at which the run animation plays, in tiles per frame
+t.rotation_speed = 1.0
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
 t.flags = hiddenEntityFlags

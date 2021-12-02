@@ -281,12 +281,14 @@ export.SearchlightRemoved = function(sl)
     g.spotter.destroy()
   end
 
+  local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
+  for tID, _ in pairs(tIDs) do
+    cu.GestaltRemoved(tID)
+  end
+
   -- Don't need to do anything fancy if we weren't targeting a foe
-  if g.light.name == d.searchlightBaseName then
-    r.removeRelationLHS(global.GestaltTunionRelations, g.gID)
-  else
+  if g.light.name == d.searchlightAlarmName then
     r.removeRelationRHS(global.FoeGestaltRelations, g.gID)
-    local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
     cu.FoeGestaltRelationRemoved(g, tIDs)
   end
 

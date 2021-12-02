@@ -1,11 +1,71 @@
 ## Current Task:
 
 
+Add note to readme to explain that in map editor, using the Tools/Entities tab to add / remove
+searchlights and turrets may result in the mod breaking since it doesn't fire any events.
+
+
+Add more resources in general across the map
+
+
+Unchart all chunks on player force
+force.clear_chart(surface)
+
+Chart all chunks on smugglers
+force.chart_all(surface)
+
+
+Manually chart select chunks on wardens (labs, walls, bases, etc)
+
+
+Pollution station design:
+4 - 8 assemblers bottling water,
+speed beacons assisting labs with speed modules
+
+
+Set player force to warden while in the 3 undestroyed research labs
+(and un-set it when they leave)
+
+if not script.labsay[player.name] then
+  script.labsay[player.name] = true
+  game.print("Facility Emergency Access Granted: " .. player.name)
+end 
+
+Make all warden-owned objects unminable
+Make all warden-owned medium & large powerpoles and substations invulnerable (but not small powerpoles)
+(Don't forget to pre-set remnants on the uranium processing plant)
+
+
+Reset the last-user on all entities to Gaia
+
+Unlock warden laser & ammo speed / damage technologies at the last minute so that players have to actually worry about getting shot by warden turrets
+
+Make an ad-hoc looking warden region devoted to just pumping out turrets, ammo, searchlights, power poles, and wires, with a little crappy train station and double-ended train half full of parts
+
+Make another lab facility to show off the indestructible power poles 
+(complex furance setup, testing area with lots of destruction, power poles in varying states of distress, but most in perfect condition,
+ wall of power poles to protect from biters with a few turrets behind)
+Special recipe: Steel, copper cable, and depleted uranium all go into a furnace, then into another furance, then into an assembler
+
+
+Take screenshot for scenario
+
+
+Test multiple players not causing rocket victory until all are up
+Test sending / packing save file as part of mod
+
+
 ## Next Tasks:
 
 - Uphold that promise about the multiplayer map from the mod description
 
+- Searchlights utterly can't handle cars... Should they?
+  Maybe go back to using attack-position.. but that was messed up vs biter nests at range...
+  Maybe try a new attack type, like how a landmine gets everything in its radius instantly...
+
 - Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
+- Add localization for the searchlight technology itself
+  "A support turret which integrates combinator & radar technology to allow spotting foes from great distance."
 
 
 ## Design Decisions & Discussion
@@ -59,6 +119,7 @@
 
 
 ## TODO's
+
 
 ### Feature: Professionalism Polish
 
@@ -141,6 +202,14 @@
 
 
 ## Stretch Goals
+
+- Biter drop pods have bonus items for spidertrons
+
+- Waves of biters attack the rocket pad every few minutes on higher difficulties
+
+- Handle brush cloning map areas
+
+- Handle cloning entities
 
 - Spawn metal & dirt particles when spawning / despawning control units
 

@@ -10,6 +10,10 @@ local function SwapToBaseEntityType(itemStack)
   local old = itemStack.get_blueprint_entities()
   local new = {}
 
+  if not old then
+    return
+  end
+
   for index, e in pairs(old) do
     if e.name == d.searchlightAlarmName  then
       e.name = d.searchlightBaseName

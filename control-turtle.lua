@@ -28,8 +28,8 @@ local function makeMoveOrders(target, followingEntity, ignoreFoes)
                    distraction = distraction,
                    pathfind_flags = {low_priority = true,
                                      cache = false,
-                                     allow_destroy_friendly_entities = true,
-                                     allow_paths_through_own_entities = true},
+                                     allow_paths_through_own_entities = true,
+                                     prefer_straight_paths = false,},
                    radius = 0.2
                   }
 
