@@ -58,10 +58,6 @@ Test sending / packing save file as part of mod
 
 - Uphold that promise about the multiplayer map from the mod description
 
-- Searchlights utterly can't handle cars... Should they?
-  Maybe go back to using attack-position.. but that was messed up vs biter nests at range...
-  Maybe try a new attack type, like how a landmine gets everything in its radius instantly...
-
 - Prepare FAQ: explain potential mod incompatibility, workarounds, uninstall command, performance (only use ~1 - 2 thousand searchlights), etc
 - Add localization for the searchlight technology itself
   "A support turret which integrates combinator & radar technology to allow spotting foes from great distance."

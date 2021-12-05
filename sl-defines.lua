@@ -33,7 +33,7 @@ d.searchlightMaxNeighborDistance = 3
 d.rangeBoostAmount = d.searchlightRange + d.searchlightMaxNeighborDistance*2
 
 -- Range-boosted turrets fire this many times slower
-d.attackCooldownPenalty = 50
+d.attackCooldownPenalty = 30
 
 -- Electric energy buffer size for the searchlight
 d.searchlightCapacitorSize      = "5MJ"
