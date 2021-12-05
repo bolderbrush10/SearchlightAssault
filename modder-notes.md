@@ -1,8 +1,7 @@
 ## Current Task:
 
-
-Add note to readme to explain that in map editor, using the Tools/Entities tab to add / remove
-searchlights and turrets may result in the mod breaking since it doesn't fire any events.
+Also, we should test the spotlight against behmoth-sized biters, extra-big entities, etc
+(We can just mod the sizes of biters / nests / worms in the original game files to do that)
 
 
 Add more resources in general across the map
@@ -111,6 +110,8 @@ Test sending / packing save file as part of mod
 - [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
   the same exact time causes the searchlights to re-boost turrets as they die,
   causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
+
+- [Feature?] You can park a car / tank somewhere to distract a spotlight indefinitely
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
@@ -225,8 +226,6 @@ Test sending / packing save file as part of mod
 - water_reflection
 
 - Searchlight color controlled by circuit signals
-
-- 'Infrared mode' (target vehicles / player only) activated via circuit signal
 
 - Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
 

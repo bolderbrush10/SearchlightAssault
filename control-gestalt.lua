@@ -321,6 +321,16 @@ end
 
 
 -- control.lua will handle freeing our table entries when their tick comes
+-- We can't make a spotlight or turret target a vehicle,
+-- and we can't stop the turtle from wanting to attack vehicles,
+-- so we have a few paths here:
+-- A) We can try deactivating the turtle and seeing if dropping it as a target
+-- will somehow, through chance, get the spotlight and any boosted turrets
+-- to attack the target vehicle, maybe even repeating this multiple times until it happens.
+-- B) We can tell the turtle go back home and ignore the vehicle.
+-- C) You can park a car somewhere to distract a spotlight indefinitely.
+-- Since the first two options would be complicated to implement, 
+-- we'll just decide this behavior is a feature for now.
 export.OpenWatchCircle = function(spotter, foe, tickToClose)
   local gID = global.unum_to_g[spotter.unit_number].gID
 
@@ -360,7 +370,7 @@ export.CloseWatchCircle = function(gIDFoeMap)
       -- Case: Foe spotted successfully
       RaiseAlarm(g, foe)
     elseif g.light.shooting_target == g.turtle then
-      -- Case: Watch circle closed but no foe spotted
+      -- Case: Watch circle closed but no valid foe spotted
       ct.ResumeTurtleDuty(g, nil)
     end
     -- else

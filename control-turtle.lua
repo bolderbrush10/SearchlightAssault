@@ -110,8 +110,15 @@ end
 
 export.CheckForTurtleEscape = function(g)
   if not u.WithinRadius(g.turtle.position, g.light.position, d.searchlightRange - 0.2) then
-    Turtleport(g.turtle, g.light.position, g.turtle.position)
+    -- If the searchlight started attacking something else while the turtle was distracted and out of range,
+    -- then we may as well sic the turtle on it, too
+    if g.light.shooting_target ~= nil then
+      g.turtle.teleport(g.light.shooting_target.position)
+    else
+      Turtleport(g.turtle, g.light.position, g.turtle.position)
+    end
   end
+
   if g.light.name == d.searchlightBaseName then
     g.light.shooting_target = g.turtle
   end

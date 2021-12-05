@@ -52,17 +52,17 @@ d.searchlightControlEnergyUsage = "900kW"
 -- Actual search radius will be increased by 10% to make detection more reliable
 d.searchlightSpotRadius = 5
 
--- Speed at which searchlight beam wanders
+-- Speeds at which searchlight beam wanders / responds to circuit commands
 -- There is a maximum speed which you cannot exceed or else the turtle
 -- has a high chance to run inside the collision box of an enemy before
--- it has a chance to fire its attack. (About 0.3 is too fast)
+-- it has a chance to fire its attack. (About 0.4 is too fast)
 -- This results in the turtle getting 'stuck' without attacking,
 -- and thus results in us having to rely on the
 -- ai_command_complete event fired when the distraction attack-event is done
 -- (which is a process that is seemingly-impossible to speed up)
 d.searchlightWanderSpeed = 0.1
 
-d.searchlightRushSpeed = 0.15
+d.searchlightRushSpeed = 0.13  -- Just barely slower than base player speed
 
 -- Amount of time in milliseconds from when a searchlight becomes suspicious
 -- until the searchlight confirms it has spotted a foe

@@ -234,12 +234,20 @@ t.has_belt_immunity = true
 t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
-t.max_pursue_distance = 1
 t.vision_distance = d.searchlightSpotRadius + 1
+-- max_pursue_distance meeds to be about as big as vision / attack range
+-- when firing at big / moving targets (which require the turtle to reposition itself).
+-- Using a value of 0 / 1 may break the unit if it chases 
+-- then fails to attack - it will afterward return to its original 
+-- destination / location and freeze in place at its home semi-permanently,
+-- ignoring any new distractions.
+t.max_pursue_distance = t.vision_distance + 1
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 t.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
-t.collision_mask = {} -- enable noclip for pathfinding
+-- "not-colliding-with-itself" seems to slightly help avoid entering unit's hitboxes,
+-- otherwise we'd use an empty set
+t.collision_mask = {"not-colliding-with-itself"}
 t.ai_settings =
 {
   allow_try_return_to_spawner = false,
@@ -259,7 +267,7 @@ t.attack_parameters =
   ammo_type =
   {
     category= "melee",
-    target_type = "position",
+    target_type = "direction",
     action =
     {
       type = "direct",
@@ -288,11 +296,15 @@ spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 spotter.collision_mask = {} -- enable noclip for pathfinding too
 spotter.picture_safe = g.layerTransparentPixel
 spotter.picture_set = g.layerTransparentPixel
-spotter.trigger_radius = d.searchlightSpotRadius
+spotter.trigger_radius = d.searchlightSpotRadius - 1
 -- Keeping the spotter alive will make handling on_script_event calls slightly easier.
 -- We'll destroy it ourselves the tick after this fires, when we're done collecting events.
 spotter.force_die_on_attack = false
-spotter.timeout = d.searchlightSpotTime_ms / 1.5
+-- This timeout can't be too short or else the game won't 
+-- be able to process the landmine arming fast enough.
+-- It can't be too long or else it's easy to just run straight 
+-- through the spotlight  "before it can see you".
+spotter.timeout = 10
 spotter.action =
 {
   type = "direct",
@@ -306,7 +318,7 @@ spotter.action =
       action =
       {
         type = "area",
-        radius = d.searchlightSpotRadius,
+        radius = d.searchlightSpotRadius - 1,
         force = "enemy",
         action_delivery =
         {

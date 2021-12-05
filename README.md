@@ -37,6 +37,8 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 - Mod settings
   - Option to list turrets which shouldn't be boosted
   - Option to provide a clean Uninstall
+- New coop-multiplayer scenario map to challenge you and your friends
+- Vehicles can be used to distract searchlights
 
 ### Turret boost block list
 
@@ -62,6 +64,13 @@ Note that changes made in the mod settings menu will be lost unless you save you
 Some turrets may not be boostable to begin with, and are automatically ignored by this mod.
 
 ## Details for other modders
+
+#### Map Editor Quirks
+
+#### Don't use the Entities tool for searchlights & turrets
+
+Using the Tools->Entities tab to add / remove searchlights and turrets may result in the mod breaking.
+Entities built or removed through that tab don't fire on_created / on_destroyed events, which this mod relies on.
 
 ### Technical Terms
 
@@ -100,7 +109,9 @@ it is undeniable that this codebase would be drastically smaller if these issues
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
-0. "Melee" attacks against non-colliding entities frequently fail
+0. Attacks fail if a unit enters its target's hitbox
+0. Vehicles don't count as an entity_with_force, so you can't set their shooting target to one manually,
+   even though turrets _can and do_ attack vehicles
 0. Command complete events don't fire right when a distraction occurs,
    you have to wait for the distraction to be over to know if your command was interrupted
 
@@ -110,7 +121,6 @@ it is undeniable that this codebase would be drastically smaller if these issues
 _sl-defines.lua_          - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
 
 _control.lua_             - handles event registrations & filtering, calls behavior from the control-*.lua files
-
 _control-searchlight.lua_ - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-* files.
 _control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
 _control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
