@@ -89,6 +89,8 @@ local function SpawnBaseLight(gestalt)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[cleared.unit_number] = gestalt
   gestalt.light = cleared
+  -- Note how many times we've spotted a foe, just for fun
+  cleared.kills = cleared.kills + 1 
 
   base.destroy()
 end
@@ -156,7 +158,7 @@ local function RaiseAlarm(g, spottedFoe)
   g.light.shooting_target = spottedFoe
   g.turtle.teleport(spottedFoe.position)
   ct.TurtleChase(g, spottedFoe)
-  cs.SetAlarmRaiseSignals(g)
+  cs.ProcessAlarmRaiseSignals(g)
 
   BoostFriends(g, spottedFoe)
 end
@@ -165,7 +167,7 @@ end
 local function ClearAlarm(g, escapedFoe)
   SpawnBaseLight(g)
   ResumeTargetingTurtle(g, escapedFoe.position)
-  cs.SetAlarmClearSignals(g)
+  cs.ProcessAlarmClearSignals(g)
 end
 
 
@@ -282,14 +284,15 @@ export.SearchlightRemoved = function(sl)
   end
 
   local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
-  for tID, _ in pairs(tIDs) do
-    cu.GestaltRemoved(tID)
-  end
 
   -- Don't need to do anything fancy if we weren't targeting a foe
   if g.light.name == d.searchlightAlarmName then
     r.removeRelationRHS(global.FoeGestaltRelations, g.gID)
     cu.FoeGestaltRelationRemoved(g, tIDs)
+  end
+
+  for tID, _ in pairs(tIDs) do
+    cu.GestaltRemoved(tID)
   end
 
   global.gestalts[g.gID] = nil

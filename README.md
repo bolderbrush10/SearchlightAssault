@@ -67,16 +67,16 @@ Some turrets may not be boostable to begin with, and are automatically ignored b
 
 #### Map Editor Quirks
 
-#### Don't use the Entities tool for searchlights & turrets
+#### Don't use the Clone / Entities tool for searchlights & turrets
 
-Using the Tools->Entities tab to add / remove searchlights and turrets may result in the mod breaking.
-Entities built or removed through that tab don't fire on_created / on_destroyed events, which this mod relies on.
+Using the Tools->Entities tab or Clone tab to add / remove searchlights and turrets may result in the mod breaking.
+Entities built or removed through those tabs don't fire on_created / on_destroyed events, which this mod relies on.
 
 ### Technical Terms
 
 #### Turtle
 
-Usage of the term "Turtle" is a reference to the rendering mechanism of some old, beginner-friendly programming languages (such as 'Logo', from 1960's).
+The term "Turtle" is a reference to the rendering concept of some old, beginner-friendly programming languages (such as 'Logo', from 1960's).
 
 The idea is to imagine a turtle with a marker held in its tail, and wherever this turtle goes, it leaves behind a line. You'd write a program specifiying distances & directions for the turtle to follow. And thus, you'd control the turtle to control rendering a picture.
 

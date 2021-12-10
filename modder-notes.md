@@ -1,57 +1,69 @@
 ## Current Task:
 
-Also, we should test the spotlight against behmoth-sized biters, extra-big entities, etc
-(We can just mod the sizes of biters / nests / worms in the original game files to do that)
+Searchlight Control Units can spawn at a position that doesn't get power,
+even if the parent-turret has power.
 
 
-Add more resources in general across the map
+-- Mapping
 
+Nuclear fuel is sideloading into the reactor's belt loop
+Also, I don't think the fuel cells can sideload into a splitter
+
+Add MORE POLLUTION
+Double up the generators, put some up by the walls
+Downgrade the lvl3 assemblers for lvl2's, they make way more base pollution when beacon'd up
+
+Maybe add more biter-expansion incenvite areas? 
+They're not quite expanding out to the next super-spawner site as fast as I'd like...
+Maybe: 
+- Add the extra sites
+- Reverse the order of checking super spawner sites,
+  so that we start spawning at the rocket, then southeaast nest, then east nest, etc
+- Count how many super-nests we did and stop when we reach the target difficulty
+- Brutal difficulty has no limit on super-spawning 
+
+Maybe sort list by distance from rocket pad?
+
+Fix reversed express underground belts at outpost to lower-right of destroyed base
+
+Finish connecting power to searchlight outposts
+
+Add back the stump to the prison mineyard corner
+
+Free nuclear power lasts way too long. Cut it back to say, 10-15 fuel cells
+
+Rework prison-area searchlights to work with new clock speed
+
+Take screenshot for scenario
+
+-- Testing
+Test multiple players not causing rocket victory until all are up
+Test sending / packing save file as part of mod
+
+Observe biter progress at 5 / 10 / 30 / 60 marks on various difficulties
+
+Personal play test
+
+
+-- Final / Cleanup tasks
+
+Make all warden-owned objects unminable
+Make all warden-owned medium & large powerpoles and substations with 4+ adjacent concrete invulnerable (but not small powerpoles)
+/c local p = "big-electric-pole"; local s = game.surfaces[1];
+for _, p in pairs(s.find_entities_filtered{name=p}) do 
+if #(s.find_entities_filtered{name="wall", position=p.position, radius=2}) > 4 then p.destructible = false end
+end
+
+Unlock warden laser & ammo speed / damage technologies at the last minute so that players have to actually worry about getting shot by warden turrets
+(Actually, maybe we just want to do the first couple ranks, then have the later ranks unlock based on difficulty?)
+
+Manually chart select chunks on wardens (labs, walls, bases, etc)
 
 Unchart all chunks on player force
 force.clear_chart(surface)
 
-Chart all chunks on smugglers
-force.chart_all(surface)
-
-
-Manually chart select chunks on wardens (labs, walls, bases, etc)
-
-
-Pollution station design:
-4 - 8 assemblers bottling water,
-speed beacons assisting labs with speed modules
-
-
-Set player force to warden while in the 3 undestroyed research labs
-(and un-set it when they leave)
-
-if not script.labsay[player.name] then
-  script.labsay[player.name] = true
-  game.print("Facility Emergency Access Granted: " .. player.name)
-end 
-
-Make all warden-owned objects unminable
-Make all warden-owned medium & large powerpoles and substations invulnerable (but not small powerpoles)
-(Don't forget to pre-set remnants on the uranium processing plant)
-
-
 Reset the last-user on all entities to Gaia
 
-Unlock warden laser & ammo speed / damage technologies at the last minute so that players have to actually worry about getting shot by warden turrets
-
-Make an ad-hoc looking warden region devoted to just pumping out turrets, ammo, searchlights, power poles, and wires, with a little crappy train station and double-ended train half full of parts
-
-Make another lab facility to show off the indestructible power poles 
-(complex furance setup, testing area with lots of destruction, power poles in varying states of distress, but most in perfect condition,
- wall of power poles to protect from biters with a few turrets behind)
-Special recipe: Steel, copper cable, and depleted uranium all go into a furnace, then into another furance, then into an assembler
-
-
-Take screenshot for scenario
-
-
-Test multiple players not causing rocket victory until all are up
-Test sending / packing save file as part of mod
 
 
 ## Next Tasks:
@@ -158,44 +170,9 @@ Test sending / packing save file as part of mod
   Related? https://forums.factorio.com/viewtopic.php?t=99845
 
 
-### Map modes / play
-
-- Create a 'jailbreak' game mode, where 1 - 8 players are wardens manually controlling searchlights,
-  and ~100 other players are convicts.
-  Convicts try to gather resources and escape, wardens unlock more searchlights as they recapture convicts
-  (Captured convicts can play a minigame of some kind to re-escape from their cells)
-  We'll figure out the win / lose conditions later.
-  Maybe prisoners break into the warden's office and steal underpants or something.
-
-- Figure out how to make night time even darker? Maybe render an overlay visible-only to the guard force?
-  So, we discovered that making a map doesn't come with triggers and other dynamic things
-  If we want to have an elaborate pvp prisonbreak scenario, we'll have to add it into the mod
-  So, custom triggers and such aren't really a thing..
-  Maybe just make it a maze with a "race to the rocket" kind of deal? Maybe two teams?
-  We can still have areas where players need to gather the final few rocket ingredients
-  Shortcuts where people can go to dunk in science packs and finish the steel axe technology
-  Lots of Big Rocks in the way as a bottle neck
-  Need to build landfill to get over moat
-  etc
-
-- I'm starting to think it'd be easier to just have the searchlights entirely under NPC control
-  Maybe we'll start with that, then make a VS version later
-
-- Maybe there's a part where players have to break through a wall, and this somehow triggers
-  a wave of construction bots to add combinators / new searchlights
-
-- When time runs out, an unstoppable wave of biters should surge and chase everyone down
-  Maybe just make some offshore pollution machines to slowly ramp up their evolution lol
-  And make an indestrucible one by the rocket
-
-- There should be a rocket launcher and ammo you can craft to shoot searchlights / turrets
-  (Just bear in mind, those same searchlights will also be helping fend off the biter swarms,
-   costing you time if you destroy them)
-
-
 ### Advertising
 
-- Submit mod to Xterminator, KatherineOfSky, other big modded factorio youtubers / names
+- Submit mod to Xterminator, KatherineOfSky, Trupen, The Spiffing Brit, Noobert, AmbiguousAmphibian, PBL, other big modded factorio youtubers / names
 
 
 ## Stretch Goals
@@ -203,6 +180,11 @@ Test sending / packing save file as part of mod
 - Biter drop pods have bonus items for spidertrons
 
 - Waves of biters attack the rocket pad every few minutes on higher difficulties
+
+- Spotlight ghosts preserve circuit connections, and restore them on revive / reconstruction
+
+- To handle large crowds better:
+  After clearing a raised alarm, immediately spawn a spotter again.
 
 - Handle brush cloning map areas
 
@@ -220,6 +202,8 @@ Test sending / packing save file as part of mod
   so it can blend in better with the base game
 
 - water_reflection
+
+- Searchlight brightness decreases during brownout
 
 - Searchlight color controlled by circuit signals
 
@@ -258,3 +242,8 @@ Test sending / packing save file as part of mod
   Let people use mod settings to control what level the boosting is
   How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
   Or just make a stand-alone version of the mod and a non-standalone version?
+
+- Make another lab facility to show off the indestructible power poles 
+  (complex furance setup, testing area with lots of destruction, power poles in varying states of distress, but most in perfect condition,
+  wall of power poles to protect from biters with a few turrets behind)
+  Special recipe: Steel, copper cable, and depleted uranium all go into a furnace, then into another furance, then into an assembler

@@ -143,7 +143,8 @@ end
 -- Wouldn't need this function if there was an event for when entities run out of power
 export.CheckElectricNeeds = function()
   for _, t in pairs(global.boosted_to_tunion) do
-    t.turret.active = t.control.energy > 0
+    -- Inactive units don't die, so we need to fix that here
+    t.turret.active = t.turret.health == 0 or t.control.energy > 0
   end
 end
 

@@ -73,9 +73,9 @@ end
 
 local function OutputCircuitSignals(g)
   if g.light.name == d.searchlightBaseName then
-    export.SetAlarmClearSignals(g)
+    export.ProcessAlarmClearSignals(g)
   else
-    export.SetAlarmRaiseSignals(g)
+    export.ProcessAlarmRaiseSignals(g)
   end
 end
 
@@ -97,7 +97,7 @@ end
 
 
 -- Called by CheckCircuitConditions, but also when an alarm is cleared
-export.SetAlarmClearSignals = function(g)
+export.ProcessAlarmClearSignals = function(g)
   local i = g.signal
   local c = i.get_control_behavior()
 
@@ -118,7 +118,7 @@ end
 
 
 -- Called by CheckCircuitConditions, but also when an alarm is raised
-export.SetAlarmRaiseSignals = function(g)
+export.ProcessAlarmRaiseSignals = function(g)
   local i = g.signal
   local c = i.get_control_behavior()
 

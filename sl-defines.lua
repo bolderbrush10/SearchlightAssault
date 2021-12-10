@@ -36,7 +36,7 @@ d.rangeBoostAmount = d.searchlightRange + d.searchlightMaxNeighborDistance*2
 d.attackCooldownPenalty = 30
 
 -- Electric energy buffer size for the searchlight
-d.searchlightCapacitorSize      = "5MJ"
+d.searchlightCapacitorSize      = "1MJ"
 
 -- How much electricity the searchlight consumes
 -- (I think it's cute to have its usage be the sum of its parts)

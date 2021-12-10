@@ -52,7 +52,7 @@ sl_b.energy_source =
   type = "electric",
   usage_priority = "secondary-input",
   buffer_capacity = d.searchlightCapacitorSize,
-  input_flow_limit = "6000kW",
+  input_flow_limit = "500kW",
   drain = d.searchlightEnergyUsage,
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
@@ -155,6 +155,7 @@ sl_c.energy_source =
   type = "electric",
   usage_priority = "primary-input",
   buffer_capacity = d.searchlightCapacitorSize,
+  input_flow_limit = "500kW",
   drain = d.searchlightControlEnergyUsage,
 }
 sl_c.render_layer = "object"
