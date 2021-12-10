@@ -2,32 +2,6 @@
 
 -- Mapping
 
-Nuclear fuel is sideloading into the reactor's belt loop
-Also, I don't think the fuel cells can sideload into a splitter
-
-Add MORE POLLUTION
-Double up the generators, put some up by the walls
-Downgrade the lvl3 assemblers for lvl2's, they make way more base pollution when beacon'd up
-
-Maybe add more biter-expansion incenvite areas? 
-They're not quite expanding out to the next super-spawner site as fast as I'd like...
-Maybe: 
-- Add the extra sites
-- Reverse the order of checking super spawner sites,
-  so that we start spawning at the rocket, then southeaast nest, then east nest, etc
-- Count how many super-nests we did and stop when we reach the target difficulty
-- Brutal difficulty has no limit on super-spawning 
-
-Maybe sort list by distance from rocket pad?
-
-Fix reversed express underground belts at outpost to lower-right of destroyed base
-
-Finish connecting power to searchlight outposts
-
-Add back the stump to the prison mineyard corner
-
-Free nuclear power lasts way too long. Cut it back to say, 10-15 fuel cells
-
 Rework prison-area searchlights to work with new clock speed
 
 Take screenshot for scenario
@@ -173,20 +147,28 @@ Reset the last-user on all entities to Gaia
 
 ## Stretch Goals
 
+### Prisonbreak Map:
 - Biter drop pods have bonus items for spidertrons
 
 - Waves of biters attack the rocket pad every few minutes on higher difficulties
 
+- Add more biter-expansion incentive areas? 
+  They're not quite expanding out to the next super-spawner site as fast as I'd like...
+  Maybe: 
+  - Add the extra sites
+  - Reverse the order of checking super spawner sites,
+    so that we start spawning at the rocket, then southeaast nest, then east nest, etc
+  - Count how many super-nests we did and stop when we reach the target difficulty
+  - Brutal difficulty has no limit on super-spawning 
+  - Maybe sort list by distance from rocket pad?
+
+### Features:
 - Spotlight ghosts preserve circuit connections, and restore them on revive / reconstruction
 
 - To handle large crowds better:
   After clearing a raised alarm, immediately spawn a spotter again.
 
-- Handle brush cloning map areas
-
-- Handle cloning entities
-
-- Spawn metal & dirt particles when spawning / despawning control units
+- Handle cloning entities / brush cloning map areas
 
 - Further crop the mask sprite, figure out the offset it needs
 

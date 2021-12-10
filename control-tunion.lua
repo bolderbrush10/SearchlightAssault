@@ -129,6 +129,10 @@ local function SpawnControl(turret)
                                                force = turret.force,
                                                create_build_effect_smoke = true}
 
+  -- Explosions clean themselves up after they're done playing, so that's nice
+  turret.surface.create_entity{name = "rock-damaged-explosion", position = pos}
+  turret.surface.create_entity{name = "rock-damaged-explosion", position = pos}
+
   control.destructible = false
 
   return control
@@ -308,7 +312,12 @@ export.UnBoost = function(tunion)
 
   u.CopyTurret(turret, newT)
   tunion.boosted = false
-  tunion.control.destroy()
+
+  local c = tunion.control
+  newT.surface.create_entity{name = "spark-explosion", position = c.position}
+  newT.surface.create_entity{name = "spark-explosion", position = c.position}
+  c.destroy()
+
   tunion.control = nil
   tunion.turret  = newT
   global.tun_to_tunion[newT.unit_number] = tunion
