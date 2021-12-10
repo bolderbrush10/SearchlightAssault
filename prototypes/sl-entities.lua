@@ -165,7 +165,7 @@ sl_c.create_ghost_on_death = false
 sl_c.vision_distance = 0
 sl_c.selectable_in_game = false
 sl_c.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
-sl_c.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+sl_c.collision_box = {{-3, -3}, {3, 0}} -- expand bounding box so we can leech electricity reliably
 sl_c.collision_mask = {} -- enable noclip for pathfinding too
 
 

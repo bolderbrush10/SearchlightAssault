@@ -1,9 +1,5 @@
 ## Current Task:
 
-Searchlight Control Units can spawn at a position that doesn't get power,
-even if the parent-turret has power.
-
-
 -- Mapping
 
 Nuclear fuel is sideloading into the reactor's belt loop
