@@ -168,6 +168,7 @@ local function ClearAlarm(g, escapedFoe)
   SpawnBaseLight(g)
   ResumeTargetingTurtle(g, escapedFoe.position)
   cs.ProcessAlarmClearSignals(g)
+  export.FoeSuspected(g.turtle, escapedFoe.position)
 end
 
 

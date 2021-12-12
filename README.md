@@ -250,9 +250,6 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
     - Also probably want to vary up the grass a bit, add some decoratives on the existing map
 
 ### Code:
-- To handle large crowds better:
-  After clearing a raised alarm, immediately spawn a spotter again.
-
 - Handle cloning entities / brush cloning map areas
 
 - Searchlight brightness decreases during brownout
