@@ -225,11 +225,16 @@ end)
 -- DESTRUCTIONS
 --
 
-local function onDeath(event)
+local function entityRemoved(event)
   local entity = event.entity
 
   if entity.name == d.searchlightBaseName or entity.name == d.searchlightAlarmName then
-    cg.SearchlightRemoved(entity)
+
+    local onDeath = event.name == defines.events.on_entity_died 
+    -- or event.name == defines.events.script_raised_destroy
+    -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
+    
+    cg.SearchlightRemoved(entity, onDeath)
   elseif entity.type:match "-turret" and entity.type ~= "artillery-turret" then
     cu.TurretRemoved(entity)
   end
@@ -246,7 +251,7 @@ for index, e in pairs
   defines.events.on_pre_player_mined_item,
   defines.events.on_robot_pre_mined,
 }) do
-  script.on_event(e, onDeath, militaryFilter)
+  script.on_event(e, entityRemoved, militaryFilter)
 end
 
 
@@ -255,7 +260,7 @@ for index, e in pairs
   defines.events.on_entity_died,
   defines.events.script_raised_destroy,
 }) do
-  script.on_event(e, onDeath)
+  script.on_event(e, entityRemoved)
 end
 
 

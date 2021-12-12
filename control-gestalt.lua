@@ -264,7 +264,7 @@ export.SearchlightAdded = function(sl)
 end
 
 
-export.SearchlightRemoved = function(sl)
+export.SearchlightRemoved = function(sl, killed)
   local g = global.unum_to_g[sl.unit_number]
 
   global.unum_to_g[sl.unit_number] = nil
@@ -273,12 +273,16 @@ export.SearchlightRemoved = function(sl)
     global.unum_to_g[g.spotter.unit_number] = nil
   end
 
-  -- global.watch_circles:
-  -- We'll just check if our gestalt is still valid when the tick comes,
-  -- instead of iterating for a gID that might not even be in it
+  -- Preserve wire connections when killed by leaving a ghost
+  if killed then
+    g.signal.destructible = true
+    g.signal.die()
+  else
+    g.signal.destroy()
+  end
 
-  g.signal.destroy()
   g.turtle.destroy()
+
   if g.spotter then
     g.spotter.destroy()
   end
@@ -296,6 +300,12 @@ export.SearchlightRemoved = function(sl)
   end
 
   global.gestalts[g.gID] = nil
+
+  -- global.watch_circles:
+  -- Instead of iterating for a gID that might not even be in it
+  -- so we can clean up any possible watch circle for this gestalt,
+  -- we'll just check if our gestalt is still valid when that tick comes.
+
 end
 
 

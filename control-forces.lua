@@ -27,7 +27,7 @@ end
 export.PrepareTurtleForce = function(SearchlightForce)
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
-  if global.sl_force_init[turtleForceName] then
+  if global.sl_force_init[turtleForceName] or game.forces[turtleForceName] then
     return turtleForceName -- We've already initialized this force, nothing to do
   end
 

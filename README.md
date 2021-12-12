@@ -231,16 +231,6 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 ### Map Editing:
 - Waves of biters attack the rocket pad every few minutes on higher difficulties
 
-- Add more biter-expansion incentive areas? 
-  They're not quite expanding out to the next super-spawner site as fast as I'd like...
-  Maybe: 
-  - Add the extra sites
-  - Reverse the order of checking super spawner sites,
-    so that we start spawning at the rocket, then southeaast nest, then east nest, etc
-  - Count how many super-nests we did and stop when we reach the target difficulty
-  - Brutal difficulty has no limit on super-spawning 
-  - Maybe sort list by distance from rocket pad?
-
 - Make another lab facility to show off the indestructible power poles 
   (complex furance setup, testing area with lots of destruction, power poles in varying states of distress, but most in perfect condition,
   wall of power poles to protect from biters with a few turrets behind)
@@ -260,8 +250,6 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
     - Also probably want to vary up the grass a bit, add some decoratives on the existing map
 
 ### Code:
-- Spotlight ghosts preserve circuit connections, and restore them on revive / reconstruction
-
 - To handle large crowds better:
   After clearing a raised alarm, immediately spawn a spotter again.
 
