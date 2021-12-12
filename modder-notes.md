@@ -1,23 +1,6 @@
 ## Current Task:
 
--- Mapping
-
-Add more biter-expansion incentive areas? 
-They're not quite expanding out to the next super-spawner site as fast as I'd like...
-Maybe: 
-- Add the extra sites
-- Reverse the order of checking super spawner sites,
-  so that we start spawning at the rocket, then southeaast nest, then east nest, etc
-- Count how many super-nests we did and stop when we reach the target difficulty
-- Brutal difficulty has no limit on super-spawning 
-- Maybe sort list by distance from rocket pad?
-
-Take screenshot for scenario
-
 -- Testing
-Test multiple players not causing rocket victory until all are up
-Test sending / packing save file as part of mod
-
 Observe biter progress at 5 / 10 / 30 / 60 marks on various difficulties
 
 Personal play test

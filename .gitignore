@@ -2,4 +2,5 @@ graphics/*
 *sublime*
 *.zip
 *.ogg
-thumbnail.png
+*.png
+*.dat

@@ -25,6 +25,8 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 
 ## Features
 
+- New coop-multiplayer scenario map to challenge you and your friends
+
 - Searchlights automatically scan their territory for foes
 - Searchlights may boost the range of neighboring turrets and direct them to snipe spotted foes
 - Animated graphics including remnants, custom light effects, and high-res integration
@@ -37,7 +39,6 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 - Mod settings
   - Option to list turrets which shouldn't be boosted
   - Option to provide a clean Uninstall
-- New coop-multiplayer scenario map to challenge you and your friends
 - Vehicles can be used to distract searchlights
 
 ## Turret boost block list
@@ -90,7 +91,7 @@ If you have any feedback or footage featuring my mod, please share with me!
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
 - Two searchlights have trouble targeting each other at the same time
-  (Probably because of raise / clear alarm "destroying" their targets and creating a new entity of the alarm / base type)
+  (Probably because of raise/clearAlarm() "destroying" their targets and creating a new entity of the alarm / base type)
 
 ### Map Editor Quirks
 
@@ -200,7 +201,7 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 
 #### Mod Interface Features / Issues to Request / Report
 
-- [DONE] energy_glow_animation on turrets flickers badly, so that's probably a bug
+- [DONE] energy_glow_animation on turrets flickers badly
          Dev responded and agreed to solve:
          https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
 
@@ -256,7 +257,7 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 
 - Searchlight color controlled by circuit signals
 
-- Searchlight could possibly be set to only wander a 180 degree arc around its inital placement?
+- Searchlight could possibly be set to only wander a 180 degree arc around its initial placement?
 
 - Don't show searchlights in the turret coverage map mode
 
@@ -280,7 +281,7 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 
 - Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
 
-- Make a little 'dirt estucheon' for where wires reach into the ground
+- Make a dirt estucheon for where wires reach into the ground
 
 - Re-render everything with some kind of smudge / blur post-processing effect
   so it can blend in better with the base game
