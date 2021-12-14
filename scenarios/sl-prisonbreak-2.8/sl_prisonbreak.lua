@@ -491,8 +491,7 @@ local checkAccessRevoked = function(player)
     end
   end
   
-  -- TODO reenable when done testing
-  --player.force = "player"
+  player.force = "player"
 end
 
 
@@ -527,7 +526,30 @@ local on_entity_died = function(event)
     game.print("Difficulty level: Brutal")
   else
     game.print("Difficulty level: " .. global.pbreakDifficulty)
-  end      
+  end
+  
+  local wardenT = game.forces["Wardens"].technologies
+  if global.pbreakDifficulty == 2 then
+    wardenT["weapon-shooting-speed-3"].researched = true
+    wardenT["physical-projectile-damage-3"].researched = true
+    wardenT["laser-shooting-speed-3"].researched = true
+    wardenT["energy-weapons-damage-3"].researched = true  
+  elseif global.pbreakDifficulty == 3 then
+    wardenT["weapon-shooting-speed-4"].researched = true
+    wardenT["physical-projectile-damage-4"].researched = true
+    wardenT["laser-shooting-speed-4"].researched = true
+    wardenT["energy-weapons-damage-4"].researched = true  
+  elseif global.pbreakDifficulty == 4 then
+    wardenT["weapon-shooting-speed-5"].researched = true
+    wardenT["weapon-shooting-speed-6"].researched = true
+    wardenT["physical-projectile-damage-5"].researched = true
+    wardenT["physical-projectile-damage-6"].researched = true
+    wardenT["physical-projectile-damage-7"].researched = true
+    wardenT["laser-shooting-speed-5"].researched = true
+    wardenT["laser-shooting-speed-6"].researched = true
+    wardenT["energy-weapons-damage-5"].researched = true
+    wardenT["energy-weapons-damage-6"].researched = true  
+  end  
 end
 
 

@@ -1,31 +1,5 @@
 ## Current Task:
 
--- Testing
-Observe biter progress at 5 / 10 / 30 / 60 marks on various difficulties
-
-Personal play test
-
-
--- Final / Cleanup tasks
-
-Make all warden-owned objects unminable
-Make all warden-owned medium & large powerpoles and substations with 4+ adjacent concrete invulnerable (but not small powerpoles)
-/c local p = "big-electric-pole"; local s = game.surfaces[1];
-for _, p in pairs(s.find_entities_filtered{name=p}) do 
-if #(s.find_entities_filtered{name="wall", position=p.position, radius=2}) > 4 then p.destructible = false end
-end
-
-Unlock warden laser & ammo speed / damage technologies at the last minute so that players have to actually worry about getting shot by warden turrets
-(Actually, maybe we just want to do the first couple ranks, then have the later ranks unlock based on difficulty?)
-
-Chart only select chunks on wardens (labs, walls, bases, etc)
-(Maybe use a script to do this, 'for every entity in their force, chart the chunk its in' -kind of thing)
-
-Unchart all chunks on player force
-force.clear_chart(surface)
-
-Reset the last-user on all entities to Gaia
-
 
 ## Next Tasks:
 
