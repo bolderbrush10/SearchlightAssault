@@ -1,4 +1,4 @@
-# Searchlights
+## Searchlights
 
 ## Welcome:
 ```
@@ -67,9 +67,6 @@ Some turrets may not be boostable to begin with, and are automatically ignored b
 
 You are welcome to contact me via email: bolderbrush10@gmail.com
 
-I am willing to consider releasing this software under alternate licenses,
-if the present one is somehow not permissive enough for your purpose.
-
 If you have any feedback or footage featuring my mod, please share with me!
 
 ## Technical Details / Details for other Modders
@@ -112,14 +109,14 @@ and several hidden entities which each are essential to making features work.
 
 The term "Turtle" is a reference to the rendering concept of some old, beginner-friendly programming languages (such as 'Logo', from 1960's).
 
-The idea is to imagine a turtle with a marker held in its tail, and wherever this turtle goes, it leaves behind a line. You'd write a program specifiying distances & directions for the turtle to follow. And thus, you'd control the turtle to control rendering a picture.
+The idea is to imagine a turtle with a marker held in its tail, and wherever this turtle goes, it leaves behind a line. You'd write a program specifiying distances & directions for the turtle to follow. And thus, you could control the turtle to control rendering a picture.
 
-And in this mod, our turtle, instead of drawing a line, will render a searchlight effect.
+And in this mod, our turtle, instead of drawing a line, will help render a searchlight effect.
 
 
 #### Primary issues inflating SLOC:
-While I enjoyed the challenge of making this mod with as few changes to the base game as possible,
-it is undeniable that this codebase would be drastically smaller if these issues weren't in place:
+I enjoyed the challenge of making this mod with as few changes to the base game as possible,
+but this codebase would be drastically smaller if these issues weren't in place:
 
 0. No mechanism in the API to modify shooting range during runtime
 0. API doesn't provide some info in on_player_setup_blueprint event for some blueprint use cases
@@ -138,30 +135,39 @@ it is undeniable that this codebase would be drastically smaller if these issues
 
 _sl-defines.lua_          - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
 
-_control.lua_             - handles event registrations & filtering, calls behavior from the control-*.lua files
-_control-searchlight.lua_ - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-* files.
+_control.lua_             - handles event registrations & filtering, calls behavior from the control-\*.lua files
+_control-gestalt.lua_     - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-\* files
+_control-searchlight.lua_ - behaviors for the searchlight itself when created / alarms are raised, etc
+_control-tunion.lua_      - behaviors for range-boosting turrets and filtering incompatible turrets per mod settings
 _control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
 _control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
 _control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
 
+_sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights
 _sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
 
 _info.json_        - information to display in the mod portal webpage, plus version / mod dependency information
 _data.lua_         - lists which files the mod manager should read to build & modify prototypes
 _data-updates.lua_ - reads what turrets OTHER MODS have put into the game and generates extended-range versions of their prototypes
-                    (this allows a searchlight to "boost" any given turret's range)
+                    (this allows a searchlight to "boost" any given turret's range).
                     If another mod creates its own turrets in its own data-updates.lua or data-final-fixes.lua files,
                     then searchlights are probably not going to be able to boost that mod's turrets.
 
 
 Prototypes contain the definitions for a unit's graphics, animations, and stats (such as max health, range, and damage)
 
-_prototypes/sl-entities.lua_       - prototypes for the searchlight and the turtle
+_prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
 
 _modder-notes.md_ - Useful notes for modders detailing design decisions, known bugs, and TODOs
+
+_locale/*_ - Translations of the various in-game strings displayed to the player
+
+_menu-simulations/*_ - Contains small demoes that run during the game's main menu, on a random rotation
+
+_scenarios/*_ - The latest revision of the Prison Break game mode. Of note are the files _sl_silobreak.py_ and _sl_prisonbreak.py_, which contain scenario-specific logic, events, and win conditions.
 
 
 #### Design Decisions & Discussion
@@ -206,7 +212,7 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 
 - OnPowerLost/Restored event mod interface request (So we don't have to check power manually in onTick)
 
-- Write up how non-turrets just totally ignore trigger_type_mask
+- Write up how non-turrets just totally ignore trigger_type_mask...
   And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
 
 - 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
@@ -229,13 +235,6 @@ _modder-notes.md_ - Useful notes for modders detailing design decisions, known b
 ## Stretch Goals
 
 ### Map Editing:
-- Waves of biters attack the rocket pad every few minutes on higher difficulties
-
-- Make another lab facility to show off the indestructible power poles 
-  (complex furance setup, testing area with lots of destruction, power poles in varying states of distress, but most in perfect condition,
-  wall of power poles to protect from biters with a few turrets behind)
-  Special recipe: Steel, copper cable, and depleted uranium all go into a furnace, then into another furance, then into an assembler
-
 - Create more main-menu simulations
   (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
     - We can probably chain the turtle to follow another turtle to give its tragetory more of a curve...
