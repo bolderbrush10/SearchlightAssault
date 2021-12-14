@@ -2,23 +2,18 @@ local util = require("util")
 local crash_site = require("crash-site")
 
 --[[
-                    Max super-  Biter Drop-  Biter Drop-  Rocket Silo           SuperSpawn/Pod
-                   spawn sites   Pod Start   Pod Period   Attack Period(TODO)    Biter Types   
-Difficulty 0/1:        2             30          6            x                    small
-Difficulty 2:          3             20          6            20                   small
-Difficulty 3:          4             15          3            15                  +spitter
-Difficulty 4:          5             2           1            5                   +medium / behemoth
+                    Max super-  Biter Drop-  Biter Drop-     SuperSpawn /
+                   spawn sites   Pod Start   Pod Period     Pod Biter Types   
+Difficulty 0/1:        2             30          6              small
+Difficulty 2:          3             20          6              small
+Difficulty 3:          4             15          3            +spitter
+Difficulty 4:       unlimited        2           1        +medium / behemoth
 ]]--
 
--- TODO 0/1: 
--- TODO 2:   biters now seek rocket silos every 20 minutes (Strech goal)
--- TODO 3:   
--- TODO 4:   rocket silo waves every 5 minutes
 
 local created_items = function()
   return
   {
-    ["iron-stick"] = 1,
     ["raw-fish"] = 4,
   }
 end
@@ -28,13 +23,12 @@ local respawn_items = function()
  if game.tick < 36000 then
     return
     {
-      ["iron-stick"] = 1,
       ["raw-fish"] = 1,
     }
   else
     return
     {
-      ["raw-fish"] = 4,
+      ["raw-fish"] = 2,
       ["submachine-gun"] = 1,
       ["piercing-rounds-magazine"] = 10,
     }    
@@ -53,6 +47,16 @@ local on_player_created = function(event)
   
   if global.pbreakDifficulty == nil then
     global.pbreakDifficulty = 0
+    
+    -- Create inital chart for Wardens
+    local s = game.surfaces[1]
+    local f = game.forces["Wardens"]
+    f.clear_chart()
+    f.chart(s, s.get_script_area("CombatLabAccess").area)
+    f.chart(s, s.get_script_area("RocketLabAccess").area)
+    f.chart(s, s.get_script_area("ControlLab1").area)
+    f.chart(s, s.get_script_area("ControlLab2").area)
+    f.chart(s, {left_top={x=-150, y=702}, right_bottom={x=-95, y=744}}) 
   end
   
   if global.rocketSilos == nil then
@@ -66,7 +70,7 @@ local on_player_created = function(event)
     global.labsay = {}
   end
   
-  -- Disable the repair pack recipe so players feel tension about keeping vehicles in shape
+  -- Disable the repair pack recipe so players feel tension about keeping vehicles, etc in shape
   game.forces["player"].recipes["repair-pack"].enabled = false
 
   if not global.init_ran then
@@ -130,7 +134,10 @@ local tryRandExpand = function(area)
   end
   
   local s = game.surfaces[1]
-  local result = s.set_multi_command{command={type=defines.command.build_base, destination=randPos, ignore_planner=true}, unit_count=100}
+  local result = s.set_multi_command{command={type=defines.command.build_base, 
+                                              destination=randPos, 
+                                              ignore_planner=true}, 
+                                     unit_count=100}
   
   return result
 end
@@ -192,9 +199,8 @@ end
 
 local compareNests = function(leftArea, rightArea)
   local pos = {0,0}
-  local _, rocket = next(global.rocketSilos)
-  if rocket then
-    pos = rocket.position
+  if global.maxSilo then
+    pos = global.maxSilo.position
   end
   
   return lensquared(leftArea.right_bottom, pos) < lensquared(rightArea.right_bottom, pos)
@@ -221,7 +227,18 @@ local updateSuperNests = function()
   -- Perodically cycle super-spawning through new nests so bunches of biters don't clump up too badly
   local tickmod = game.tick % (60*60)
   if tickmod == 0 then
-    global.superSpawnNests = {}    
+
+    -- Prefer to attack the rocket with the most progress
+    global.maxSilo = nil
+    for unit_num, silo in pairs(global.rocketSilos) do
+      if not silo.valid then
+        global.rocketSilos[unit_num] = nil
+      elseif maxSilo == nil or silo.rocket_parts > maxSilo.rocket_parts then
+        global.maxSilo = silo
+      end
+    end
+
+    global.superSpawnNests = {}
     table.sort(global.biterAreas, compareNests)
   end
     
@@ -376,37 +393,6 @@ local dropBiterCapsules = function()
        
     spawnBiters(chest)    
   end
-end
-
-
-local siloWaveStartDifficulty2 = 60 * 60 * 20
---local siloWaveStartDifficulty4 = sendRocketSiloWave should already only be getting called every 5 minutes 
-
--- TODO Stretch goal
-local sendRocketSiloWave = function()
-  local t = game.tick
-  if global.pbreakDifficulty < 2 then
-    return
-  elseif global.pbreakDifficulty < 4 and t % siloWaveStartDifficulty2 ~= 0 then
-    return
-  end
-    
-  -- Prefer to attack the rocket with the most progress
-  local maxSilo = nil
-  for unit_num, silo in pairs(global.rocketSilos) do
-    if not silo.valid then
-      global.rocketSilos[unit_num] = nil
-    elseif maxSilo == nil or silo.rocket_parts > maxSilo.rocket_parts then
-      maxSilo = silo
-    end
-  end
-  
-  if not maxSilo then
-    return
-  end
-  
-  -- TODO create unit groups from existing biters or spawn some in just for this?
-  --      Unit groups are less trivial to create from existing sources than I'd hoped...
 end
 
 
@@ -579,13 +565,13 @@ local pbreak_interface =
     return global.created_items
   end,
   set_created_items = function(map)
-    global.created_items = map or error("Remote call parameter to freeplay set created items can't be nil.")
+    global.created_items = map or error("Remote call parameter to set created items can't be nil.")
   end,
   get_respawn_items = function()
     return global.respawn_items
   end,
   set_respawn_items = function(map)
-    global.respawn_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
+    global.respawn_items = map or error("Remote call parameter to set respawn items can't be nil.")
   end,
   set_skip_intro = function(bool)
     global.skip_intro = bool
@@ -594,7 +580,7 @@ local pbreak_interface =
     return global.skip_intro
   end,
   set_chart_distance = function(value)
-    global.chart_distance = tonumber(value) or error("Remote call parameter to freeplay set chart distance must be a number")
+    global.chart_distance = tonumber(value) or error("Remote call parameter to set chart distance must be a number")
   end,
   get_disable_crashsite = function()
     return global.disable_crashsite
@@ -609,19 +595,19 @@ local pbreak_interface =
     return global.crashed_ship_items
   end,
   set_ship_items = function(map)
-    global.crashed_ship_items = map or error("Remote call parameter to freeplay set created items can't be nil.")
+    global.crashed_ship_items = map or error("Remote call parameter to set created items can't be nil.")
   end,
   get_debris_items = function()
     return global.crashed_debris_items
   end,
   set_debris_items = function(map)
-    global.crashed_debris_items = map or error("Remote call parameter to freeplay set respawn items can't be nil.")
+    global.crashed_debris_items = map or error("Remote call parameter to set respawn items can't be nil.")
   end,
   get_ship_parts = function()
     return global.crashed_ship_parts
   end,
   set_ship_parts = function(parts)
-    global.crashed_ship_parts = parts or error("Remote call parameter to freeplay set ship parts can't be nil.")
+    global.crashed_ship_parts = parts or error("Remote call parameter to set ship parts can't be nil.")
   end
 }
 
@@ -665,7 +651,6 @@ pbreak.on_nth_tick =
 {
   [300] = aggressiveBiterExpand,
   [3600] = dropBiterCapsules,
-  [18000] = sendRocketSiloWave,
 }
 
 

@@ -1,5 +1,6 @@
 ## Searchlights
 
+
 ## Welcome:
 ```
 -> The interesting & easy tweaks to make are in sl-defines.lua
@@ -29,16 +30,18 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 
 - Searchlights automatically scan their territory for foes
 - Searchlights may boost the range of neighboring turrets and direct them to snipe spotted foes
-- Animated graphics including remnants, custom light effects, and high-res integration
-- Custom audio effects
+- Custom animated graphics, plus remnants, custom light effects, and high-res integration
+- Custom audio effects for the searchlight, its light effect, and when spotting a foe
 - Optimized to allow running several thousand searchlights
 - Searchlights can be connected to the circuit network
   - Takes inputs of coordinates to search
   - Outputs position data of spotted foes
+  - Outputs own-position data
   - Outputs signals for when a foe is suspected / spotted
 - Mod settings
   - Option to list turrets which shouldn't be boosted
   - Option to provide a clean Uninstall
+
 
 ## Turret boost block list
 
@@ -63,11 +66,24 @@ Note that changes made in the mod settings menu will be lost unless you save you
 
 Some turrets may not be boostable to begin with, and are automatically ignored by this mod.
 
+
+## FAQ
+
+- Potential Mod Incompatibility: Any mod which uses highly scripted turrets that interact with their own hidden entities, or turrets that are populated into a global table.
+
+- Workarounds: Add turrets from incompatible mods into the turret-boost block list. (See above section)
+
+- Performance: The first few hundred searchlights should have almost no impact on UPS. After two thousand even a high end system should expect to see about 10 UPS lost.
+
+- Megabases: This mod hasn't been tested against any megabases, but shouldn't present major issues as long as the number of searchlights themselves are kept below one thousand. Searchlights are always searching, so, they never make use of internal sleep methods like other entities in a megabase.
+
+
 ## Contact
 
 You are welcome to contact me via email: bolderbrush10@gmail.com
 
-If you have any feedback or footage featuring my mod, please share with me!
+If you have any feedback or footage featuring my mod, please share with me! I would love to know what people think.
+
 
 ## Technical Details / Details for other Modders
 
@@ -80,21 +96,23 @@ If you have any feedback or footage featuring my mod, please share with me!
 
 - [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
   the same exact time causes the searchlights to re-boost turrets as they die,
-  causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
+  causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed
 
-- [Feature?] Spidertrons can only distract searchlights, not be targeted by them.
+- [Feature?] Spidertrons can only distract searchlights, not be targeted by them
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
 - Two searchlights have trouble targeting each other at the same time
   (Probably because of raise/clearAlarm() "destroying" their targets and creating a new entity of the alarm / base type)
 
+
 ### Map Editor Quirks
 
 #### Don't use the Clone / Entities tool for searchlights & turrets
 
 Using the Tools->Entities tab or Clone tab to add / remove searchlights and turrets may result in the mod breaking.
-Entities built or removed through those tabs don't fire on_created / on_destroyed events, which this mod relies on.
+Entities built or removed through those tabs don't fire on_built / on_destroyed events, which this mod relies on.
+
 
 ### Terms
 
@@ -104,6 +122,7 @@ A gestalt is an aggregation of things which together are more capable than by th
 
 In this mod, a 'gestalt' refers to the collection of a Searchlight, the list of turrets it may range-boost,
 and several hidden entities which each are essential to making features work.
+
 
 #### Turtle
 
@@ -174,7 +193,7 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 
 - What if we just manually call render for a searchlight effect and move & search around it every tick ourselves?
 
-  This is extremely performance intensive, after a few dozen searchlights like this you noticably lose fps.
+  This is extremely performance intensive, noticably costing fps after only a few dozen searchlights.
   It's vastly more efficient to have the game create an entity, shoot at it,
   and let the engine do pathfinding and rendering calls for us.
   (Even with all the rigmarole associated with maintaining that entity...)
@@ -235,8 +254,8 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 ## Stretch Goals
 
 ### Map Editing:
-- Create more main-menu simulations
-  (Unfortunately, control.lua doesn't work in main-menu simulations, so we have to work around that...)
+- Create more main-menu simulations, update existing sim.
+  (Unfortunately, the mod's control.lua doesn't work in main-menu simulations, so we have to work around that...)
     - We can probably chain the turtle to follow another turtle to give its tragetory more of a curve...
     - Actually, it looks like we can do some real magic in menu-simulations.lua init,
       registering stuff to happen in on_nth_tick. "Chase" is a great example.
@@ -248,6 +267,7 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
       some searchlights thrown into
     - Also probably want to vary up the grass a bit, add some decoratives on the existing map
 
+
 ### Code:
 - Handle cloning entities / brush cloning map areas
 
@@ -255,9 +275,9 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 
 - Searchlight color controlled by circuit signals
 
-- Searchlight could possibly be set to only wander a 180 degree arc around its initial placement?
-
 - Don't show searchlights in the turret coverage map mode
+
+- Searchlight could possibly be set to only wander a 180 degree arc around its initial placement?
 
 - Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself.
   So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
@@ -269,10 +289,11 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
   It'd be nice to not have to spawn / destroy turrets all the time just because we're boosting them.
   Initial research doesn't look promising.
 
-- Break apart into a 'boostable turrets' mod
-  Let people use mod settings to control what level the boosting is
+- Break apart into a 'boostable turrets' mod.
+  Let people use mod settings to control what level the boosting is.
   How to handle recipes? Just a beacon to all the regular recipes, enable it with a unique range-boosting technology?
   Or just make a stand-alone version of the mod and a non-standalone version?
+
 
 ### Art:
 - Further crop the mask sprite, figure out the offset it needs

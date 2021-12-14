@@ -17,8 +17,8 @@ local signalX = {type="virtual", name="signal-X"}
 local signalY = {type="virtual", name="signal-Y"}
 local signalW = {type="virtual", name="signal-W"}
 local signalA = {type="virtual", name="signal-A"}
+local signalO = {type="virtual", name="signal-O"}
 local signalP = {type="virtual", name="signal-P"}
-local signalQ = {type="virtual", name="signal-Q"}
 
 
 --------------------
@@ -151,8 +151,8 @@ export.SpawnSignalInterface = function(sl)
   i.get_control_behavior().set_signal(AlarmSlot,        {signal = signalA, count = 0})
   i.get_control_behavior().set_signal(WarningSlot,      {signal = signalW, count = 0})
 
-  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = signalP, count = i.position.x})
-  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = signalQ, count = i.position.y})
+  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = signalO, count = i.position.x})
+  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = signalP, count = i.position.y})
 
   return i
 end
