@@ -39,7 +39,6 @@ This will destroy all searchlights and hidden entities used by this mod, and pre
 - Mod settings
   - Option to list turrets which shouldn't be boosted
   - Option to provide a clean Uninstall
-- Vehicles can be used to distract searchlights
 
 ## Turret boost block list
 
@@ -75,7 +74,7 @@ If you have any feedback or footage featuring my mod, please share with me!
 
 ## Technical Details / Details for other Modders
 
-### Known Bugs:
+### Known Issues:
 
 - [Mitigated] Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
 
@@ -86,7 +85,7 @@ If you have any feedback or footage featuring my mod, please share with me!
   the same exact time causes the searchlights to re-boost turrets as they die,
   causing boosted versions of that turret to be spawned in and avoid being mass-deconstructed.
 
-- [Feature?] You can sit in a car / tank somewhere to distract a spotlight indefinitely if it notices you in it
+- [Feature?] Spidertrons can only distract searchlights, not be targeted by them.
 
 - Boosted turrets have trouble shooting at something if it has its force set every tick
 
