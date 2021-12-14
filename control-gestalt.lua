@@ -24,9 +24,10 @@ local export = {}
   light     = Searchlight / Alarmlight,
   signal    = SignalInterface,
   turtle    = Turtle,
-  tState    = WANDER / FOLLOW  / {x, y} (Adjusted signal coords)
+  tState    = WANDER / FOLLOW  / MOVE
   tCoord    = WANDER / &entity / {x, y} (Raw signal coords)
-  tOldState = WANDER           / {x, y} (Raw signal coords)
+  tOldState = WANDER / MOVE
+  tOldCoord = WANDER / {x, y} (Raw signal coords)
   spotter   = nil / Spotter,
 }
 ]]--
@@ -310,12 +311,10 @@ export.SearchlightRemoved = function(sl, killed)
 end
 
 
+
+
 export.FoeSuspected = function(turtle, foePos)
   local g = global.unum_to_g[turtle.unit_number]
-
-  if g.tState == ct.FOLLOW then
-    return
-  end
 
   -- If there's a foe in the spotter's radius after a few moments,
   -- we'll sound the alarm and target it
@@ -328,23 +327,20 @@ export.FoeSuspected = function(turtle, foePos)
   -- (note that it takes quite a few extra ticks for the landmine to do its business,
   --  but we still want to make sure the circle is closed by the time the searchlight
   --  would spawn a new spotter and be 'rearmed')
-  -- A new watch circle will be opened if the spotter still has foes in range after arming;
-  -- in which case, this watch circle will just silently expire
-  export.OpenWatchCircle(g.spotter, nil, game.tick - 10 + d.searchlightSpotTime_ms * 2)
+  -- A new watch circle will be opened if the spotter has foes in range after arming;
+  -- in which case, this watch circle will just silently expire.
+  export.OpenWatchCircle(g.spotter, nil, game.tick + d.searchlightSpotTime)
 end
 
 
--- control.lua will handle freeing our table entries when their tick comes
--- We can't make a spotlight or turret target a vehicle,
--- and we can't stop the turtle from wanting to attack vehicles,
--- so we have a few paths here:
--- A) We can try deactivating the turtle and seeing if dropping it as a target
--- will somehow, through chance, get the spotlight and any boosted turrets
--- to attack the target vehicle, maybe even repeating this multiple times until it happens.
--- B) We can tell the turtle go back home and ignore the vehicle.
--- C) You can park a car somewhere to distract a spotlight indefinitely.
--- Since the first two options would be complicated to implement, 
--- we'll just decide this behavior is a feature for now.
+-- When a spotter has finished arming and spotted a foe, it fires
+-- an event for each entity in its range.
+-- So, we'll wait one tick to make sure we've collected a list of all those entities,
+-- which we can sort through by distance from the spotter later.
+-- Those entities will be put into a list, here.
+-- If the list of foes is empty when the tickToClose is reached, 
+-- then we'll know we have not spotted any foes.
+-- (control.lua will handle freeing our table entries when their tick comes)
 export.OpenWatchCircle = function(spotter, foe, tickToClose)
   local gID = global.unum_to_g[spotter.unit_number].gID
 
@@ -369,6 +365,8 @@ export.CloseWatchCircle = function(gIDFoeMap)
     end
 
     local g = global.gestalts[gID]
+
+    -- Case: This is just the original, stale watch circle expiring
     if not g.spotter then
       goto continue
     end
@@ -383,13 +381,10 @@ export.CloseWatchCircle = function(gIDFoeMap)
     if foe then
       -- Case: Foe spotted successfully
       RaiseAlarm(g, foe)
-    elseif g.light.shooting_target == g.turtle then
-      -- Case: Watch circle closed but no valid foe spotted
-      ct.ResumeTurtleDuty(g, nil)
+    else
+      -- Case: No valid foes spotted
+      ResumeTargetingTurtle(g, nil)
     end
-    -- else
-      -- Case: Foe previously spotted and alarm raised,
-      --       this is just the original, stale watch circle expiring
 
     ::continue::
   end

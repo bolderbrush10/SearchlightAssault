@@ -235,7 +235,7 @@ t.has_belt_immunity = true
 t.move_while_shooting = true
 t.distraction_cooldown = 0 -- undocumented, mandatory
 t.min_pursue_time = 0
-t.vision_distance = d.searchlightSpotRadius + 1
+t.vision_distance = d.searchlightSpotRadius + 2
 -- max_pursue_distance meeds to be about as big as vision / attack range
 -- when firing at big / moving targets (which require the turtle to reposition itself).
 -- Using a value of 0 / 1 may break the unit if it chases 
@@ -257,7 +257,7 @@ t.ai_settings =
 }
 t.attack_parameters =
 {
-  range = d.searchlightSpotRadius - 2,
+  range = d.searchlightSpotRadius,
   type = "projectile",
   cooldown = 60, -- measured in ticks
   animation = g.layerTransparentAnimation,
@@ -297,15 +297,11 @@ spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 spotter.collision_mask = {} -- enable noclip for pathfinding too
 spotter.picture_safe = g.layerTransparentPixel
 spotter.picture_set = g.layerTransparentPixel
-spotter.trigger_radius = d.searchlightSpotRadius - 1
+spotter.trigger_radius = d.searchlightSpotRadius
 -- Keeping the spotter alive will make handling on_script_event calls slightly easier.
 -- We'll destroy it ourselves the tick after this fires, when we're done collecting events.
 spotter.force_die_on_attack = false
--- This timeout can't be too short or else the game won't 
--- be able to process the landmine arming fast enough.
--- It can't be too long or else it's easy to just run straight 
--- through the spotlight  "before it can see you".
-spotter.timeout = 10
+spotter.timeout = d.searchlightArmTime
 spotter.action =
 {
   type = "direct",
@@ -319,7 +315,7 @@ spotter.action =
       action =
       {
         type = "area",
-        radius = d.searchlightSpotRadius - 1,
+        radius = d.searchlightSpotRadius,
         force = "enemy",
         action_delivery =
         {

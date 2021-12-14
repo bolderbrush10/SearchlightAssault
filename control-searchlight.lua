@@ -10,11 +10,15 @@ local FoePositionXSlot = 1
 local FoePositionYSlot = 2
 local WarningSlot = 3
 local AlarmSlot = 4
+local OwnPositionXSlot = 5
+local OwnPositionYSlot = 6
 
 local signalX = {type="virtual", name="signal-X"}
 local signalY = {type="virtual", name="signal-Y"}
 local signalW = {type="virtual", name="signal-W"}
 local signalA = {type="virtual", name="signal-A"}
+local signalP = {type="virtual", name="signal-P"}
+local signalQ = {type="virtual", name="signal-Q"}
 
 
 --------------------
@@ -146,6 +150,9 @@ export.SpawnSignalInterface = function(sl)
   i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = 0})
   i.get_control_behavior().set_signal(AlarmSlot,        {signal = signalA, count = 0})
   i.get_control_behavior().set_signal(WarningSlot,      {signal = signalW, count = 0})
+
+  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = signalP, count = i.position.x})
+  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = signalQ, count = i.position.y})
 
   return i
 end

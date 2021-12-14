@@ -142,6 +142,10 @@ function(event)
   local failed = event.result == defines.behavior_result.fail
   if event.was_distracted or failed then
     cg.FoeSuspected(g.turtle, g.turtle.position)
+
+    if failed then
+      ct.TurtleFailed(g.turtle)
+    end
   else
     ct.TurtleWaypointReached(g)
   end

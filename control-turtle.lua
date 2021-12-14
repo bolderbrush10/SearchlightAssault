@@ -8,8 +8,9 @@ local export = {}
 
 
 -- tState states
-export.WANDER = 0
-export.FOLLOW = 1
+export.MOVE = 0
+export.WANDER = 1
+export.FOLLOW = 2
 
 
 ------------------------
@@ -65,6 +66,40 @@ local function MakeWanderWaypoint(origin)
 end
 
 
+local function TranslateCoordinate(gestalt, coord)
+  local bufferedRange = d.searchlightRange - 5
+  local translatedCoord = {x=coord.x, y=coord.y}
+
+  -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
+  if u.lensquared(coord, {x=0, y=0}) > u.square(bufferedRange) then
+    translatedCoord = u.ClampCoordToDistance(translatedCoord, bufferedRange)
+  end
+
+  translatedCoord.x = translatedCoord.x + gestalt.light.position.x
+  translatedCoord.y = translatedCoord.y + gestalt.light.position.y
+
+  return translatedCoord
+end
+
+
+local function RespawnTurtle(turtle, position)
+  local g = global.unum_to_g[turtle.unit_number]
+  local newT = export.SpawnTurtle(g.light, g.light.surface, position)
+
+  g.turtle = newT
+  global.unum_to_g[newT.unit_number] = g
+  global.unum_to_g[turtle.unit_number] = nil
+
+  if g.light.shooting_target == turtle then
+    g.light.shooting_target = newT
+  end
+
+  turtle.destroy()
+
+  return g
+end
+
+
 local function Turtleport(turtle, origin, position)
   if not position then
     return
@@ -82,23 +117,9 @@ local function Turtleport(turtle, origin, position)
     position = u.ScreenOrientationToPosition(origin, theta, bufferedRange)
   end
 
-
   if not turtle.teleport(position) then
-    -- The teleport failed for some reason, so respawn a fresh turtle and update maps
-
-    local g = global.unum_to_g[turtle.unit_number]
-    local newT = export.SpawnTurtle(g.light, g.light.surface, nil)
-
-    g.turtle = newT
-    global.unum_to_g[newT.unit_number] = g
-    global.unum_to_g[turtle.unit_number] = nil
-
-    log("[Searchlights Mod] Error! Please report to mod author with before & after saves. " ..
-        "Teleport of hidden entity failed. Old Unit Number: " ..
-        turtle.unit_number .. " New Unit Number: " .. newT.unit_number ..
-        " Target Position: " .. position.x .. ", " .. position.y)
-
-    turtle.destroy()
+    -- The teleport failed for some reason, so respawn
+    RespawnTurtle(turtle, nil)
   end
 end
 
@@ -128,10 +149,13 @@ end
 export.TurtleWaypointReached = function(g)
   if g.tState == export.WANDER then
     export.WanderTurtle(g)
-    g.light.shooting_target = g.turtle -- retarget turtle just in case something happened
+    -- retarget turtle just in case something happened
+    g.light.shooting_target = g.turtle
   elseif g.tState == export.FOLLOW and g.tCoord.speed then
+    -- If the foe can move, keep chasing it
     export.TurtleChase(g, g.tCoord)
   elseif g.tState == export.FOLLOW then
+    -- (If the foe can't move, then we can probably stop ordering the turtle around)
     g.turtle.set_command({type = defines.command.stop,
                           distraction = defines.distraction.none,
                          })
@@ -143,13 +167,28 @@ export.TurtleWaypointReached = function(g)
 end
 
 
+-- If a turtle fails a command, respawn it and reissue its current command
+export.TurtleFailed = function(turtle)
+  local g = RespawnTurtle(turtle, turtle.position)
+
+  if g.tState == export.MOVE then
+    local translatedCoord = TranslateCoordinate(g, g.tCoord)
+    IssueMoveCommand(turtle, translatedCoord, false)
+  elseif g.tState == export.FOLLOW then
+    export.TurtleChase(g, g.tCoord)
+  else
+    export.WanderTurtle(g)
+  end
+end
+
+
 export.ResumeTurtleDuty = function(gestalt, turtlePositionToResume)
   local turtle = gestalt.turtle
 
   Turtleport(turtle, gestalt.light.position, turtlePositionToResume)
 
-  if gestalt.tOldState and type(gestalt.tOldState) == "table" then
-    export.ManualTurtleMove(gestalt, gestalt.tOldState)
+  if gestalt.tOldState == export.MOVE then
+    export.ManualTurtleMove(gestalt, gestalt.tOldCoord)
   else
     export.WanderTurtle(gestalt)
   end
@@ -196,7 +235,6 @@ end
 export.WanderTurtle = function(gestalt, waypoint)
   gestalt.tState    = export.WANDER
   gestalt.tCoord    = export.WANDER
-  gestalt.tOldState = export.WANDER
 
   if waypoint == nil then
     waypoint = MakeWanderWaypoint(gestalt.light.position)
@@ -206,10 +244,8 @@ export.WanderTurtle = function(gestalt, waypoint)
   IssueMoveCommand(gestalt.turtle, waypoint, false)
 end
 
-
 export.ManualTurtleMove = function(gestalt, coord)
-  if gestalt.tState ~= export.FOLLOW
-      and type(gestalt.tCoord) == "table"
+  if      gestalt.tState == export.MOVE
       and gestalt.tCoord.x == coord.x
       and gestalt.tCoord.y == coord.y then
     return -- Already servicing this coordinate
@@ -222,37 +258,38 @@ export.ManualTurtleMove = function(gestalt, coord)
     return
   end
 
-  gestalt.tCoord    = coord
-  gestalt.tOldState = coord
+  local translatedCoord = TranslateCoordinate(gestalt, coord)
 
-  local bufferedRange = d.searchlightRange - 5
+  if gestalt.tState == export.MOVE then    
+    local trans_tCoord = TranslateCoordinate(gestalt, gestalt.tCoord)
 
-  -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
-  if u.lensquared(coord, {x=0, y=0}) > u.square(bufferedRange) then
-    local old = coord
-    coord = u.ClampCoordToDistance(coord, bufferedRange)
+    if      trans_tCoord.x == translatedCoord.x
+        and trans_tCoord.y == translatedCoord.y then
+      return -- Already servicing this coordinate
+    end
   end
 
-  local translatedCoord = coord
-  translatedCoord.x = translatedCoord.x + gestalt.light.position.x
-  translatedCoord.y = translatedCoord.y + gestalt.light.position.y
+  gestalt.tState = export.MOVE
+  gestalt.tCoord = coord
 
-  if type(gestalt.tState) ~= "table"
-     or translatedCoord.x ~= gestalt.tState.x
-     or translatedCoord.y ~= gestalt.tState.y then
-
-    gestalt.tState = translatedCoord
-
-    turtle.speed = d.searchlightRushSpeed
-    IssueMoveCommand(turtle, gestalt.tState, false)
-  end
+  turtle.speed = d.searchlightRushSpeed
+  IssueMoveCommand(turtle, translatedCoord, false)
 end
 
 
 export.TurtleChase = function(gestalt, entity)
-  gestalt.turtle.speed = entity.speed or d.searchlightRushSpeed
+  if gestalt.tState == export.MOVE then
+    gestalt.tOldState = export.MOVE
+    gestalt.tOldCoord = {x=gestalt.tCoord.x, y=gestalt.tCoord.y}
+  elseif gestalt.tState == export.WANDER then
+    gestalt.tOldState = export.WANDER
+    gestalt.tOldCoord = export.WANDER
+  end
+
   gestalt.tState = export.FOLLOW
   gestalt.tCoord = entity
+
+  gestalt.turtle.speed = entity.speed or d.searchlightRushSpeed
 
   IssueFollowCommand(gestalt.turtle, entity, true)
 end

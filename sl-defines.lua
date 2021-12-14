@@ -49,8 +49,7 @@ d.searchlightControlEnergyUsage = "900kW"
 
 -- Radius at which the searchlight beam detects foes
 -- Setting vision distance too low can cause turtles to get stuck in their foes
--- Actual search radius will be increased by 10% to make detection more reliable
-d.searchlightSpotRadius = 5
+d.searchlightSpotRadius = 4
 
 -- Speeds at which searchlight beam wanders / responds to circuit commands
 -- There is a maximum speed which you cannot exceed or else the turtle
@@ -64,11 +63,17 @@ d.searchlightWanderSpeed = 0.1
 
 d.searchlightRushSpeed = 0.13  -- Just barely slower than base player speed
 
--- Amount of time in milliseconds from when a searchlight becomes suspicious
--- until the searchlight confirms it has spotted a foe
--- (Setting this too low will cause conflicts with landmine arming-time)
--- (game runs at 60 ticks per second)
-d.searchlightSpotTime_ms = 0.8 * 60
+-- Ticks until a searchlight stops being suspicious and goes back to its search pattern
+d.searchlightSpotTime = 1.5 * 60
+
+-- Ticks from when a searchlight becomes suspicious
+-- until the searchlight can confirm it has spotted a foe.
+-- This timeout can't be too short or else the game won't 
+-- be able to process the landmine arming fast enough,
+-- and players won't get a chance to get away.
+-- It can't be too long or else it's easy to just run straight 
+-- through the spotlight without getting spotted.
+d.searchlightArmTime = 20
 
 
 -------------------------------------------------
