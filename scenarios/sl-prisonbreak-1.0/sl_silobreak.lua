@@ -87,10 +87,29 @@ local on_driving_changed_state = function(event)
     return
   end
   
+  local remoteCount = player.get_main_inventory().get_item_count("artillery-targeting-remote")
+
   if player.driving then
-    player.get_main_inventory().insert({name = "artillery-targeting-remote", count = 1})
+    if remoteCount == 0 then
+      player.get_main_inventory().insert({name = "artillery-targeting-remote", count = 1})
+    end
   else
-    player.get_main_inventory().remove({name = "artillery-targeting-remote", count = 1})
+    player.get_main_inventory().remove({name = "artillery-targeting-remote", count = remoteCount})
+  end
+end
+
+
+local on_inv_changed = function(event)
+  local player = game.players[event.player_index]
+  
+  if player.force.name ~= "Smugglers" then
+    return
+  end
+  
+  local remoteCount = player.get_main_inventory().get_item_count("artillery-targeting-remote")
+
+  if not player.driving and remoteCount > 0 then
+    player.get_main_inventory().remove({name = "artillery-targeting-remote", count = remoteCount})
   end
 end
 
@@ -188,7 +207,8 @@ silo_script.events =
 {
   [defines.events.on_player_driving_changed_state] = on_driving_changed_state,
   [defines.events.on_rocket_launched] = on_rocket_launched,
-  [defines.events.on_built_entity] = on_built_entity
+  [defines.events.on_built_entity] = on_built_entity,
+  [defines.events.on_player_main_inventory_changed] = on_inv_changed,
 }
 
 

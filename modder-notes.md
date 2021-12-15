@@ -1,8 +1,5 @@
 ## Current Task:
 
-## Next Tasks:
-
-- Script to zip up only relevant files for release
 
 ### Advertising
 

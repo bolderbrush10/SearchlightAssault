@@ -167,6 +167,7 @@ _sl-relation.lua_         - a simple matrix to help track relations between turr
 _sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
 
 _info.json_        - information to display in the mod portal webpage, plus version / mod dependency information
+_settings.lua_     - prototypes for the settings that can be configured for this mod
 _data.lua_         - lists which files the mod manager should read to build & modify prototypes
 _data-updates.lua_ - reads what turrets OTHER MODS have put into the game and generates extended-range versions of their prototypes
                     (this allows a searchlight to "boost" any given turret's range).

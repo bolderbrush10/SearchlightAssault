@@ -273,6 +273,17 @@ local aggressiveBiterExpand = function()
   if global.randBiterPositions == nil then
     initRandPositions()
   end
+
+  local f = game.forces["enemy"]
+  if f.evolution_factor < 0.6 then
+    f.evolution_factor = f.evolution_factor + 0.0006
+    if global.pbreakDifficulty > 2 then
+      f.evolution_factor = f.evolution_factor + 0.0002
+    end
+    if global.pbreakDifficulty > 3 then
+      f.evolution_factor = f.evolution_factor + 0.004
+    end
+  end
   
   updateSuperNests()
     
@@ -305,7 +316,8 @@ local loottable_common =
   {name = "discharge-defense-remote",         count = "1"},
   {name = "construction-robot",               count = "1"},
   {name = "repair-pack",                      count = "2"},
-  {name = "explosive-rocket",                 count = "16"},
+  {name = "rocket",                           count = "8"},
+  {name = "explosive-rocket",                 count = "8"},
 }
 
 local loottable_rare = 
@@ -317,6 +329,9 @@ local loottable_rare =
 }
 
 local insertPodBonusItem = function(pod)
+  -- Insert a few rockets in every pod
+  pod.get_inventory(defines.inventory.chest).insert(loottable_common[math.random(#loottable_common - 1, #loottable_common)])
+
   for i=1, math.random(1, 5) do
     local roll = math.random(1, #loottable_common + 1)
     if roll > #loottable_common then
@@ -448,7 +463,7 @@ local checkAccessGranted = function(player)
     if inArea(player.position, area) then
       if global.labsay[i .. player.name] == nil then
         global.labsay[i .. player.name] = true
-        game.print("Facility Emergency Access Granted: " .. player.name)
+        player.print("[Facility Emergency Access Granted]: " .. player.name)
       end
       
       player.force = "Wardens"
