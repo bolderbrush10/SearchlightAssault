@@ -1,0 +1,6 @@
+.git/*
+.gitignore
+exclude.txt
+modder-notes.md
+*sublime-*
+zPack.sh
