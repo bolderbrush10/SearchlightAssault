@@ -181,8 +181,6 @@ _prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden enti
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
 
-_modder-notes.md_ - Useful notes for modders detailing design decisions, known bugs, and TODOs
-
 _locale/*_ - Translations of the various in-game strings displayed to the player
 
 _menu-simulations/*_ - Contains small demoes that run during the game's main menu, on a random rotation
