@@ -216,7 +216,7 @@ function(event)
 
   if event.entity.name == d.searchlightBaseName then
     cg.SearchlightAdded(event.entity)
-  elseif entity.name == d.searchlightSignalInterfaceName then
+  elseif event.entity.name == d.searchlightSignalInterfaceName then
     ci.CheckSignalInterfaceHasSearchlight(entity)
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
     cu.TurretAdded(event.entity)
