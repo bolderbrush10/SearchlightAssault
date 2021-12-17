@@ -264,7 +264,7 @@ export.Boost = function(tunion, foe)
 
   local turret = tunion.turret
 
-  if not u.IsPositionWithinTurretArc(foe.position, turret) then
+  if not turret.valid and u.IsPositionWithinTurretArc(foe.position, turret) then
     return
   end
 
@@ -303,6 +303,12 @@ export.UnBoost = function(tunion)
   end
 
   local turret = tunion.turret
+
+  if not turret.valid then
+    log("SearchlightAssault: Unable to unboost a turret, something else has invalidated it")
+    return
+  end
+
   local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
                                             position = turret.position,
                                             force = turret.force,
