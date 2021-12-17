@@ -1,10 +1,11 @@
 {
   "name": "SearchlightAssault",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "title": "⚠️ SearchlightAssault ⚠️",
   "author": "ben",
   "contact": "bolderbrush10@gmail.com",
   "homepage": "",
-  "factorio_version": "1.1.43",
+  "factorio_version": "1.1",
+  "dependencies": ["base >= 1.1.43"],
   "description": "Adds a game map and searchlights which sweep for foes at great range, alerting you while directing adjacent turrets to snipe spotted foes.\n\nDesigned to dovetail with the early-mid game, searchlights provide:\n- Circuit network interfaces for search & detection I/O\n- Incentive to automate lamp & combinator production in the early game\n- New tactics to assault biter bases without leap-frogging turrets!\nAdvantages are balanced by scaling electricity consumption & time between shots.\n\nThe multiplayer map sl_escape is a tense challenge designed to be run by 1 - 8 players in 1 - 4 hours.\nSneak past the lights, improvise tools as well as plans, and escape on the rocket before the prison is overrun!"
 }
