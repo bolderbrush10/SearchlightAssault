@@ -97,9 +97,14 @@ local function ReassignTurret(turret, tuID)
 
   for gID, _ in pairs(r.getRelationRHS(gtRelations, tuID)) do
     local gtarget = global.gestalts[gID].shooting_target
-    if gtarget and gtarget.valid and gtarget.unit_number ~= g.turtle.unit_number then
+    if  gtarget 
+        and gtarget.valid 
+        and gtarget.unit_number ~= g.turtle.unit_number
+        and u.IsPositionWithinTurretArc(gtarget.position, turret) then
+
       turret.shooting_target = gtarget
       return true
+
     end
   end
 
@@ -147,8 +152,14 @@ end
 -- Wouldn't need this function if there was an event for when entities run out of power
 export.CheckElectricNeeds = function()
   for _, t in pairs(global.boosted_to_tunion) do
+    local turret = t.turret
     -- Inactive units don't die, so we need to fix that here
-    t.turret.active = t.turret.health == 0 or t.control.energy > 0
+    turret.active = turret.health == 0 or t.control.energy > 0
+    
+    -- Some mods put a limited range on ammo, so check for that here
+    if not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret) then
+      export.UnBoost(t)
+    end
   end
 end
 

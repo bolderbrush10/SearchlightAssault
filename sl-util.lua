@@ -171,8 +171,56 @@ local function LookupRange(turret)
 end
 
 
+local function CheckAmmo(turret)
+  local inv = turret.get_inventory(defines.inventory.turret_ammo)
+  if not inv then
+    return nil
+  end
+
+  -- No idea how to tell which slot a multi-slot inventory is spending ammo from,
+  -- so just report the worst-case of all of them.
+  local min = nil
+  for index=1, #inv do
+    if inv[index] and inv[index].valid and inv[index].valid_for_read then
+      local prototype = game.item_prototypes[inv[index].name]
+      if prototype then
+        local ammoType = prototype.get_ammo_type("turret")
+        if ammoType then
+          local rangeMod = ammoType.range_modifier
+
+          for _, a in pairs(ammoType.action) do
+            for _, d in pairs(a.action_delivery) do
+            
+              local val = d.max_range
+              if val and rangeMod then
+                val = val * rangeMod
+              end
+
+              if val and min and val < min then
+                min = val
+              elseif val then
+                min = val
+              end
+              
+            end
+          end
+        end
+      end
+    end
+  end
+
+  return min
+end
+
+
 u.IsPositionWithinTurretArc =
 function(pos, turret)
+  local ammoRange = CheckAmmo(turret)
+
+  if ammoRange and not u.WithinRadius(pos, turret.position, ammoRange - 2) then
+    return False
+  end
+
   local arc = LookupArc(turret)
 
   if arc <= 0 then
