@@ -62,7 +62,7 @@ local function SpawnAlarmLight(gestalt)
   local raised = base.surface.create_entity{name = d.searchlightAlarmName,
                                             position = base.position,
                                             force = base.force,
-                                            fast_replace = true,
+                                            fast_replace = false,
                                             create_build_effect_smoke = false}
 
   u.CopyTurret(base, raised)
@@ -83,7 +83,7 @@ local function SpawnBaseLight(gestalt)
   local cleared = base.surface.create_entity{name = d.searchlightBaseName,
                                              position = base.position,
                                              force = base.force,
-                                             fast_replace = true,
+                                             fast_replace = false,
                                              create_build_effect_smoke = false}
 
   u.CopyTurret(base, cleared)

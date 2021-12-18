@@ -206,7 +206,7 @@ export.SpawnTurtle = function(sl, surface, location)
   local turtle = surface.create_entity{name = d.turtleName,
                                        position = location,
                                        force = cf.PrepareTurtleForce(sl.force),
-                                       fast_replace = true,
+                                       fast_replace = false,
                                        create_build_effect_smoke = false}
 
   turtle.destructible = false

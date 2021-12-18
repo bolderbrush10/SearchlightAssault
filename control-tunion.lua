@@ -264,7 +264,7 @@ export.Boost = function(tunion, foe)
 
   local turret = tunion.turret
 
-  if not turret.valid and u.IsPositionWithinTurretArc(foe.position, turret) then
+  if not (turret.valid and u.IsPositionWithinTurretArc(foe.position, turret)) then
     return
   end
 
@@ -272,7 +272,7 @@ export.Boost = function(tunion, foe)
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
-                                            fast_replace = true,
+                                            fast_replace = false,
                                             create_build_effect_smoke = false}
 
   u.CopyTurret(turret, newT)
@@ -313,7 +313,7 @@ export.UnBoost = function(tunion)
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
-                                            fast_replace = true,
+                                            fast_replace = false,
                                             create_build_effect_smoke = false}
 
   u.CopyTurret(turret, newT)

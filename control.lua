@@ -365,7 +365,7 @@ function(event)
   game.surfaces[event.surface_index].create_entity{name = "entity-ghost",
                                                    inner_name = unboostedName,
                                                    expires = true,
-                                                   fast_replace = true,
+                                                   fast_replace = false,
                                                    raise_built = false,
                                                    create_build_effect_smoke = false,
                                                    position = gh.position,
