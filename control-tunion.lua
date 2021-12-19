@@ -157,7 +157,8 @@ export.CheckElectricNeeds = function()
     turret.active = turret.health == 0 or t.control.energy > 0
     
     -- Some mods put a limited range on ammo, so check for that here
-    if not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret) then
+    if  not turret.shooting_target 
+        or not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret) then
       export.UnBoost(t)
     end
   end
