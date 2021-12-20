@@ -1,9 +1,4 @@
 ---------------------------------------------------------------------------------------------------
-Version: 1.0.5
-Date: 2021.12.20
-  Changes:
-    - Mod compatibility fixes.
----------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 2021.12.18
   Changes:
@@ -12,7 +7,8 @@ Date: 2021.12.18
 Version: 1.0.3
 Date: 2021.12.18
   Changes:
-    - Mod compatibility fixes; searchlights now check if boostable turret ammo has a max_range.
+    - Mod compatibility fixes
+    - Searchlights now check if boostable turret ammo has a max_range.
 ---------------------------------------------------------------------------------------------------
 Version: 1.0.2
 Date: 2021.12.17

@@ -3,4 +3,5 @@
 exclude.txt
 modder-notes.md
 *sublime-*
+version.txt
 zPack.sh
