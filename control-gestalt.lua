@@ -266,12 +266,31 @@ export.SearchlightAdded = function(sl)
 end
 
 
-export.SearchlightRemoved = function(sl, killed)
-  local g = global.unum_to_g[sl.unit_number]
+export.SearchlightRemoved = function(sl, killed, g)
+  if not g then
+    g = global.unum_to_g[sl.unit_number]
+  end
 
-  global.unum_to_g[sl.unit_number] = nil
-  global.unum_to_g[g.turtle.unit_number] = nil
-  if g.spotter then
+  -- Stuff gets a little more complicated because we have to deal
+  -- with the map editor not firing events
+  if not sl then
+    for lhs, rhs in pairs(global.unum_to_g) do
+      if rhs.gID == g.gID then
+        global.unum_to_g[lhs] = nil
+      end
+    end
+  else
+    global.unum_to_g[sl.unit_number] = nil
+  end
+
+  -- Above for loop should have cleared out this unum,
+  -- if the turtle was somehow invalidated
+  if g.turtle.valid then
+    global.unum_to_g[g.turtle.unit_number] = nil
+  end
+
+  -- Likewise for this valid check
+  if g.spotter and g.spotter.valid then
     global.unum_to_g[g.spotter.unit_number] = nil
   end
 
@@ -291,8 +310,8 @@ export.SearchlightRemoved = function(sl, killed)
 
   local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
 
-  -- Don't need to do anything fancy if we weren't targeting a foe
-  if g.light.name == d.searchlightAlarmName then
+  -- Turtle state should be locked into follow while we're tracking a foe
+  if g.tState == ct.FOLLOW then
     r.removeRelationRHS(global.FoeGestaltRelations, g.gID)
     cu.FoeGestaltRelationRemoved(g, tIDs)
   end

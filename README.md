@@ -89,6 +89,9 @@ If you have any feedback or footage featuring my mod, please share with me! I wo
 
 ### Known Issues:
 
+- [Mitigated] The map editor doesn't fire events when creating / removing entities in some tabs,
+  which would cause crashes, so we must manually search for turrets while the editor runs, causing lag.
+
 - [Mitigated] Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
 
 - [Mitigated] It's possible to 'fake out' the turtle near the edge of the searchlight range
@@ -104,14 +107,6 @@ If you have any feedback or footage featuring my mod, please share with me! I wo
 
 - Two searchlights have trouble targeting each other at the same time
   (Probably because of raise/clearAlarm() "destroying" their targets and creating a new entity of the alarm / base type)
-
-
-### Map Editor Quirks
-
-#### Don't use the Clone / Entities tool for searchlights & turrets
-
-Using the Tools->Entities tab or Clone tab to add / remove searchlights and turrets may result in the mod breaking.
-Entities built or removed through those tabs don't fire on_built / on_destroyed events, which this mod relies on.
 
 
 ### Terms
@@ -148,6 +143,7 @@ but this codebase would be drastically smaller if these issues weren't in place:
    even though turrets _can and do_ attack vehicles
 0. Command complete events don't fire right when a distraction occurs,
    you have to wait for the distraction to be over to know if your command was interrupted
+0. The mod editor doesn't fire events while creating / destroying from some tabs.
 
 
 #### File Guide:

@@ -81,10 +81,81 @@ script.on_configuration_changed(handleModSettingsChanges)
 -- onto already-created games anyway... So, don't bother.
 
 
+local function detectEditorChanges()
+  for sindex, _ in pairs(global.editorSurfaces) do
+    local s = game.surfaces[sindex]
+    local turrets = s.find_entities_filtered{type="turret"}
+
+    -- First things first, iterate through all tunions
+    -- and carefully pick apart any tunions with an invalid turret
+    -- (We'll do the turrets first to make it less likely to crash
+    --  if an invalid searchlight references an invalid turret)
+    for tuID, tu in pairs(global.tunions) do
+      if not tu.turret.valid then
+        cu.TurretRemoved(nil, tu)
+      end
+    end
+
+    -- Then do the same for gestalts
+    for gID, g in pairs(global.gestalts) do
+      if not g.light.valid then
+        cg.SearchlightRemoved(nil, false, g)
+      end
+    end
+
+    for _, t in pairs(turrets) do
+      -- Then check for searchlights without a gestalt
+      if  t.name == d.searchlightBaseName
+          or t.name == d.searchlightAlarmName then
+        if not global.unum_to_g[t.unit_number] then SearchlightAdded(t) end
+      -- Then check for turrets neighboring gestalts to make sure they got added
+      elseif not global.tun_to_tunion[t.unit_number] then
+        cu.TurretAdded(t)
+      end   
+    end
+
+  end
+
+end
+
+
+local function checkEditor()
+  global.editorSurfaces = nil
+
+  for _, p in pairs(game.players) do
+    if p.controller_type == defines.controllers.editor then
+      if not global.editorSurfaces then
+        global.editorSurfaces = {}
+      end
+
+      global.editorSurfaces[p.surface.index] = true
+    end
+  end
+
+  -- All players left the editor, do a final sweep
+  if global.inEditor == nil then
+    detectEditorChanges()
+  end
+end
+
+
+script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
+
+
+-- This is the best we can do for detecting when
+-- a player is messing with stuff in the mod editor
+-- (Since events don't fire in some editor tabs)
+script.on_event(defines.events.on_selected_entity_changed,
+function(event)
+  if global.editorSurfaces then
+    detectEditorChanges()
+  end
+end)
+
+
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
-
   -- Run seperate loops for gestalts vs turrets since they
   -- could possibly be in seperate electric networks
   cg.CheckElectricNeeds()

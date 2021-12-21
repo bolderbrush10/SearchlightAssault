@@ -96,15 +96,20 @@ local function ReassignTurret(turret, tuID)
   local gtRelations = global.GestaltTunionRelations
 
   for gID, _ in pairs(r.getRelationRHS(gtRelations, tuID)) do
-    local gtarget = global.gestalts[gID].shooting_target
-    if  gtarget 
-        and gtarget.valid 
-        and gtarget.unit_number ~= g.turtle.unit_number
-        and u.IsPositionWithinTurretArc(gtarget.position, turret) then
+    local g = global.gestalts[gID]
+    -- Check light.valid here because this could get called 
+    -- while checking if the map editor failed to fire an event
+    if g.light.valid then
+      local gtarget = g.light.shooting_target
+      if  gtarget 
+          and gtarget.valid 
+          and gtarget.unit_number ~= g.turtle.unit_number
+          and u.IsPositionWithinTurretArc(gtarget.position, turret) then
 
-      turret.shooting_target = gtarget
-      return true
+        turret.shooting_target = gtarget
+        return true
 
+      end
     end
   end
 
@@ -189,22 +194,51 @@ end
 
 
 -- Turret removed
-function export.TurretRemoved(turret)
-  if not global.tun_to_tunion[turret.unit_number] then
-    return -- We weren't tracking this turret, so nothing to do
+function export.TurretRemoved(turret, tu)
+  if turret then
+    if not global.tun_to_tunion[turret.unit_number] then
+      return -- We weren't tracking this turret, so nothing to do
+    end
+
+    local tu = global.tun_to_tunion[turret.unit_number]
+    r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
+
+    if tu.control then
+      tu.control.destroy()
+      tu.control = nil
+    end
+
+    global.tun_to_tunion[turret.unit_number] = nil
+    global.boosted_to_tunion[turret.unit_number] = nil
+    global.tunions[tu.tuID] = nil
+  else
+    -- Some workarounds are necessary here
+    -- to deal with the map editor not firing events
+    r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
+
+    if tu.control then
+      tu.control.destroy()
+      tu.control = nil
+    end
+
+    for lhs, rhs in pairs(global.tun_to_tunion) do
+      if rhs.tuID == tu.tuID then
+        global.tun_to_tunion[lhs] = nil
+      end
+    end
+
+    for lhs, rhs in pairs(global.boosted_to_tunion) do
+      if rhs.tuID == tu.tuID then
+        global.boosted_to_tunion[lhs] = nil
+      end
+    end
+
+    for lhs, rhs in pairs(global.tunions) do
+      if rhs.tuID == tu.tuID then
+        global.tunions[lhs] = nil
+      end
+    end
   end
-
-  local tu = global.tun_to_tunion[turret.unit_number]
-  r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
-
-  if tu.control then
-    tu.control.destroy()
-    tu.control = nil
-  end
-
-  global.tun_to_tunion[turret.unit_number] = nil
-  global.boosted_to_tunion[turret.unit_number] = nil
-  global.tunions[tu.tuID] = nil
 end
 
 
