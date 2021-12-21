@@ -94,6 +94,7 @@ end
 
 local function ReassignTurret(turret, tuID)
   local gtRelations = global.GestaltTunionRelations
+  local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
 
   for gID, _ in pairs(r.getRelationRHS(gtRelations, tuID)) do
     local g = global.gestalts[gID]
@@ -104,7 +105,7 @@ local function ReassignTurret(turret, tuID)
       if  gtarget 
           and gtarget.valid 
           and gtarget.unit_number ~= g.turtle.unit_number
-          and u.IsPositionWithinTurretArc(gtarget.position, turret) then
+          and u.IsPositionWithinTurretArc(gtarget.position, turret, checkAmmoRange) then
 
         turret.shooting_target = gtarget
         return true
@@ -149,13 +150,138 @@ local function SpawnControl(turret)
 end
 
 
+local function SwapAmmo(inventory, stack, new)
+  local ammoCount = stack.count
+  local roundCount = stack.ammo
+  stack.clear()
+  inventory.insert({name=new.name, count=ammoCount})
+
+  -- Hopefully this won't be abused in turrets with multiple ammo slots
+  if roundCount then
+    inventory.find_item_stack(new.name).ammo = roundCount
+  end
+end
+
+
+-- We'll try to skip some of the more questionable inventories
+-- for ammo to be in (eg, fuel, lab_input)
+local ammoInventories = {
+  defines.inventory.chest,
+  defines.inventory.character_main,
+  defines.inventory.character_ammo,
+  defines.inventory.character_trash,
+  defines.inventory.god_main,
+  defines.inventory.robot_cargo,
+  defines.inventory.item_main,
+  defines.inventory.car_trunk,
+  defines.inventory.car_ammo,
+  defines.inventory.cargo_wagon,
+  defines.inventory.turret_ammo,
+  defines.inventory.character_corpse,
+  defines.inventory.artillery_turret_ammo,
+  defines.inventory.artillery_wagon_ammo,
+  defines.inventory.spider_trunk,
+  defines.inventory.spider_ammo,
+  defines.inventory.spider_trash,
+}
+
+
+local lookupInventories = {}
+
+
+-- memoize inventory lists since we'll probably be doing this a lot
+local function GetAmmoInv(entity)
+  local entityName = entity.name
+  local invList = lookupInventories[entityName]
+
+  if not invList then
+    lookupInventories[entityName] = {}
+    for _, invName in pairs(ammoInventories) do
+      if entity.get_inventory(invName) then
+        table.insert(lookupInventories[entityName], invName)
+      end
+    end
+
+    invList = lookupInventories[entityName]
+  end
+
+  return invList
+end
+
+
+local function UnBoostAmmo(entity)
+  -- If this was actually a different type of boosted turret, 
+  -- we can let it keep whatever ammo it has
+  -- (We'll just hope nobody tries to take advantage of this for now)
+  if u.EndsWith(entity.name, d.boostSuffix) then
+    return
+  end
+
+  local invList = GetAmmoInv(entity)
+
+  for _, invName in pairs(invList) do
+    local inv = entity.get_inventory(invName)
+    for index=1, #inv do
+      if inv[index] and inv[index].valid and inv[index].valid_for_read then
+        local prototype = game.item_prototypes[inv[index].name]
+        if u.EndsWith(prototype.name, d.boostSuffix) then
+          local baseName = prototype.name:gsub(d.boostSuffix, "")
+          if game.item_prototypes[baseName] then
+            SwapAmmo(inv, inv[index], game.item_prototypes[baseName])
+          end
+        end
+      end
+    end
+  end
+end
+
+
+-- Every tick, we'll make sure ammo within this turret is boosted,
+-- and check the nearby area to make sure no boosted ammo has leaked
+-- (Sadly, it doesn't look like there's a way to 'lock' an inventory)
+local function BoostAmmo(turret)
+  if not turret.get_inventory then    
+    return
+  end
+
+  local inv = turret.get_inventory(defines.inventory.turret_ammo)
+  for index=1, #inv do
+    if inv[index] and inv[index].valid and inv[index].valid_for_read then
+      local prototype = game.item_prototypes[inv[index].name]
+      if not u.EndsWith(prototype.name, d.boostSuffix) then
+        local boostName = prototype.name .. d.boostSuffix
+        if game.item_prototypes[boostName] then
+          SwapAmmo(inv, inv[index], game.item_prototypes[boostName])
+        end
+      end
+    end
+  end
+
+  -- Find all nearby entities NOT named after this boosted turret
+  -- so we can see if they robbed it of its ammo somehow and unboost it.
+  -- We'll use a radius of 4 arbitrarily -- big enough to catch any long-handed
+  -- inserters, short enough that we won't lag things out too bad (hopefully)
+  local neighbors = turret.surface.find_entities_filtered{invert = true,
+                                                          name=turret.name,
+                                                          position=turret.position,
+                                                          radius=4
+                                                         }
+
+  for _, n in pairs(neighbors) do
+    UnBoostAmmo(n)
+  end
+end
+
+
 ----------------------
 --  On Tick Events  --
 ----------------------
 
 
 -- Wouldn't need this function if there was an event for when entities run out of power
-export.CheckElectricNeeds = function()
+export.CheckAmmoElectricNeeds = function()
+  local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
+
   for _, t in pairs(global.boosted_to_tunion) do
     local turret = t.turret
     -- Inactive units don't die, so we need to fix that here
@@ -163,8 +289,11 @@ export.CheckElectricNeeds = function()
     
     -- Some mods put a limited range on ammo, so check for that here
     if  not turret.shooting_target 
-        or not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret) then
+        or not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret, checkAmmoRange) then
       export.UnBoost(t)
+
+    elseif not checkAmmoRange then
+      BoostAmmo(turret)
     end
   end
 end
@@ -243,6 +372,7 @@ end
 
 
 -- Gestalt removed
+-- (Unboosting would happen in FoeGestaltRelationRemoved)
 function export.GestaltRemoved(tuID)
   -- Check if we still have a relationship with anything before removing this tunion
   if next(r.getRelationRHS(global.GestaltTunionRelations, tuID)) then
@@ -308,9 +438,10 @@ export.Boost = function(tunion, foe)
     return
   end
 
+  local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
   local turret = tunion.turret
 
-  if not (turret.valid and u.IsPositionWithinTurretArc(foe.position, turret)) then
+  if not (turret.valid and u.IsPositionWithinTurretArc(foe.position, turret, checkAmmoRange)) then
     return
   end
 
@@ -336,6 +467,10 @@ export.Boost = function(tunion, foe)
   -- mapped to what we're destroying? We're messing up their unit_number too...
   -- Would we be better off just setting active=false on the original entity
   -- and somehow hiding it / synchronizing its movement & firing animations?
+
+  if not checkAmmoRange then
+    BoostAmmo(newT)
+  end
 
   newT.shooting_target = foe
 
@@ -377,6 +512,8 @@ export.UnBoost = function(tunion)
   global.boosted_to_tunion[turret.unit_number] = nil
   turret.destroy()
   -- As with Boost(), don't raise script_raised_destroy
+
+  UnBoostAmmo(newT)
 
   return newT
 end

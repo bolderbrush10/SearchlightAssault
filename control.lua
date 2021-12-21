@@ -159,7 +159,7 @@ function(event)
   -- Run seperate loops for gestalts vs turrets since they
   -- could possibly be in seperate electric networks
   cg.CheckElectricNeeds()
-  cu.CheckElectricNeeds()
+  cu.CheckAmmoElectricNeeds()
 
   cg.CheckGestaltFoes()
 

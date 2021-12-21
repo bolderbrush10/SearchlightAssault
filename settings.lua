@@ -19,3 +19,12 @@ data:extend({{
   setting_type = "runtime-global",
   default_value = false,
 }})
+
+data:extend({{
+  type = "bool-setting",
+  name = d.overrideAmmoRange,
+  localised_name        = {"name.searchlight-assault-override-ammo-range"},
+  localised_description = {"description.searchlight-assault-override-ammo-range"},
+  setting_type = "runtime-global",
+  default_value = true,
+}})

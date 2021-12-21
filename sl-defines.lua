@@ -107,5 +107,6 @@ d.boostSuffix = "-sla_boosted"
 -- Mod settings keys
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
+d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
 
 return d

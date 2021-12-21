@@ -90,12 +90,15 @@ If you have any feedback or footage featuring my mod, please share with me! I wo
 ### Known Issues:
 
 - [Mitigated] The map editor doesn't fire events when creating / removing entities in some tabs,
-  which would cause crashes, so we must manually search for turrets while the editor runs, causing lag.
+  which would cause crashes, so we must manually search for turrets while the editor runs, causing lag
 
 - [Mitigated] Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
 
 - [Mitigated] It's possible to 'fake out' the turtle near the edge of the searchlight range
   and desync the searchlight from attacking its turtle or make the turtle "lock up"
+
+- [Mitigated] Some mods limit the range on ammo, which results in range-boosted turrets having to swap out
+   the ammo they use in real-time (and also try to detect other entities taking that boosted ammo, causing lag)
 
 - [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
   the same exact time causes the searchlights to re-boost turrets as they die,
@@ -133,6 +136,7 @@ I enjoyed the challenge of making this mod with as few changes to the base game 
 but this codebase would be drastically smaller if these issues weren't in place:
 
 0. No mechanism in the API to modify shooting range during runtime
+0. No mechanism in the API to modify ammo max range during runtime
 0. API doesn't provide some info in on_player_setup_blueprint event for some blueprint use cases
 0. Unsophisticated technique to "fire" the searchlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
