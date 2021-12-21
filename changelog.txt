@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.0.5
+Date: 
+  Changes:
+    - Boosted turrets now match modded health on other turrets better
+    - Workaround added to handle map editor not firing events
+    - Option added to allow range-boosted turrets to modify their ammo's max range (defaults to yes)
+---------------------------------------------------------------------------------------------------
 Version: 1.0.4
 Date: 2021.12.18
   Changes:
