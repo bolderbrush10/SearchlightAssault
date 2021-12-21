@@ -67,6 +67,13 @@ local function handleModSettingsChanges(event)
     cu.UpdateBlockList()
     cu.UnboostBlockedTurrets()
   end
+
+  if event and event.setting == d.overrideAmmoRange then
+    if not settings.global[d.overrideAmmoRange].value then
+      cu.RespectMaxAmmoRange()
+    end
+  end
+
   handleUninstall()
 end
 

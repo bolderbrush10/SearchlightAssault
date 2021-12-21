@@ -190,13 +190,15 @@ end
 local function CheckAmmoAction(ammoAction, rangeMod, min)
   -- action_delivery can either be a table of ammo_types,
   -- or just the action_delivery entry directly...
-  if a.action_delivery.type then
-    min = CheckActDelivery(a.action_delivery, rangeMod, min)    
+  if ammoAction.action_delivery.type then
+    min = CheckActDelivery(ammoAction.action_delivery, rangeMod, min)    
   else
-    for _, del in pairs(a.action_delivery) do
+    for _, del in pairs(ammoAction.action_delivery) do
       min = CheckActDelivery(del, rangeMod, min)              
     end
   end
+
+  return min
 end
 
 

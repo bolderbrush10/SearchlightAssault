@@ -213,7 +213,8 @@ local function UnBoostAmmo(entity)
   -- If this was actually a different type of boosted turret, 
   -- we can let it keep whatever ammo it has
   -- (We'll just hope nobody tries to take advantage of this for now)
-  if u.EndsWith(entity.name, d.boostSuffix) then
+  if  u.EndsWith(entity.name, d.boostSuffix) 
+      and settings.global[d.overrideAmmoRange].value then
     return
   end
 
@@ -422,6 +423,25 @@ export.FoeGestaltRelationRemoved = function(g, tIDlist)
     end
   end
 
+end
+
+
+-- Called when the override max ammo range mod setting changes to false,
+-- which means we need to find and swap back any taboo'd ammo
+export.RespectMaxAmmoRange = function()
+  for tun, tu in pairs(global.boosted_to_tunion) do
+    local turret = tu.turret
+    local entities = turret.surface.find_entities_filtered{position=turret.position,
+                                                           radius=4
+                                                          }
+
+    for _, e in pairs(entities) do
+      UnBoostAmmo(e)
+    end
+
+    -- We'll reboost this turret if its foe was still actually in range
+    export.UnBoost(tu)
+  end
 end
 
 
