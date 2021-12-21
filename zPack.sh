@@ -29,7 +29,7 @@ echo ${clDelim} > tempCL.txt
 printf "Version: " >> tempCL.txt
 printf "${newVersion}" >> tempCL.txt
 printf "\nDate: " >> tempCL.txt
-printf -v date '%(%Y-%m-%d)T' -1 
+printf '%(%Y-%m-%d)T' -1  >> tempCL.txt
 printf "\n  Changes:\n" >> tempCL.txt
 
 IFS=';'          # Change IFS to split on semicolon
