@@ -13,13 +13,19 @@ local AlarmSlot = 4
 local OwnPositionXSlot = 5
 local OwnPositionYSlot = 6
 
-local signalX = {type="virtual", name="signal-X"}
-local signalY = {type="virtual", name="signal-Y"}
-local signalW = {type="virtual", name="signal-W"}
-local signalA = {type="virtual", name="signal-A"}
-local signalO = {type="virtual", name="signal-O"}
-local signalP = {type="virtual", name="signal-P"}
-
+-- hardcoded name lookup below for an ever-so-slight speedup
+-- local sigDirectX = {type="virtual", name="signal-X"}
+-- local sigDirectY = {type="virtual", name="signal-Y"}
+local sigFoeX    = {type="virtual", name="foe-x-position"}
+local sigFoeY    = {type="virtual", name="foe-y-position"}
+local sigWarn    = {type="virtual", name="sl-warn"}
+local sigAlarm   = {type="virtual", name="sl-alarm"}
+local sigOwnX    = {type="virtual", name="signal-O"}
+local sigOwnY    = {type="virtual", name="signal-P"}
+local sigRadius  = {type="virtual", name="sl-radius"}
+local sigMin     = {type="virtual", name="sl-minimum"}
+local sigMax     = {type="virtual", name="sl-maximum"}
+local sigRotate  = {type="virtual", name="sl-rotation"}
 
 --------------------
 --  Helper Funcs  --
@@ -89,15 +95,17 @@ end
 -- so roll that back by one unit to get 45 degree changes.
 -- We can compare oldDir to the current direction to figure out
 -- whether the player is rotating clockwise or counterclockwise.
-local function RotateDirByOne(light, oldDir)
+local function RotateDirByOne(g, light, oldDir)
   local newDir = light.direction
 
   -- Detect clockwise looparound
   if oldDir == 6 and newDir == 0 then
+    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
     light.direction = 7
     return
   end
   if oldDir == 7 and newDir == 1 then
+    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
     light.direction = 0
     return
   end
@@ -105,21 +113,25 @@ local function RotateDirByOne(light, oldDir)
 
   -- Detect counter-clockwise looparound
   if oldDir == 0 and newDir == 6 then
+    g.tWanderParams.rotation = g.tWanderParams.rotation - 45
     light.direction = 7
     return
   end
   if oldDir == 1 and newDir == 7 then
+    g.tWanderParams.rotation = g.tWanderParams.rotation - 45
     light.direction = 0
     return
   end
 
   -- Detect clockwise procession
   if oldDir < newDir then
+    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
     light.direction = light.direction - 1
     return
   end
 
   -- counterclockwise is the only remaining case
+  g.tWanderParams.rotation = g.tWanderParams.rotation - 45
   light.direction = light.direction + 1
 end
 
@@ -145,18 +157,25 @@ export.ProcessAlarmClearSignals = function(g)
   local i = g.signal
   local c = i.get_control_behavior()
 
-  c.set_signal(FoePositionXSlot, {signal = signalX, count = 0})
-  c.set_signal(FoePositionYSlot, {signal = signalY, count = 0})
-  c.set_signal(AlarmSlot,        {signal = signalA, count = 0})
-  c.set_signal(WarningSlot,      {signal = signalW, count = (g.turtle.distraction_command and 1 or 0)})
+  c.set_signal(FoePositionXSlot, {signal = sigFoeX, count = 0})
+  c.set_signal(FoePositionYSlot, {signal = sigFoeY, count = 0})
+  c.set_signal(AlarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(WarningSlot,      {signal = sigWarn, count = (g.turtle.distraction_command and 1 or 0)})
 
-  local x = i.get_merged_signal({type="virtual", name="signal-X"})
-  local y = i.get_merged_signal({type="virtual", name="signal-Y"})
+  local x = i.get_merged_signal({type="virtual", name="sl-x"})
+  local y = i.get_merged_signal({type="virtual", name="sl-y"})
 
   if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
     ct.ManualTurtleMove(g, {x=x, y=y})
   elseif g.tState ~= ct.FOLLOW then
     g.tState = ct.WANDER
+
+    local rad = i.get_merged_signal(sigRadius)
+    local rot = i.get_merged_signal(sigRotate)
+    local min = i.get_merged_signal(sigMin)
+    local max = i.get_merged_signal(sigMax)
+
+    ct.UpdateWanderParams(g, rad, rot, min, max)
   end
 end
 
@@ -168,12 +187,12 @@ export.ProcessAlarmRaiseSignals = function(g)
 
   if g.light.shooting_target and g.light.shooting_target.valid then
     local pos = g.light.shooting_target.position
-    c.set_signal(FoePositionXSlot, {signal = signalX, count = pos.x})
-    c.set_signal(FoePositionYSlot, {signal = signalY, count = pos.y})
+    c.set_signal(FoePositionXSlot, {signal = sigFoeX, count = pos.x})
+    c.set_signal(FoePositionYSlot, {signal = sigFoeY, count = pos.y})
   end
 
-  c.set_signal(AlarmSlot,        {signal = signalA, count = 1})
-  c.set_signal(WarningSlot,      {signal = signalW, count = 0})
+  c.set_signal(AlarmSlot,        {signal = sigAlarm, count = 1})
+  c.set_signal(WarningSlot,      {signal = sigWarn, count = 0})
 end
 
 
@@ -186,20 +205,26 @@ export.SpawnSignalInterface = function(sl)
   i.rotatable = false
   i.destructible = false
 
-  i.get_control_behavior().set_signal(FoePositionXSlot, {signal = signalX, count = 0})
-  i.get_control_behavior().set_signal(FoePositionYSlot, {signal = signalY, count = 0})
-  i.get_control_behavior().set_signal(AlarmSlot,        {signal = signalA, count = 0})
-  i.get_control_behavior().set_signal(WarningSlot,      {signal = signalW, count = 0})
+  i.get_control_behavior().set_signal(FoePositionXSlot, {signal = sigFoeX, count = 0})
+  i.get_control_behavior().set_signal(FoePositionYSlot, {signal = sigFoeY, count = 0})
+  i.get_control_behavior().set_signal(AlarmSlot,        {signal = sigAlarm, count = 0})
+  i.get_control_behavior().set_signal(WarningSlot,      {signal = sigWarn, count = 0})
 
-  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = signalO, count = i.position.x})
-  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = signalP, count = i.position.y})
+  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = sigOwnX, count = i.position.x})
+  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = sigOwnY, count = i.position.y})
 
   return i
 end
 
 
 export.Rotated = function(g, light, oldDir)
-  RotateDirByOne(light, oldDir)
+  if not g.tWanderParams then
+    g.tWanderParams = {}
+  end
+  if not g.tWanderParams.rotation then
+    g.tWanderParams.rotation = 0
+  end
+  RotateDirByOne(g, light, oldDir)
 end
 
 

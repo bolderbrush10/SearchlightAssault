@@ -166,24 +166,31 @@ _control-common.lua_      - data structures to be shared across control-* files 
 _sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights
 _sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
 
-_info.json_        - information to display in the mod portal webpage, plus version / mod dependency information
-_settings.lua_     - prototypes for the settings that can be configured for this mod
-_data.lua_         - lists which files the mod manager should read to build & modify prototypes
-_data-updates.lua_ - reads what turrets OTHER MODS have put into the game and generates extended-range versions of their prototypes
-                    (this allows a searchlight to "boost" any given turret's range).
-                    If another mod creates its own turrets in its own data-updates.lua or data-final-fixes.lua files,
-                    then searchlights are probably not going to be able to boost that mod's turrets.
+_info.json_            - information to display in the mod portal webpage, plus version / mod dependency information
+_settings.lua_         - prototypes for the settings that can be configured for this mod
+_data.lua_             - lists which files the mod manager should read to build & modify prototypes
+_data-updates.lua_     - reads what turrets OTHER MODS have put into the game
+                         and generates extended-range versions of their prototypes
+                         (this allows a searchlight to "boost" any given turret's range).
+                         If another mod creates its own turrets in its own data-updates.lua or data-final-fixes.lua files,
+                         then searchlights are probably not going to be able to boost that mod's turrets.
+_data-final-fixes.lua_ - Double checks that any boosted turrets have the correct health,
+                         since other mods have been discovered to change vanilla turrets in data-updates.
+                         Generates extended-range versions of ammo prototypes, since other mods have
+                         been observed modifying vanilla ammo in data-updates.
+                         Also declares our own entities here, so other mods will stop messing with them.
 
 
 Prototypes contain the definitions for a unit's graphics, animations, and stats (such as max health, range, and damage)
 
 _prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
+_prototypes/sl-signals.lua_        - virtual signals for refined control over searchlights
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
 
 _locale/*_ - Translations of the various in-game strings displayed to the player
 
-_menu-simulations/*_ - Contains small demoes that run during the game's main menu, on a random rotation
+_menu-simulations/*_ - Contains small demos that run during the game's main menu, on a random rotation
 
 _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are the files _sl_silobreak.py_ and _sl_prisonbreak.py_, which contain scenario-specific logic, events, and win conditions.
 

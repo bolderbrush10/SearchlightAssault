@@ -54,13 +54,94 @@ local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
 end
 
 
-local function MakeWanderWaypoint(origin)
+-- tWanderParams = .radius, .rotation, .min, .max
+local function MakeWanderWaypoint(g)
+  local origin = g.light.position
+
   -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
   -- too close to the max range of the searchlight
   local bufferedRange = d.searchlightRange - 5
-   -- 0 - 1 inclusive. If you supply arguments, math.random will return ints not floats.
-  local angle = math.random()
-  local distance = math.random(d.searchlightRange/8, bufferedRange)
+
+  local angle = nil
+  local minDist = 1
+  local maxDist = bufferedRange
+
+  if g.tWanderParams then
+    -- blueprints ignore orientation data anyway
+    -- so we might as well just override old orientation
+
+    local rot = g.tWanderParams.rotation
+    if rot then
+      if rot < 0 then
+        g.tWanderParams.rotation = 0
+      elseif rot > 360 then
+        g.tWanderParams.rotation = 360
+      end
+    else
+      g.tWanderParams.rotation = 0
+    end
+    rot = g.tWanderParams.rotation
+
+    local rad = g.tWanderParams.radius
+    if rad then
+      if rad < 0 then
+        rad = 0
+      elseif rad > 360 then
+        rad = 360
+      end
+
+      -- Need to wrap around the unit circle and drop decimal places
+      -- (math.random doesn't like floats)
+      -- TODO divide rad / 2 after we get the basics working
+      local angleA = math.floor(rot - rad / 2)
+      if angleA < 0 then
+        angleA = angleA + 360
+      end
+      
+      local angleB = math.floor(rot + rad / 2)
+      if angleB > 360 then
+        angleB = angleB - 360
+      end
+
+      if angleA ~= angleB then
+        if angleA < angleB then
+          angle = math.random(angleA, angleB) / 360
+        else
+          -- If we have to wrap around, do a coinflip to decide
+          -- between halves, weighted by the angle of each wrap-around.
+          local weight = angleB / angleA
+          if math.random(0, 1) > weight then
+            angle = math.random(angleA, 360) / 360 
+          else
+            angle = math.random(0, angleB) / 360
+          end
+        end
+      end
+    end
+
+    local min = g.tWanderParams.min
+    if min and min > minDist then
+      minDist = min
+    end
+    local max = g.tWanderParams.max
+    if max and max < maxDist then
+      maxDist = max
+    end
+  end
+
+  if not angle then
+    -- 0 - 1 inclusive.
+    -- If you supply arguments, math.random will return ints not floats.
+    angle = math.random()
+  end
+
+  if minDist < maxDist then
+    distance = math.random(minDist, maxDist)
+  elseif minDist == maxDist then
+    distance = minDist
+  else
+    distance = 1
+  end
 
   return u.OrientationToPosition(origin, angle, distance)
 end
@@ -237,12 +318,64 @@ export.WanderTurtle = function(gestalt, waypoint)
   gestalt.tCoord    = export.WANDER
 
   if waypoint == nil then
-    waypoint = MakeWanderWaypoint(gestalt.light.position)
+    waypoint = MakeWanderWaypoint(gestalt)
   end
   gestalt.turtle.speed = d.searchlightWanderSpeed
 
   IssueMoveCommand(gestalt.turtle, waypoint, false)
 end
+
+
+-- tWanderParams = .radius, .rotation, .min, .max
+-- These parameters will be read in MakeWanderWaypoint
+export.UpdateWanderParams = function(g, rad, rot, min, max)
+  -- If we were passed nothing, clear the wander parameters and return
+  if not (rad or rot or min or max) then
+    g.tWanderParams = nil
+    return
+  end
+  if (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
+    g.tWanderParams = nil
+    return
+  end
+
+  local change = false
+  if not g.tWanderParams then
+    change = true
+    g.tWanderParams = {}
+  end
+
+  local oldRad = g.tWanderParams.radius
+  if oldRad ~= rad then
+    g.tWanderParams.radius = rad
+    change = true
+  end
+
+  local oldRot = g.tWanderParams.rotation
+  if oldRot ~= rot then
+    if rot ~= 0 then
+      g.tWanderParams.rotation = rot
+      change = true
+    end
+  end
+
+  local oldMin = g.tWanderParams.min
+  if oldMin ~= min then
+    g.tWanderParams.min = min
+    change = true
+  end
+
+  local oldMax = g.tWanderParams.max
+  if oldMax ~= max then
+    g.tWanderParams.max = max
+    change = true
+  end
+
+  if change then
+    export.WanderTurtle(g)
+  end
+end
+
 
 export.ManualTurtleMove = function(gestalt, coord)
   if      gestalt.tState == export.MOVE
