@@ -241,7 +241,8 @@ end
 -- and check the nearby area to make sure no boosted ammo has leaked
 -- (Sadly, it doesn't look like there's a way to 'lock' an inventory)
 local function BoostAmmo(turret)
-  if not turret.get_inventory then    
+  if not turret.get_inventory 
+    or not turret.get_inventory(defines.inventory.turret_ammo) then    
     return
   end
 

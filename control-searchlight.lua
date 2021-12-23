@@ -84,6 +84,46 @@ local function OutputCircuitSignals(g)
 end
 
 
+-- valid directions: 0 - 7
+-- Players rotate things in increments of 2 (90 degrees),
+-- so roll that back by one unit to get 45 degree changes.
+-- We can compare oldDir to the current direction to figure out
+-- whether the player is rotating clockwise or counterclockwise.
+local function RotateDirByOne(light, oldDir)
+  local newDir = light.direction
+
+  -- Detect clockwise looparound
+  if oldDir == 6 and newDir == 0 then
+    light.direction = 7
+    return
+  end
+  if oldDir == 7 and newDir == 1 then
+    light.direction = 0
+    return
+  end
+
+
+  -- Detect counter-clockwise looparound
+  if oldDir == 0 and newDir == 6 then
+    light.direction = 7
+    return
+  end
+  if oldDir == 1 and newDir == 7 then
+    light.direction = 0
+    return
+  end
+
+  -- Detect clockwise procession
+  if oldDir < newDir then
+    light.direction = light.direction - 1
+    return
+  end
+
+  -- counterclockwise is the only remaining case
+  light.direction = light.direction + 1
+end
+
+
 --------------------
 --     Events     --
 --------------------
@@ -155,6 +195,11 @@ export.SpawnSignalInterface = function(sl)
   i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = signalP, count = i.position.y})
 
   return i
+end
+
+
+export.Rotated = function(g, light, oldDir)
+  RotateDirByOne(light, oldDir)
 end
 
 

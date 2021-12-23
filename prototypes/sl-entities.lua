@@ -79,6 +79,7 @@ sl_b.dying_explosion = "laser-turret-explosion"
 sl_b.corpse = d.remnantsName
 sl_b.vehicle_impact_sound = sounds.generic_impact
 sl_b.working_sound = a.working
+sl_b.turret_base_has_direction = true
 sl_b.shoot_in_prepare_state = true
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap

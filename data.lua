@@ -2,3 +2,4 @@
 -- because other mods may have inadvertent access to functions & variables at this step.
 
 require("menu-simulations.sl-menu-simulations")
+require("prototypes.sl-signals")

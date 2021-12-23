@@ -266,8 +266,17 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
       some searchlights thrown into
     - Also probably want to vary up the grass a bit, add some decoratives on the existing map
 
+- Retune prisonbreak scenario difficulty
+    - Easy difficulty shouldn't drop biter pods until after players start building a rocket
+
+- Victory screen prints out what difficulty you were on 
+  (with a percentage of playtime since reaching that difficulty)
+  and hint how you can increase the difficulty level
+
 
 ### Code:
+- Tips & Tricks integration
+
 - Handle cloning entities / brush cloning map areas
 
 - Searchlight brightness decreases during brownout
@@ -275,12 +284,6 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 - Searchlight color controlled by circuit signals
 
 - Don't show searchlights in the turret coverage map mode
-
-- Searchlight could possibly be set to only wander a 180 degree arc around its initial placement?
-
-- Detect playerRotatedEntity events and swing the turtle waypoint around 90 degrees each time the player rotates the SL itself.
-  So, the playerRotatedEntity event doesn't fire for this. We'll have to add a custom input event and check if the player
-  has a searchlight selected. Maybe play a little UI sound.
 
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
@@ -309,3 +312,5 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 - Shadow layer cleanup:
   I think I need to go into photoshop or blender and rig it so that any pixels from the base layer
   exclude pixels from the shadow layer
+
+- UI sound when rotating searchlight
