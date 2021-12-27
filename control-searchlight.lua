@@ -1,6 +1,7 @@
 local d = require "sl-defines"
 
 local ct = require "control-turtle"
+local rd = require "sl-render"
 
 
 local export = {}
@@ -175,7 +176,15 @@ export.ProcessAlarmClearSignals = function(g)
     local min = i.get_merged_signal(sigMin)
     local max = i.get_merged_signal(sigMax)
 
-    ct.UpdateWanderParams(g, rad, rot, min, max)
+    if game.tick % 60 == 0 then
+      game.print(game.tick .. " rad: " .. rad)
+      game.print(game.tick .. " rot: " .. rot)
+      game.print(game.tick .. " min: " .. min)
+      game.print(game.tick .. " max: " .. max)
+      ct.UpdateWanderParams(g, rad, rot, min, max)
+    end
+
+    --ct.UpdateWanderParams(g, rad, rot, min, max)
   end
 end
 
@@ -222,9 +231,13 @@ export.Rotated = function(g, light, oldDir)
     g.tWanderParams = {}
   end
   if not g.tWanderParams.rotation then
+    -- TODO set this to default to 'south'
     g.tWanderParams.rotation = 0
   end
   RotateDirByOne(g, light, oldDir)
+  ct.UpdateWanderParams(g, g.tWanderParams.radius, g.tWanderParams.rotation, 
+                        g.tWanderParams.min, g.tWanderParams.max)
+  rd.DrawSearchArea(g.light, nil, g.light.force, true)
 end
 
 

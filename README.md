@@ -142,7 +142,7 @@ but this codebase would be drastically smaller if these issues weren't in place:
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
-0. Attacks fail if a unit enters its target's hitbox
+0. [Mitigated by dev update; forums.factorio.com/100269] Attacks fail if a unit enters its target's hitbox
 0. Vehicles don't count as an entity_with_force, so you can't set their shooting target to one manually,
    even though turrets _can and do_ attack vehicles
 0. Command complete events don't fire right when a distraction occurs,

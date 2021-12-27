@@ -9,6 +9,8 @@ local cs = require "control-searchlight"
 local ct = require "control-turtle"
 local cu = require "control-tunion"
 
+local rd = require "sl-render"
+
 
 -- Reference: https://wiki.factorio.com/Military_units_and_structures
 local militaryFilter =
@@ -156,6 +158,14 @@ script.on_event(defines.events.on_selected_entity_changed,
 function(event)
   if global.editorSurfaces then
     detectEditorChanges()
+  end
+
+  local p = game.players[event.player_index]
+  local entity = p.selected
+  if entity and 
+    (entity.name == d.searchlightBaseName 
+      or entity.name == d.searchlightAlarmName) then
+    rd.DrawSearchArea(entity, p, nil, false)
   end
 end)
 

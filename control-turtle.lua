@@ -2,6 +2,7 @@ local d = require "sl-defines"
 local u = require "sl-util"
 
 local cf = require "control-forces"
+local rd = require "sl-render"
 
 
 local export = {}
@@ -12,6 +13,9 @@ export.MOVE = 0
 export.WANDER = 1
 export.FOLLOW = 2
 
+-- Since the turtle has to 'chase' foes it spots, we don't want it to wander
+-- too close to the max range of the searchlight
+local bufferedRange = d.searchlightRange - 5
 
 ------------------------
 --  Helper Functions  --
@@ -54,93 +58,64 @@ local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
 end
 
 
--- tWanderParams = .radius, .rotation, .min, .max
 local function MakeWanderWaypoint(g)
   local origin = g.light.position
-
-  -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
-  -- too close to the max range of the searchlight
-  local bufferedRange = d.searchlightRange - 5
 
   local angle = nil
   local minDist = 1
   local maxDist = bufferedRange
 
-  if g.tWanderParams then
-    -- blueprints ignore orientation data anyway
-    -- so we might as well just override old orientation
-
-    local rot = g.tWanderParams.rotation
-    if rot then
-      if rot < 0 then
-        g.tWanderParams.rotation = 0
-      elseif rot > 360 then
-        g.tWanderParams.rotation = 360
-      end
-    else
-      g.tWanderParams.rotation = 0
+  -- tAdjParams = .angleStart, .angleEnd, .min, .max
+  -- Validated & bounds-checked in UpdateWanderParams()
+  if g.tAdjParams then
+    if g.tAdjParams.angleStart ~= g.tAdjParams.angleEnd then
+      angle = math.random()
     end
-    rot = g.tWanderParams.rotation
 
-    local rad = g.tWanderParams.radius
-    if rad then
-      if rad < 0 then
-        rad = 0
-      elseif rad > 360 then
-        rad = 360
-      end
-
-      -- Need to wrap around the unit circle and drop decimal places
-      -- (math.random doesn't like floats)
-      -- TODO divide rad / 2 after we get the basics working
-      local angleA = math.floor(rot - rad / 2)
-      if angleA < 0 then
-        angleA = angleA + 360
-      end
-      
-      local angleB = math.floor(rot + rad / 2)
-      if angleB > 360 then
-        angleB = angleB - 360
-      end
-
-      if angleA ~= angleB then
-        if angleA < angleB then
-          angle = math.random(angleA, angleB) / 360
+    -- math.random doesn't play nice with floats
+    local angleA = math.floor(g.tAdjParams.angleStart * 100)
+    local angleB = math.floor(g.tAdjParams.angleEnd * 100)
+    if angleA == angleB then
+      angle = angleA / 100
+    else
+      if angleA < angleB then
+        angle = math.random(angleA, angleB) / 100
+      else
+        -- If we have to wrap around, do a coinflip to decide
+        -- between sides, weighted by the angle of each wrap-around.
+        local weight = 0
+        if angleA ~= 0 then -- angleA = 0 shouldn't be possible here, but let's be safe
+          weight = angleB / angleA
+        end
+        if math.random(0, 1) > weight then
+          angle = math.random(angleA, 100) / 100
         else
-          -- If we have to wrap around, do a coinflip to decide
-          -- between halves, weighted by the angle of each wrap-around.
-          local weight = angleB / angleA
-          if math.random(0, 1) > weight then
-            angle = math.random(angleA, 360) / 360 
-          else
-            angle = math.random(0, angleB) / 360
-          end
+          angle = math.random(0, angleB) / 100
         end
       end
     end
 
-    local min = g.tWanderParams.min
-    if min and min > minDist then
+    local min = g.tAdjParams.min
+    local max = g.tAdjParams.max
+
+    if min then
       minDist = min
     end
-    local max = g.tWanderParams.max
-    if max and max < maxDist then
+
+    if max then
       maxDist = max
     end
   end
 
   if not angle then
-    -- 0 - 1 inclusive.
-    -- If you supply arguments, math.random will return ints not floats.
+    -- 0 - 1 inclusive. If you supply args, math.random returns ints, not floats.
     angle = math.random()
   end
 
   if minDist < maxDist then
     distance = math.random(minDist, maxDist)
-  elseif minDist == maxDist then
-    distance = minDist
   else
-    distance = 1
+    distance = minDist
   end
 
   return u.OrientationToPosition(origin, angle, distance)
@@ -148,7 +123,6 @@ end
 
 
 local function TranslateCoordinate(gestalt, coord)
-  local bufferedRange = d.searchlightRange - 5
   local translatedCoord = {x=coord.x, y=coord.y}
 
   -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
@@ -186,22 +160,89 @@ local function Turtleport(turtle, origin, position)
     return
   end
 
-  local bufferedRange = d.searchlightRange - 3
+  local tpBufferRange = d.searchlightRange - 3
 
   -- If position is too far from the origin for the searchlight to attack it,
   -- calculate a slightly-closer position with the same angle and use that
-  if not u.WithinRadius(position, origin, bufferedRange) then
+  if not u.WithinRadius(position, origin, tpBufferRange) then
     local vecOriginPos = {x = position.x - origin.x,
                           y = position.y - origin.y}
 
     local theta = math.atan2(vecOriginPos.y, vecOriginPos.x)
-    position = u.ScreenOrientationToPosition(origin, theta, bufferedRange)
+    position = u.ScreenOrientationToPosition(origin, theta, tpBufferRange)
   end
 
   if not turtle.teleport(position) then
     -- The teleport failed for some reason, so respawn
     RespawnTurtle(turtle, nil)
   end
+end
+
+
+local function clamp(value, min, max, default)
+  if not value then
+    return default
+  else
+    if value < min then
+      return min
+    elseif value > max then
+      return max
+    end
+  end
+
+  return value
+end
+
+
+-- tWanderParams = .radius, .rotation, .min, .max
+-- tAdjParams = .angleStart, .angleEnd, .min, .max
+local function ValidateAndSet(g, new)
+  -- Cleared in IsChanged
+  g.tAdjParams = {}
+
+  -- Blueprints ignore orientation data,
+  -- so just ignore orientations
+  -- TODO default rotation needs to point downward to show off searchlight's "face"
+  local rot = clamp(g.tWanderParams.rotation, 0, 360, 0)
+  local rad = clamp(g.tWanderParams.radius, 0, 360, 360)
+
+  if rad == 360 then
+    g.tAdjParams.angleStart = 0
+    g.tAdjParams.angleEnd = 1
+  else
+    -- Need to get to 2 decimal places for random() calculations above
+    -- ([1,2,3] / 360 = 0.00x)
+    if rad == 1 or rad == 2 or rad ==3 then
+      rad = 4
+    end
+
+    -- Need to wrap around the unit circle and drop decimal places
+    -- (math.random doesn't like floats)
+    local angleA = math.floor(rot - (rad / 2))
+    if angleA < 0 then
+      angleA = angleA + 360
+    end
+    
+    local angleB = math.floor(rot + (rad / 2))
+    if angleB > 360 then
+      angleB = angleB - 360
+    end
+
+    g.tAdjParams.angleStart = angleA / 360
+    g.tAdjParams.angleEnd   = angleB / 360
+  end
+
+  local min = clamp(g.tWanderParams.min, 1, bufferedRange, 1)
+  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+
+  if min > max then
+    max = min
+  end
+
+  g.tAdjParams.min = min
+  g.tAdjParams.max = max
+
+  game.print("params: " .. serpent.block(g.tAdjParams))
 end
 
 
@@ -326,53 +367,36 @@ export.WanderTurtle = function(gestalt, waypoint)
 end
 
 
--- tWanderParams = .radius, .rotation, .min, .max
 -- These parameters will be read in MakeWanderWaypoint
 export.UpdateWanderParams = function(g, rad, rot, min, max)
-  -- If we were passed nothing, clear the wander parameters and return
-  if not (rad or rot or min or max) then
+  if  g.tWanderParams
+      and (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
     g.tWanderParams = nil
+    g.tAdjParams = nil -- TODO handle this in sl-render    
+    -- no need to call export.WanderTurtle(g);
+    -- we can let it finish whatever it's currently doing
+    rd.DrawSearchArea(g.light, nil, g.light.force, true)
     return
   end
-  if (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
-    g.tWanderParams = nil
-    return
-  end
-
+  
   local change = false
-  if not g.tWanderParams then
-    change = true
+  if not oldT then
     g.tWanderParams = {}
-  end
-
-  local oldRad = g.tWanderParams.radius
-  if oldRad ~= rad then
-    g.tWanderParams.radius = rad
     change = true
   end
 
-  local oldRot = g.tWanderParams.rotation
-  if oldRot ~= rot then
-    if rot ~= 0 then
-      g.tWanderParams.rotation = rot
+  local new = {radius = rad, rotation = rot, min = min, max = max}
+  for key, item in pairs(g.tWanderParams) do
+    if item ~= new[key] then
+      g.tWanderParams[key] = item
       change = true
     end
   end
 
-  local oldMin = g.tWanderParams.min
-  if oldMin ~= min then
-    g.tWanderParams.min = min
-    change = true
-  end
-
-  local oldMax = g.tWanderParams.max
-  if oldMax ~= max then
-    g.tWanderParams.max = max
-    change = true
-  end
-
   if change then
+    ValidateAndSet(g, new)
     export.WanderTurtle(g)
+    rd.DrawSearchArea(g.light, nil, g.light.force, true)  
   end
 end
 
