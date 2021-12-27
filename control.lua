@@ -91,7 +91,16 @@ script.on_configuration_changed(handleModSettingsChanges)
 
 
 local function detectEditorChanges()
-  for sindex, _ in pairs(global.editorSurfaces) do
+  local surfaces = global.editorSurfaces
+  
+  if not surfaces then
+    surfaces = {}
+    for pindex, p in pairs(game.players) do
+      surfaces[p.surface.index] = true
+    end
+  end
+
+  for sindex, _ in pairs(surfaces) do
     local s = game.surfaces[sindex]
     local turrets = s.find_entities_filtered{type="turret"}
 
