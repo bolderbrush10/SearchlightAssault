@@ -58,6 +58,10 @@ end
 
 
 local function ParseAmmoAction(ammoAction, rangeMod)
+  if not ammoAction.action_delivery then
+    return false
+  end
+  
 	local updated = false
 
 	-- action_delivery can either be a table of ammo_types,
@@ -75,6 +79,10 @@ end
 
 
 local function ParseAmmoType(ammoType)
+  if not ammoType.action then
+    return false
+  end
+
 	local rangeMod = ammoType.range_modifier	
 
 	-- No point checking ammoType.source_type,

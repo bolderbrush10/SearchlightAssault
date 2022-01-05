@@ -188,6 +188,10 @@ end
 
 
 local function CheckAmmoAction(ammoAction, rangeMod, min)
+  if not ammoAction.action_delivery then
+    return min
+  end
+
   -- action_delivery can either be a table of ammo_types,
   -- or just the action_delivery entry directly...
   if ammoAction.action_delivery.type then
@@ -217,7 +221,7 @@ local function CheckAmmo(turret)
       if prototype then
 
         local ammoType = prototype.get_ammo_type("turret")
-        if ammoType then
+        if ammoType and ammoType.action then
           local rangeMod = ammoType.range_modifier
 
           -- action can either be a table of ammo_types,
