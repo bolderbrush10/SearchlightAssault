@@ -28,7 +28,7 @@ local export = {}
   tCoord    = WANDER / &entity / {x, y} (Raw signal coords)
   tOldState = WANDER / MOVE
   tOldCoord = WANDER / {x, y} (Raw signal coords)
-  tWanderParams = .radius, .rotation, .min, .max (raw values)
+  tWanderParams = .radius (deg), .rotation (deg), .min, .max (raw values)
   tAdjParams    = .angleStart(rad), .len(rad), .min, .max (bounds-checked)
   spotter   = nil / Spotter,
 }

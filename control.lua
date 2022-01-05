@@ -124,7 +124,6 @@ local function detectEditorChanges()
     end
 
   end
-
 end
 
 
@@ -185,10 +184,17 @@ function(event)
     global.watch_circles[event.tick] = nil
   end
 
+  if global.render_draw[event.tick] then
+
+  end
+
+  if global.render_pop[event.tick] then
+
+  end
 end)
 
 
--- Run twice a second (at 60 ups)
+-- Run twice a second (at 60 updates per second)
 script.on_nth_tick(30,
 function(event)
 

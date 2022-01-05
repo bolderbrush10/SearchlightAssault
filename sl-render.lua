@@ -5,9 +5,8 @@ local u = require("sl-util")
 
 -- Only redraw for a given searchlight every few seconds
 -- Maps: 
---  [player.index .. "p" .. sl.unit_number] -> game.tick
---  [force.index  .. "f" .. sl.unit_number] -> game.tick
--- TODO -> {game.tick, [render_objects]} so we can kill old ones & redraw on change
+--  [player.index .. "p" .. sl.unit_number] -> {game.tick, [render_ids]}
+--  [ force.index .. "f" .. sl.unit_number] -> {game.tick, [render_ids]}
 local slFOVRenders = {}
 
 local wireFrameTTL = 240
@@ -15,6 +14,13 @@ local wireWidth = 0.04
 
 local colorDrab = {r=0.08, g=0.04, b=0, a=0.0}
 local colorVibr = {r=0.16, g=0.08, b=0, a=0.0}
+
+local hazeAnimationTime = 60
+
+
+local function append_table(a, b)
+  table.move(b, 1, table_size(b), table_size(tableA)+1, tableA)
+end
 
 
 -- angles: {min,   max,   start,   len}
@@ -74,17 +80,32 @@ local function MakeLineParams(sl, player, force, pos1, pos2, dashLen, color, ttl
 end
 
 
-local function MakeArcSweep(sl, player, force, wParams)
-  local angle = {min=3, max=10, start=0, len=math.pi / 2}
+local function MakeOneCellHazeParams(sl, player, force, pos)
+  local t = 
+  {
+    animation = d.hazeOneCellAnim,
+    target = pos,
+    render_layer = "lower-object-above-shadow", --"radius-visualization", -- TODO does this actually work?
+    orientation_target = sl,
+    surface = sl.surface,
+    time_to_live = hazeAnimationTime, -- TODO this is the whole frame sequence length,
+                                      -- but we can speed that up by setting animation_speed
+  }
 
-  rendering.draw_arc(MakeArcParams(sl, player, force, true, angle, colorDrab, wireFrameTTL - 5))
-  rendering.draw_arc(MakeArcParams(sl, player, force, true, angle, colorDrab, wireFrameTTL))
+  if player then
+    t.players = {player}
+  end
 
+  if force then
+    t.forces = {force}
+  end
+
+  return t
 end
 
 
 -- tAdjParams = .angleStart, .angleEnd, .min, .max
-local function DrawOuterArc(sl, player, force, wParams)
+local function DrawOuterArc(r_ids, sl, player, force, wParams)
   local dist = wParams.max
   if wParams.min == wParams.max then
       game.print("skipping outer because min & max match: " .. wParams.min)
@@ -93,93 +114,160 @@ local function DrawOuterArc(sl, player, force, wParams)
 
   local angle = {min=dist, 
                  max=dist + wireWidth, 
-                 start=(wParams.angleStart * 2 * math.pi) - math.pi/2,
-                 len=((wParams.angleEnd - wParams.angleStart) * 2 * math.pi)
+                 start=wParams.angleStart,
+                 len=wParams.len
                 }
 
-  rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 6))
-  rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 5))
-  rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 4))
-  rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 6)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 5)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 4)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL)))
 end 
 
 
--- TODO I think I desperately want to store wParams as angleStart + length
---      It wouldn't hurt MakeWanderWaypoint() to say, "math.rand(angleStart, angleStart+len)"
---      In fact, it'd make a lot of things simpler here and there
-local function DrawInnerArc(sl, player, force, wParams)
+local function DrawInnerArc(r_ids, sl, player, force, wParams)
   local dist = wParams.min
 
-  game.print("drawing inner at dist " .. dist)
   local angle = {min=dist, 
                  max=dist + wireWidth, 
-                 start=(wParams.angleStart * 2 * math.pi) - math.pi/2,
-                 len=(math.abs(wParams.angleEnd - wParams.angleStart) * 2 * math.pi)
+                 start=wParams.angleStart,
+                 len=wParams.len
                 }
 
-  game.print(serpent.block(angle))
-
-  -- rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 6))
-  -- rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 5))
-  -- rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 4))
-  rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL))
-
-  -- TODO remove
-  --local tempAng = {min = 2, max = 10,
-  --                 start = 0, len = math.pi / 2,}
-  --rendering.draw_arc(MakeArcParams(sl, player, force, false, tempAng, {r=1}, wireFrameTTL))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 6)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 5)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL - 4)))
+  table.insert(r_ids, rendering.draw_arc(MakeArcParams(sl, player, force, false, angle, colorVibr, wireFrameTTL)))
 end
 
 
--- TODO probably also want to render short spiky ruler-marks every 15 degrees or so from the base and outer edge
-local function DrawEdgesArc(sl, player, force, wParams)
+local function DrawEdgesArc(r_ids, sl, player, force, wParams)
   local origin = sl.position
 
-  if angle and angle == 360 then  
+  if wParams.len == (math.pi * 2) then  
     -- TODO draw 4 lines each 90degrees apart, starting from 45deg offset, around the sl
+    game.print("360 detected")
   end
 
   local lines = {a={}, b={}}
 
-  lines.a.p1 = u.OrientationToPosition(origin, wParams.angleStart, wParams.min)
-  lines.a.p2 = u.OrientationToPosition(origin, wParams.angleStart, wParams.max)
+  local angleEnd = wParams.angleStart + wParams.len
+  lines.a.p1 = u.ScreenOrientationToPosition(origin, wParams.angleStart, wParams.min)
+  lines.a.p2 = u.ScreenOrientationToPosition(origin, wParams.angleStart, wParams.max)
 
-  lines.b.p1 = u.OrientationToPosition(origin, wParams.angleEnd, wParams.min)
-  lines.b.p2 = u.OrientationToPosition(origin, wParams.angleEnd, wParams.max)
+  lines.b.p1 = u.ScreenOrientationToPosition(origin, angleEnd, wParams.min)
+  lines.b.p2 = u.ScreenOrientationToPosition(origin, angleEnd, wParams.max)
 
   for _, l in pairs(lines) do
-    game.print("drawing edges")
-    rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 6))
-    rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 5))
-    rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 4))
-    rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL))
+    table.insert(r_ids, rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 6)))
+    table.insert(r_ids, rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 5)))
+    table.insert(r_ids, rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL - 4)))
+    table.insert(r_ids, rendering.draw_line(MakeLineParams(sl, player, force, l.p1, l.p2, nil, colorVibr, wireFrameTTL)))
   end
 end
 
 
-local function DrawGradientSweep()
-
+local function DrawSearchAreaWireFrame(r_ids, sl, player, force, wParams)
+  DrawInnerArc(r_ids, sl, player, force, wParams)
+  DrawOuterArc(r_ids, sl, player, force, wParams)
+  DrawEdgesArc(r_ids, sl, player, force, wParams)
 end
 
 
--- TODO rotation value of 0 or 360 and anything seems busted
--- TODO rotation value of 360 & radius 45 is making a parallelogram instead of an arc
---      kinda neat, but not what we intended
--- TODO rotation value of 360 & distance 100 isn't rendering the outer arc at all at high zoom levels,
---      and the sides look like a parallelogram
-local function DrawSearchAreaWireFrame(sl, player, force, wParams)
+-- Tiles, Radians, Radians
+local function ArcLen(radius, angleStart, angleEnd)
+  return radius * math.abs(angleEnd - angleStart)
+end
+
+
+-- TODO So, what do we want to do here?
+-- I think we want to render a sparse sweep of sparkles emanating from the searchlight,
+-- with a thicker 'cluster' towards the middle of the sweep, like a gradient.
+-- How do we want to do this?
+-- Well, we could make a few and set_position them at some tick count,
+-- but I think it'd be cleaner to just ask the renderer to make new ones every time.
+-- We can start by calculating "bands" for the sweep to populate,
+-- make up some population density levels for the current band,
+-- and caculate positions within the band based on the wParams.radius
+-- We also need to figure out
+-- A) How many ticks we want to spend per band.
+--    I think we want the bands to all begin and end in sync with the wireframe's time to live
+-- B) How to hook into control.lua on_(nth_)tick() (and with what n value)
+local function DrawGradientSweep(r_ids, sl, player, force, wParams, tick)
+  local origin = sl.position
+
+  local min = wParams.min + 1
+  local bandCount = wParams.max - min - 1
+  local lightLen = 1.2
+  local bandGap = 1 -- 1 tile per sprite
+
+  local angleStart = wParams.angleStart
+  local angleEnd = angleStart + wParams.len
+
+  for i=0, bandCount do -- Starting at 0 intentional
+    local bandDist = min + (bandGap * i)
+    -- Adjust so that cells appear within the wireframe lines
+    local angleStartAdj = angleStart + (0.5 / bandDist)
+    local angleEndAdj = angleEnd - (0.5 / bandDist)
+
+    local arcLen = ArcLen(bandDist, angleStartAdj, angleEndAdj)
+    local lightCount = math.floor(arcLen / lightLen)
+    if lightCount == 0 then
+      local angleMid = (angleEndAdj - angleStartAdj) / 2
+      local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + angleMid, bandDist)
+      table.insert(r_ids, rendering.draw_animation(MakeOneCellHazeParams(sl, player, force, pos)))
+    else
+      local arcIncrement = arcLen / lightCount
+      local padding = (arcLen % lightLen) / lightCount
+      local angleIncrement = (arcIncrement ) / bandDist
+
+      for j=0, lightCount do -- Starting at 0 intentional
+        local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + (angleIncrement*j), bandDist)
+        table.insert(r_ids, rendering.draw_animation(MakeOneCellHazeParams(sl, player, force, pos)))
+      end
+    end
+  end
+end
+
+
+export.InitTables_Render = function()
+  -- Map: Tick -> {gestalt, startTick}
+  global.render_draw = {}
+
+  -- Map: Tick -> [RenderID]
+  global.render_pop = {}
+end
+
+
+-- TODO This is gonna leak memory like crazy.
+--      We need to clean up those map entries after their tick expires.
+-- TODO Need to handle radius == 360
+-- TODO Need to handle radius == 0
+-- TODO Need to handle minDist == maxDist
+-- TODO Maybe set up the time to live so wireframes fade-in fast
+-- TODO Maybe keep the wireframes alive until the player stops mousing over them?
+-- TODO Need to test setting hundreds of searchlight areas at once over circuit network
+export.DrawSearchArea = function(sl, player, force, forceRedraw)
+  local g = global.unum_to_g[sl.unit_number]
+  if not g or not g.tAdjParams then
+    return
+  end
+
   local lastDraw = nil
   local updatePlayerTick = true
   local forceIndex = nil
+
   if player then
     forceIndex = player.force.index
-    -- If the whole force just saw this radius, no need to redraw
+    -- If the whole force just saw this radius, no need to redraw for one of its players
+    -- (Which would case a double-draw and render it twice as bright as intended)
     local forceDraw = slFOVRenders[forceIndex .. "f" .. sl.unit_number]
-    if forceDraw then
+    local playerDraw = slFOVRenders[player.index .. "p" .. sl.unit_number]
+    if forceDraw and forceDraw[1] then
       lastDraw = forceDraw
       updatePlayerTick = false
-    else
-      lastDraw = slFOVRenders[player.index .. "p" .. sl.unit_number]
+    elseif playerDraw and playerDraw[1] then
+      lastDraw = playerDraw
     end
   else
     forceIndex = force.index
@@ -187,45 +275,24 @@ local function DrawSearchAreaWireFrame(sl, player, force, wParams)
     updatePlayerTick = false
   end
 
-  if lastDraw and lastDraw + wireFrameTTL > game.tick  then
+
+  if forceRedraw and lastDraw and lastDraw[2] then
+    for _, render_id in pairs(lastDraw[2]) do
+      rendering.destroy(render_id)
+    end
+  elseif lastDraw and lastDraw[1] and lastDraw[1] + wireFrameTTL > game.tick then
     return
   end
+
+  local render_ids = {}
+  DrawSearchAreaWireFrame(render_ids, sl, player, force, g.tAdjParams)
+  DrawGradientSweep(render_ids, sl, player, force, g.tAdjParams)
 
   if updatePlayerTick then
-    slFOVRenders[player.index .. "p" .. sl.unit_number] = game.tick
+    slFOVRenders[player.index .. "p" .. sl.unit_number] = {game.tick, render_ids}
   else
-    slFOVRenders[forceIndex .. "f" .. sl.unit_number] = game.tick
+    slFOVRenders[forceIndex .. "f" .. sl.unit_number] = {game.tick, render_ids}
   end
-
-  DrawInnerArc(sl, player, force, wParams)
-  DrawOuterArc(sl, player, force, wParams)
-  DrawEdgesArc(sl, player, force, wParams)
-  MakeArcSweep(sl, player, force, wParams)
-
-end
-
-
-export.DrawSearchArea = function(sl, player, force, forceRedraw)
-  local g = global.unum_to_g[sl.unit_number]
-  if not g then
-    game.print("not rendering g")
-    return
-  end
-  local wParams = g.tAdjParams
-  if not wParams then
-    game.print("not rendering w")
-    -- TODO draw 360 with decoration
-    return
-  end
-
-  if forceRedraw then
-    -- TODO kill old objects with rendering.destroy(id)
-  end
-
-  game.print("rendering")
-
-  DrawSearchAreaWireFrame(sl, player, force, wParams)
-  DrawGradientSweep()
 end
 
 

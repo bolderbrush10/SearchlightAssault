@@ -2,6 +2,7 @@ local r  = require "sl-relation"
 local cf = require "control-forces"
 local cg = require "control-gestalt"
 local cu = require "control-tunion"
+local rd = require "sl-render"
 
 
 local export = {}
@@ -17,6 +18,7 @@ export.InitTables = function()
   cf.InitTables_Forces()
   cg.InitTables_Gestalt()
   cu.InitTables_Turrets()
+  rd.InitTables_Render()
 
   ----------------
   --  Relation  --

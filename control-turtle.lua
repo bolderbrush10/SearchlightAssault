@@ -58,67 +58,108 @@ local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
 end
 
 
-local function MakeWanderWaypoint(g)
-  local origin = g.light.position
-
-  local angle = nil
-  local minDist = 1
-  local maxDist = bufferedRange
-
-  -- tAdjParams = .angleStart, .angleEnd, .min, .max
-  -- Validated & bounds-checked in UpdateWanderParams()
-  if g.tAdjParams then
-    if g.tAdjParams.angleStart ~= g.tAdjParams.angleEnd then
-      angle = math.random()
-    end
-
-    -- math.random doesn't play nice with floats
-    local angleA = math.floor(g.tAdjParams.angleStart * 100)
-    local angleB = math.floor(g.tAdjParams.angleEnd * 100)
-    if angleA == angleB then
-      angle = angleA / 100
-    else
-      if angleA < angleB then
-        angle = math.random(angleA, angleB) / 100
-      else
-        -- If we have to wrap around, do a coinflip to decide
-        -- between sides, weighted by the angle of each wrap-around.
-        local weight = 0
-        if angleA ~= 0 then -- angleA = 0 shouldn't be possible here, but let's be safe
-          weight = angleB / angleA
-        end
-        if math.random(0, 1) > weight then
-          angle = math.random(angleA, 100) / 100
-        else
-          angle = math.random(0, angleB) / 100
-        end
-      end
-    end
-
-    local min = g.tAdjParams.min
-    local max = g.tAdjParams.max
-
-    if min then
-      minDist = min
-    end
-
-    if max then
-      maxDist = max
-    end
-  end
-
-  if not angle then
-    -- 0 - 1 inclusive. If you supply args, math.random returns ints, not floats.
-    angle = math.random()
-  end
-
-  if minDist < maxDist then
-    distance = math.random(minDist, maxDist)
+local function clamp(value, min, max, default)
+  if not value then
+    return default
   else
-    distance = minDist
+    if value < min then
+      return min
+    elseif value > max then
+      return max
+    end
   end
 
-  return u.OrientationToPosition(origin, angle, distance)
+  return value
+end
+
+
+-- Clamps values to 1 - 360, treating 0 as 360
+-- (rendering.draw_arc creates beautiful but glitchy lines
+--  when given negative or excessive values)
+local function clampDeg(value, default)
+  if not value then
+    return default
+  end
+
+  if value == 0 then
+    return 360
+  elseif value > 0 then
+    return value % 360
+  else
+    -- return 360 - (value % 360)
+    -- Believe it or not, but factorio's version of lua acts like the above for negatives
+    -- (version 5.4.3 does not, and requires that line above)
+    return value % 360
+  end
+end
+
+
+-- tWanderParams = .radius, .rotation, .min, .max
+-- tAdjParams = .angleStart, .len, .min, .max
+local function ValidateAndSetParams(g)
+  g.tAdjParams = {} -- init / reset
+
+  -- Blueprints ignore orientation,
+  -- so we will ignore orientation
+  local rot = clampDeg(g.tWanderParams.rotation, 0)
+  local rad = clampDeg(g.tWanderParams.radius, 360)
+
+  if rad == 360 then
+    g.tAdjParams.angleStart = 0
+    g.tAdjParams.len = math.pi * 2
+  else
+    local angleLHS = rot - (rad / 2)
+    -- Need to wrap around the unit circle
+    if angleLHS < 0 then
+      angleLHS = angleLHS + 360
+    end
+
+    -- Convert from degrees to radians
+    g.tAdjParams.angleStart = (angleLHS / 180) * math.pi
+    g.tAdjParams.len = (rad / 180) * math.pi
+  end
+
+  local min = clamp(g.tWanderParams.min, 1, bufferedRange, 1)
+  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+
+  if min > max then
+    max = min
+  end
+
+  g.tAdjParams.min = min
+  g.tAdjParams.max = max
+
+  -- Show new search area
+  rd.DrawSearchArea(g.light, nil, g.light.force, true)  
+end
+
+
+local function MakeWanderWaypoint(g)
+  if not g.tAdjParams then
+    ValidateAndSetParams(g)
+  end
+
+  -- tAdjParams = .angleStart, .len, .min, .max
+
+  -- math.random doesn't like floats, so, multiply by 100 and floor it
+  local angle = nil
+  local start = math.floor(g.tAdjParams.angleStart * 100)
+  local len = math.floor(g.tAdjParams.len * 100)
+  if len == 0 then
+    angle = start / 100
+  else
+    angle = math.random(start, start + len) / 100
+  end
+
+  local min = g.tAdjParams.min
+  local max = g.tAdjParams.max
+  if min < max then
+    distance = math.random(min, max)
+  else
+    distance = min
+  end
+
+  return u.ScreenOrientationToPosition(g.light.position, angle, distance)
 end
 
 
@@ -176,73 +217,6 @@ local function Turtleport(turtle, origin, position)
     -- The teleport failed for some reason, so respawn
     RespawnTurtle(turtle, nil)
   end
-end
-
-
-local function clamp(value, min, max, default)
-  if not value then
-    return default
-  else
-    if value < min then
-      return min
-    elseif value > max then
-      return max
-    end
-  end
-
-  return value
-end
-
-
--- tWanderParams = .radius, .rotation, .min, .max
--- tAdjParams = .angleStart, .angleEnd, .min, .max
-local function ValidateAndSet(g, new)
-  -- Cleared in IsChanged
-  g.tAdjParams = {}
-
-  -- Blueprints ignore orientation data,
-  -- so just ignore orientations
-  -- TODO default rotation needs to point downward to show off searchlight's "face"
-  local rot = clamp(g.tWanderParams.rotation, 0, 360, 0)
-  local rad = clamp(g.tWanderParams.radius, 0, 360, 360)
-
-  if rad == 360 then
-    g.tAdjParams.angleStart = 0
-    g.tAdjParams.angleEnd = 1
-  else
-    -- Need to get to 2 decimal places for random() calculations above
-    -- ([1,2,3] / 360 = 0.00x)
-    if rad == 1 or rad == 2 or rad ==3 then
-      rad = 4
-    end
-
-    -- Need to wrap around the unit circle and drop decimal places
-    -- (math.random doesn't like floats)
-    local angleA = math.floor(rot - (rad / 2))
-    if angleA < 0 then
-      angleA = angleA + 360
-    end
-    
-    local angleB = math.floor(rot + (rad / 2))
-    if angleB > 360 then
-      angleB = angleB - 360
-    end
-
-    g.tAdjParams.angleStart = angleA / 360
-    g.tAdjParams.angleEnd   = angleB / 360
-  end
-
-  local min = clamp(g.tWanderParams.min, 1, bufferedRange, 1)
-  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
-
-  if min > max then
-    max = min
-  end
-
-  g.tAdjParams.min = min
-  g.tAdjParams.max = max
-
-  game.print("params: " .. serpent.block(g.tAdjParams))
 end
 
 
@@ -372,15 +346,14 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
   if  g.tWanderParams
       and (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
     g.tWanderParams = nil
-    g.tAdjParams = nil -- TODO handle this in sl-render    
+    ValidateAndSetParams(g)
     -- no need to call export.WanderTurtle(g);
     -- we can let it finish whatever it's currently doing
-    rd.DrawSearchArea(g.light, nil, g.light.force, true)
     return
   end
   
   local change = false
-  if not oldT then
+  if not g.tWanderParams then
     g.tWanderParams = {}
     change = true
   end
@@ -388,15 +361,15 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
   local new = {radius = rad, rotation = rot, min = min, max = max}
   for key, item in pairs(g.tWanderParams) do
     if item ~= new[key] then
-      g.tWanderParams[key] = item
+      g.tWanderParams[key] = new[key]
       change = true
     end
   end
 
-  if change then
-    ValidateAndSet(g, new)
+  -- TODO reenable to change
+  if change then -- true then --change then TODO renable
+    ValidateAndSetParams(g)
     export.WanderTurtle(g)
-    rd.DrawSearchArea(g.light, nil, g.light.force, true)  
   end
 end
 
