@@ -63,9 +63,9 @@ export.ScanBP_StacksAndSwapToBaseType = function(event)
   local cstack = player.cursor_stack
   local pstack = player.blueprint_to_setup
 
-  if cstack and cstack.valid_for_read and cstack.is_blueprint_setup() then
+  if cstack and cstack.valid_for_read and cstack.is_blueprint and cstack.is_blueprint_setup() then
     SwapToBaseEntityType(cstack)
-  elseif pstack and pstack.valid_for_read and pstack.is_blueprint_setup() then
+  elseif pstack and pstack.valid_for_read and pstack.is_blueprint and pstack.is_blueprint_setup() then
     SwapToBaseEntityType(pstack)
   else
     SeekBlueprints(player.get_main_inventory())
