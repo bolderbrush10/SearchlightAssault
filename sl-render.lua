@@ -3,11 +3,6 @@ local export = {}
 local d = require("sl-defines")
 local u = require("sl-util")
 
--- Only redraw for a given searchlight every few seconds
--- Maps: 
---  [player.index .. "p" .. sl.unit_number] -> {game.tick, [render_ids]}
---  [ force.index .. "f" .. sl.unit_number] -> {game.tick, [render_ids]}
-local slFOVRenders = {}
 
 local wireFrameTTL = 240
 local wireWidth = 0.04
@@ -18,8 +13,11 @@ local colorVibr = {r=0.16, g=0.08, b=0, a=0.0}
 local hazeAnimationTime = 60
 
 
-local function append_table(a, b)
-  table.move(b, 1, table_size(b), table_size(tableA)+1, tableA)
+-- TODO Migration file?
+-- These maps organize things so we limit redraws for a given searchlight UI
+export.InitTables_Render = function()
+  -- Map: gID -> [0/playerIndex -> {originTick, [render_ids]}]
+  global.slFOVRenders = {}
 end
 
 
@@ -230,75 +228,92 @@ local function DrawGradientSweep(r_ids, sl, player, force, wParams, tick)
 end
 
 
-export.InitTables_Render = function()
-  -- Map: Tick -> {gestalt, startTick}
-  global.render_draw = {}
-
-  -- Map: Tick -> [RenderID]
-  global.render_pop = {}
-end
-
-
--- TODO This is gonna leak memory like crazy.
---      We need to clean up those map entries after their tick expires.
 -- TODO Need to handle radius == 360
 -- TODO Need to handle radius == 0
 -- TODO Need to handle minDist == maxDist
--- TODO Maybe set up the time to live so wireframes fade-in fast
--- TODO Maybe keep the wireframes alive until the player stops mousing over them?
 -- TODO Need to test setting hundreds of searchlight areas at once over circuit network
+-- Map: gID -> [0/playerIndex -> {originTick, [render_ids]}]
 export.DrawSearchArea = function(sl, player, force, forceRedraw)
   local g = global.unum_to_g[sl.unit_number]
   if not g or not g.tAdjParams then
     return
   end
 
-  local lastDraw = nil
-  local updatePlayerTick = true
-  local forceIndex = nil
+  local gID = g.gID
+  local pIndex = player or 0
 
-  if player then
-    forceIndex = player.force.index
-    -- If the whole force just saw this radius, no need to redraw for one of its players
-    -- (Which would case a double-draw and render it twice as bright as intended)
-    local forceDraw = slFOVRenders[forceIndex .. "f" .. sl.unit_number]
-    local playerDraw = slFOVRenders[player.index .. "p" .. sl.unit_number]
-    if forceDraw and forceDraw[1] then
-      lastDraw = forceDraw
-      updatePlayerTick = false
-    elseif playerDraw and playerDraw[1] then
-      lastDraw = playerDraw
-    end
-  else
-    forceIndex = force.index
-    lastDraw = slFOVRenders[forceIndex .. "f" .. sl.unit_number]
-    updatePlayerTick = false
+  if not global.slFOVRenders[gID] then
+    global.slFOVRenders[gID] = {}
   end
 
+  local pIndexToEpochAndRendersMap = global.slFOVRenders[gID]
 
-  if forceRedraw and lastDraw and lastDraw[2] then
-    for _, render_id in pairs(lastDraw[2]) do
+  -- If the whole force just saw this area, no need to redraw for just one of its players
+  -- (Which would case a double-draw and render it twice as bright as intended)
+  if  not forceRedraw 
+      and (pIndexToEpochAndRendersMap[pIndex] or pIndexToEpochAndRendersMap[0]) then
+    return
+  else
+    pIndexToEpochAndRendersMap[pIndex] = {game.tick, {}}
+  end
+
+  local epochAndRenders = pIndexToEpochAndRendersMap[pIndex]
+
+  if forceRedraw then
+    for _, render_id in pairs(epochAndRenders[2]) do
       rendering.destroy(render_id)
     end
-  elseif lastDraw and lastDraw[1] and lastDraw[1] + wireFrameTTL > game.tick then
-    return
   end
 
-  local render_ids = {}
-  DrawSearchAreaWireFrame(render_ids, sl, player, force, g.tAdjParams)
-  DrawGradientSweep(render_ids, sl, player, force, g.tAdjParams)
+  epochAndRenders = {game.tick, {}}
 
-  if updatePlayerTick then
-    slFOVRenders[player.index .. "p" .. sl.unit_number] = {game.tick, render_ids}
-  else
-    slFOVRenders[forceIndex .. "f" .. sl.unit_number] = {game.tick, render_ids}
-  end
+  DrawSearchAreaWireFrame(epochAndRenders[2], sl, player, force, g.tAdjParams)
+  DrawGradientSweep(epochAndRenders[2], sl, player, force, g.tAdjParams, nil)
 end
 
 
-export.UpdateSearchArea = function()
-  for _, fov in pairs(slFOVRenders) do
-    -- TODO
+-- Map: gID -> [0/playerIndex -> {originTick, [render_ids]}]
+-- TODO sloppy... clean this up
+export.Update = function(tick)
+  for gID, pIndexToEpochAndRendersMap in pairs(global.slFOVRenders) do
+    local g = global.gestalts[gID]
+
+    if g then
+      for pIndex, epochAndRenders in pairs(pIndexToEpochAndRendersMap) do
+        local player = players[pIndex]
+        local force = nil
+
+        local tick = game.tick - epochAndRenders[1]
+
+        if tick == wireFrameTTL then          
+          if player and player.selected == g.light then
+            tick = 0
+            epochAndRenders[1] = game.tick
+          else
+            pIndexToEpochAndRendersMap[pIndex] = nil
+            -- TODO clean up outer map if this just emptied it
+            return
+          end
+        end
+
+        if not player then
+          force = g.light.force
+        end
+
+        -- TODO pop on last update tick, unless a player is mousing over this searchlight
+        -- (in that case, just reset origin tick)
+        DrawGradientSweep(epochAndRenders[2], sl, player, force, g.tAdjParams, tick)
+      end
+    else
+      -- Destroy all renders for this gestalt
+      for pIndex, epochAndRenders in pairs(pIndexToEpochAndRendersMap) do
+        for _, render_id in pairs(epochAndRenders[2]) do
+          rendering.destroy(render_id)
+        end
+      end
+      global.slFOVRenders[gID] = nil
+    end
+
   end
 end
 

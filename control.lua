@@ -193,13 +193,7 @@ function(event)
     global.watch_circles[event.tick] = nil
   end
 
-  if global.render_draw[event.tick] then
-
-  end
-
-  if global.render_pop[event.tick] then
-
-  end
+  rd.Update(event.tick)
 end)
 
 
