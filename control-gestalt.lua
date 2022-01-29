@@ -131,6 +131,8 @@ local function makeGestalt(sl, sigInterface, turtle)
   global.unum_to_g[sl.unit_number] = g
   global.unum_to_g[turtle.unit_number] = g
 
+  ct.SetDefaultWanderParams(g)
+
   return g
 end
 

@@ -98,6 +98,7 @@ d.remnantsName = "searchlight-assault-remnants"
 d.spottedEffectID = "searchlight-assault-spotted-effect"
 d.confirmedSpottedEffectID = "searchlight-assault-confirm-spotted-effect"
 d.hazeOneCellAnim = "searchlight-haze-onecell-animation"
+d.hazeOneHex = "searchlight-haze-onehex"
 
 -- Force name-suffix, to be appended to the name of the force that owns a searchlight
 d.turtleForceSuffix = "_SLATurtle"

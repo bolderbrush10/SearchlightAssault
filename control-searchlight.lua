@@ -176,15 +176,6 @@ export.ProcessAlarmClearSignals = function(g)
     local min = i.get_merged_signal(sigMin)
     local max = i.get_merged_signal(sigMax)
 
-    -- TODO need to update this to run every call after we're done debugging
-    -- if game.tick % 60 == 0 then
-      --game.print(game.tick .. " rad: " .. rad)
-      --game.print(game.tick .. " rot: " .. rot)
-      --game.print(game.tick .. " min: " .. min)
-      --game.print(game.tick .. " max: " .. max)
-    --   ct.UpdateWanderParams(g, rad, rot, min, max)
-    -- end
-
     ct.UpdateWanderParams(g, rad, rot, min, max)
   end
 end

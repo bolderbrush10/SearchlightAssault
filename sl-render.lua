@@ -10,6 +10,9 @@ local wireWidth = 0.04
 local colorDrab = {r=0.08, g=0.04, b=0, a=0.0}
 local colorVibr = {r=0.16, g=0.08, b=0, a=0.0}
 
+-- This is the whole frame sequence length,
+-- but we can speed it up by setting animation_speed,
+-- or cut it short by reducing time_to_live
 local hazeAnimationTime = 60
 
 
@@ -78,16 +81,22 @@ local function MakeLineParams(sl, player, force, pos1, pos2, dashLen, color, ttl
 end
 
 
-local function MakeOneCellHazeParams(sl, player, force, pos)
+-- TODO Starting to wonder if this animation is a good idea.
+--      Players are DEFINTIELY going to wonder why this initial radar pulse
+--      doesn't detect enemies like the regular turtle's does.
+--      Just stopping it from animating doesn't look good enough.
+--      I think we'll have to desaturate it, or pick a different color,
+--      or a different image entirely. Maybe empty hexagons?
+local function MakeOneCellHazeParams(sl, player, force, pos, ttl)
   local t = 
   {
-    animation = d.hazeOneCellAnim,
+    --animation = d.hazeOneCellAnim,
+    sprite=d.hazeOneHex,
     target = pos,
-    render_layer = "lower-object-above-shadow", --"radius-visualization", -- TODO does this actually work?
+    render_layer = "lower-object-above-shadow",
     orientation_target = sl,
     surface = sl.surface,
-    time_to_live = hazeAnimationTime, -- TODO this is the whole frame sequence length,
-                                      -- but we can speed that up by setting animation_speed
+    time_to_live = ttl,
   }
 
   if player then
@@ -106,7 +115,7 @@ end
 local function DrawOuterArc(r_ids, sl, player, force, wParams)
   local dist = wParams.max
   if wParams.min == wParams.max then
-      game.print("skipping outer because min & max match: " .. wParams.min)
+      game.print("skipping outer because min & max match: " .. wParams.min) -- TODO remove
       return -- We can skip drawing two arcs in the same place
   end
 
@@ -145,6 +154,7 @@ local function DrawEdgesArc(r_ids, sl, player, force, wParams)
   if wParams.len == (math.pi * 2) then  
     -- TODO draw 4 lines each 90degrees apart, starting from 45deg offset, around the sl
     game.print("360 detected")
+    return
   end
 
   local lines = {a={}, b={}}
@@ -165,6 +175,8 @@ local function DrawEdgesArc(r_ids, sl, player, force, wParams)
 end
 
 
+-- TODO this could really use a fade-in. 
+-- It'd look much nicer when continously hovering the cursor over a searchlight
 local function DrawSearchAreaWireFrame(r_ids, sl, player, force, wParams)
   DrawInnerArc(r_ids, sl, player, force, wParams)
   DrawOuterArc(r_ids, sl, player, force, wParams)
@@ -179,57 +191,96 @@ end
 
 
 -- TODO So, what do we want to do here?
--- I think we want to render a sparse sweep of sparkles emanating from the searchlight,
+-- Render a sparse sweep of sparkles emanating from the searchlight,
 -- with a thicker 'cluster' towards the middle of the sweep, like a gradient.
--- How do we want to do this?
--- Well, we could make a few and set_position them at some tick count,
--- but I think it'd be cleaner to just ask the renderer to make new ones every time.
--- We can start by calculating "bands" for the sweep to populate,
--- make up some population density levels for the current band,
--- and caculate positions within the band based on the wParams.radius
--- We also need to figure out
--- A) How many ticks we want to spend per band.
---    I think we want the bands to all begin and end in sync with the wireframe's time to live
--- B) How to hook into control.lua on_(nth_)tick() (and with what n value)
+-- TODO We probably need to only render 'half' of the pieces of the band in the first pass,
+--      then do the other half in the next update tick while doing the intended band
+--      I think we want 3 bands, with 3 density phases (none -> low -> full -> medium -> low -> none)
+--      (Think, "strong radar edge")
+-- TODO Maybe just don't even render this for band counts less than 5 or something?
+--      Or just render the whole field?
+-- TODO Starting to think splitting into tiers so lower bandcounts repeat is a good idea again
+-- TODO move out constants, memoize more details?
+-- TODO We should enforce a minimun linger on the last band...
+
+
+-- Okay, so real talk. We had a lot of fun here.
+-- But I think we need to consider axing this entirely.
+-- Maybe just go with drawing a solid wedge. Sleep on it.
+-- Or maybe no wedge. Just thicken up the rendered lines a little.
 local function DrawGradientSweep(r_ids, sl, player, force, wParams, tick)
   local origin = sl.position
 
-  local min = wParams.min + 1
-  local bandCount = wParams.max - min - 1
   local lightLen = 1.2
   local bandGap = 1 -- 1 tile per sprite
 
+  local min = wParams.min + 1
   local angleStart = wParams.angleStart
   local angleEnd = angleStart + wParams.len
 
-  for i=0, bandCount do -- Starting at 0 intentional
-    local bandDist = min + (bandGap * i)
-    -- Adjust so that cells appear within the wireframe lines
-    local angleStartAdj = angleStart + (0.5 / bandDist)
-    local angleEndAdj = angleEnd - (0.5 / bandDist)
+  local bandCount = wParams.max - min - 1
+  local ticksPerBand = math.floor(wireFrameTTL / bandCount)
+  -- Any "unused ticks" can be spent on the last band. They look cooler there.
+  local linger = wireFrameTTL % bandCount
 
-    local arcLen = ArcLen(bandDist, angleStartAdj, angleEndAdj)
-    local lightCount = math.floor(arcLen / lightLen)
-    if lightCount == 0 then
-      local angleMid = (angleEndAdj - angleStartAdj) / 2
-      local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + angleMid, bandDist)
-      table.insert(r_ids, rendering.draw_animation(MakeOneCellHazeParams(sl, player, force, pos)))
-    else
-      local arcIncrement = arcLen / lightCount
-      local padding = (arcLen % lightLen) / lightCount
-      local angleIncrement = (arcIncrement ) / bandDist
+  if tick % ticksPerBand ~= 0 then
+    return
+  end
 
-      for j=0, lightCount do -- Starting at 0 intentional
-        local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + (angleIncrement*j), bandDist)
-        table.insert(r_ids, rendering.draw_animation(MakeOneCellHazeParams(sl, player, force, pos)))
+  local i = tick / ticksPerBand
+  if i > bandCount then
+    return
+  end
+
+  local bandDist = min + (bandGap * i)
+  -- Adjust so that cells appear within the wireframe lines
+  local angleStartAdj = angleStart + (0.5 / bandDist)
+  local angleEndAdj = angleEnd - (0.5 / bandDist)
+
+  local arcLen = ArcLen(bandDist, angleStartAdj, angleEndAdj)
+  local lightCount = math.floor(arcLen / lightLen)
+  if lightCount == 0 then -- TODO test this branch
+    local angleMid = (angleEndAdj - angleStartAdj) / 2
+    local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + angleMid, bandDist)
+    table.insert(r_ids, rendering.draw_animation(MakeOneCellHazeParams(sl, player, force, pos, ticksPerBand)))
+  else
+    local arcIncrement = arcLen / lightCount
+    local padding = (arcLen % lightLen) / lightCount
+    local angleIncrement = (arcIncrement ) / bandDist
+
+    for j=0, lightCount do -- Starting at 0 intentional
+      local pos = u.ScreenOrientationToPosition(origin, angleStartAdj + (angleIncrement*j), bandDist)
+
+      cellParams = MakeOneCellHazeParams(sl, player, force, pos, ticksPerBand * 3)
+
+      if i == bandCount then
+        cellParams.time_to_live = cellParams.time_to_live + linger
       end
+
+      --table.insert(r_ids, rendering.draw_animation(cellParams))
+      table.insert(r_ids, rendering.draw_sprite(cellParams))
     end
   end
 end
 
 
--- TODO Need to handle radius == 360
--- TODO Need to handle radius == 0
+-- TODO wireframes aren't getting destroyed
+local function Unrender(epochAndRenders)
+  for _, render_id in pairs(epochAndRenders[2]) do
+    rendering.destroy(render_id)
+  end
+end
+
+
+local function ClearGestaltRender(gID)
+  local pIndexToEpochAndRendersMap = global.slFOVRenders[gID]
+  for pIndex, epochAndRenders in pairs(pIndexToEpochAndRendersMap) do
+    Unrender(epochAndRenders)
+  end
+  global.slFOVRenders[gID] = nil
+end
+
+
 -- TODO Need to handle minDist == maxDist
 -- TODO Need to test setting hundreds of searchlight areas at once over circuit network
 -- Map: gID -> [0/playerIndex -> {originTick, [render_ids]}]
@@ -240,7 +291,10 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
   end
 
   local gID = g.gID
-  local pIndex = player or 0
+  local pIndex = 0
+  if player then
+    pIndex = player.index
+  end
 
   if not global.slFOVRenders[gID] then
     global.slFOVRenders[gID] = {}
@@ -250,7 +304,7 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
 
   -- If the whole force just saw this area, no need to redraw for just one of its players
   -- (Which would case a double-draw and render it twice as bright as intended)
-  if  not forceRedraw 
+  if  not forceRedraw
       and (pIndexToEpochAndRendersMap[pIndex] or pIndexToEpochAndRendersMap[0]) then
     return
   else
@@ -260,58 +314,56 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
   local epochAndRenders = pIndexToEpochAndRendersMap[pIndex]
 
   if forceRedraw then
-    for _, render_id in pairs(epochAndRenders[2]) do
-      rendering.destroy(render_id)
-    end
+    Unrender(epochAndRenders)
   end
 
   epochAndRenders = {game.tick, {}}
 
   DrawSearchAreaWireFrame(epochAndRenders[2], sl, player, force, g.tAdjParams)
-  DrawGradientSweep(epochAndRenders[2], sl, player, force, g.tAdjParams, nil)
+  DrawGradientSweep(epochAndRenders[2], sl, player, force, g.tAdjParams, 0)
 end
 
 
 -- Map: gID -> [0/playerIndex -> {originTick, [render_ids]}]
--- TODO sloppy... clean this up
 export.Update = function(tick)
   for gID, pIndexToEpochAndRendersMap in pairs(global.slFOVRenders) do
     local g = global.gestalts[gID]
 
-    if g then
+    if not g or not next(pIndexToEpochAndRendersMap) then
+      ClearGestaltRender(gID)
+    else
       for pIndex, epochAndRenders in pairs(pIndexToEpochAndRendersMap) do
-        local player = players[pIndex]
+        local player = nil
         local force = nil
+
+        if pIndex == 0 then
+          force = g.light.force
+        else
+          player = game.players[pIndex]
+        end
 
         local tick = game.tick - epochAndRenders[1]
 
-        if tick == wireFrameTTL then          
+        -- TODO also check if any particular player on the force was mousing over this searchlight
+        -- (Can we just check game.player? Will that cause a desync or something?)
+        if tick == wireFrameTTL then
+          -- If the player is still mousing over this light,
+          -- then keep showing its range
           if player and player.selected == g.light then
             tick = 0
             epochAndRenders[1] = game.tick
+            DrawGradientSweep(epochAndRenders[2], g.light, player, force, g.tAdjParams, tick)
+            DrawSearchAreaWireFrame(epochAndRenders[2], g.light, player, force, g.tAdjParams)
           else
+            Unrender(epochAndRenders)
             pIndexToEpochAndRendersMap[pIndex] = nil
-            -- TODO clean up outer map if this just emptied it
-            return
+            -- If this just emptied the outer map, we'll clear it next tick by checking next()
           end
+        else
+          DrawGradientSweep(epochAndRenders[2], g.light, player, force, g.tAdjParams, tick)
         end
 
-        if not player then
-          force = g.light.force
-        end
-
-        -- TODO pop on last update tick, unless a player is mousing over this searchlight
-        -- (in that case, just reset origin tick)
-        DrawGradientSweep(epochAndRenders[2], sl, player, force, g.tAdjParams, tick)
       end
-    else
-      -- Destroy all renders for this gestalt
-      for pIndex, epochAndRenders in pairs(pIndexToEpochAndRendersMap) do
-        for _, render_id in pairs(epochAndRenders[2]) do
-          rendering.destroy(render_id)
-        end
-      end
-      global.slFOVRenders[gID] = nil
     end
 
   end

@@ -81,7 +81,7 @@ local function clampDeg(value, default)
     return default
   end
 
-  if value == 0 then
+  if value == 0 or value == 360 then
     return 360
   elseif value > 0 then
     return value % 360
@@ -94,6 +94,7 @@ local function clampDeg(value, default)
 end
 
 
+-- TODO Need to treat wanderParam values of 0 as unset / default
 -- tWanderParams = .radius, .rotation, .min, .max
 -- tAdjParams = .angleStart, .len, .min, .max
 local function ValidateAndSetParams(g)
@@ -120,7 +121,10 @@ local function ValidateAndSetParams(g)
   end
 
   local min = clamp(g.tWanderParams.min, 1, bufferedRange, 1)
-  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+  local max = bufferedRange
+  if g.tWanderParams.max ~= 0 then
+    max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+  end
 
   if min > max then
     max = min
@@ -306,7 +310,7 @@ export.SpawnTurtle = function(sl, surface, location)
                                        create_build_effect_smoke = false}
 
   turtle.destructible = false
-
+  
   return turtle
 end
 
@@ -325,6 +329,8 @@ export.WindupTurtle = function(gestalt, turtle)
                                                              d.searchlightRange - 2))
 
   export.WanderTurtle(gestalt, windupWaypoint)
+
+  ValidateAndSetParams(gestalt)
 end
 
 
@@ -341,13 +347,28 @@ export.WanderTurtle = function(gestalt, waypoint)
 end
 
 
+export.SetDefaultWanderParams = function(g)
+  g.tWanderParams =
+  {
+    radius = 360,
+    rotation = 0,
+    min = 0,
+    max = d.searchlightRange
+  }
+end
+
+
 -- These parameters will be read in MakeWanderWaypoint
 export.UpdateWanderParams = function(g, rad, rot, min, max)
-  if  g.tWanderParams
+  -- TODO won't this get called constantly if everything is unset? 
+  -- We were initially thinking we'd set tWanderParams to null to indicate none are set,
+  -- but that seems infeasible now.. 
+  -- We realized it's going to have to always be set to something.
+  if  g.tWanderParams 
       and (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
-    g.tWanderParams = nil
+    export.SetDefaultWanderParams(g)
     ValidateAndSetParams(g)
-    -- no need to call export.WanderTurtle(g);
+    -- No need to call export.WanderTurtle(g);
     -- we can let it finish whatever it's currently doing
     return
   end
@@ -366,8 +387,7 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
     end
   end
 
-  -- TODO reenable to change
-  if change then -- true then --change then TODO renable
+  if change then
     ValidateAndSetParams(g)
     export.WanderTurtle(g)
   end

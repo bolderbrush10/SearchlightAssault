@@ -290,6 +290,44 @@ local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight
 Light_Layer_Searchlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
 
 
+local Light_Layer_Searchlight_OneCellHaze =
+{
+  filename = "__SearchlightAssault__/graphics/searchlight-haze-onecell.png",
+  line_length = 2,
+  frame_count = slFrameCount,
+  frame_sequence = {
+                    1,1,1,1,1,1,1,1,1,1,1,1,
+                    2,2,2,2,2,2,2,2,2,2,2,2,
+                    3,3,3,3,3,3,3,3,3,3,3,3,
+                    4,4,4,4,4,4,4,4,4,4,4,4,
+                    2,2,2,2,2,2,2,2,2,2,2,2,
+                    },
+  width = 200,
+  height = 200,
+  scale = 0.7,
+  blend_mode = "additive",
+  tint = {r=230/255, g=115/255, b=0, a=1.0},
+}
+
+local OneCellHazeAnim = 
+{
+  name = d.hazeOneCellAnim,
+  type = "animation",
+  layers = {Light_Layer_Searchlight_OneCellHaze},
+}
+
+local OneHexSprite =
+{
+  filename = "__SearchlightAssault__/graphics/searchlight-haze-onehex.png",
+  type = "sprite",
+  name = d.hazeOneHex,
+  width = 50,
+  height = 50,
+  scale = 0.4,
+  blend_mode = "additive",
+  tint = {r=230/255, g=115/255, b=0, a=0.8},
+}
+
 local Light_Layer_Searchlight_NormLight =
 {
   filename = "__SearchlightAssault__/graphics/searchlight-r.png",
@@ -378,7 +416,7 @@ SearchlightBeamAlarm.ground_light_animations =
 }
 
 
-data:extend{SearchlightBeamPassive, SearchlightBeamAlarm}
+data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, OneCellHazeAnim, OneHexSprite}
 
 
 return export
