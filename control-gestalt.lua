@@ -215,6 +215,7 @@ export.CheckGestaltFoes = function()
         end
 
         -- In lua, it's usually safe to remove from a table while iterating
+        -- (If you're nil'ing entries while using pairs())
         -- (But not safe to add into a table)
         r.removeRelation(fgRelations, fun, gID)
         cu.FoeGestaltRelationRemoved(g)
