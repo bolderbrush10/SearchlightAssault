@@ -21,8 +21,8 @@ local sigFoeX    = {type="virtual", name="foe-x-position"}
 local sigFoeY    = {type="virtual", name="foe-y-position"}
 local sigWarn    = {type="virtual", name="sl-warn"}
 local sigAlarm   = {type="virtual", name="sl-alarm"}
-local sigOwnX    = {type="virtual", name="signal-O"}
-local sigOwnY    = {type="virtual", name="signal-P"}
+local sigOwnX    = {type="virtual", name="sl-own-x"}
+local sigOwnY    = {type="virtual", name="sl-own-y"}
 local sigRadius  = {type="virtual", name="sl-radius"}
 local sigMin     = {type="virtual", name="sl-minimum"}
 local sigMax     = {type="virtual", name="sl-maximum"}

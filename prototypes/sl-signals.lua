@@ -23,16 +23,18 @@ data:extend({
 
 -- Then extend our signals
 local signals = {
-  makeSignal("sl-x",           "directX",       "a-a"),
-  makeSignal("sl-y",           "directY",       "a-b"),
-  makeSignal("foe-x-position", "foeX",          "a-c"),
-  makeSignal("foe-y-position", "foeY",          "a-d"),
-  makeSignal("sl-warn",        "warn",          "a-e"),
-  makeSignal("sl-alarm",       "alarm",         "a-f"),
-  makeSignal("sl-radius",      "radius",        "a-g"),
-  makeSignal("sl-minimum",     "min_distance",  "a-h"),
-  makeSignal("sl-maximum",     "max_distance",  "a-i"),
-  makeSignal("sl-rotation",    "rotate",        "a-j"),
+  makeSignal("sl-own-x",       "ownX",          "a-a"),
+  makeSignal("sl-own-y",       "ownY",          "a-b"),
+  makeSignal("sl-x",           "directX",       "a-c"),
+  makeSignal("sl-y",           "directY",       "a-d"),
+  makeSignal("foe-x-position", "foeX",          "a-e"),
+  makeSignal("foe-y-position", "foeY",          "a-f"),
+  makeSignal("sl-warn",        "warn",          "a-g"),
+  makeSignal("sl-alarm",       "alarm",         "a-h"),
+  makeSignal("sl-radius",      "radius",        "a-i"),
+  makeSignal("sl-minimum",     "min_distance",  "a-j"),
+  makeSignal("sl-maximum",     "max_distance",  "a-k"),
+  makeSignal("sl-rotation",    "rotate",        "a-l"),
 }
 
 data:extend(signals)
