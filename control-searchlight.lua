@@ -229,7 +229,7 @@ export.Rotated = function(g, light, oldDir)
   RotateDirByOne(g, light, oldDir)
   ct.UpdateWanderParams(g, g.tWanderParams.radius, g.tWanderParams.rotation, 
                         g.tWanderParams.min, g.tWanderParams.max)
-  rd.DrawSearchArea(g.light, nil, g.light.force, true)
+  rd.DrawSearchArea(g.light, nil, g.light.force)
 end
 
 

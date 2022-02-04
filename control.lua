@@ -172,8 +172,9 @@ function(event)
   local entity = p.selected
   if entity and 
     (entity.name == d.searchlightBaseName 
-      or entity.name == d.searchlightAlarmName) then
-    rd.DrawSearchArea(entity, p, nil, false)
+      or entity.name == d.searchlightAlarmName)
+    and entity.force == p.force then
+    rd.DrawSearchArea(entity, p, nil)
   end
 end)
 

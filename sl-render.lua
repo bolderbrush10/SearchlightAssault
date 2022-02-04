@@ -8,9 +8,7 @@ local wireFrameTTL = 240
 local colorDrab = {r=0.08, g=0.04, b=0, a=0.0}
 local colorVibr = {r=0.16, g=0.08, b=0, a=0.0}
 
-
--- TODO test with old save from user
--- TODO Migration file to add this global variable?
+local twoPi = 2 * math.pi
 
 
 -- The map helps limit UI redraws for a given searchlight
@@ -36,6 +34,11 @@ local function MakeArcParams(sl, player, force, wParams)
     draw_on_ground = true,
   }
 
+  if t.min_radius == t.max_radius then
+    t.max_radius = t.min_radius - 0.2
+    t.min_radius = t.max_radius + 0.2
+  end
+
   if player then
     t.players = {player}
   end
@@ -48,14 +51,13 @@ local function MakeArcParams(sl, player, force, wParams)
 end
 
 
--- TODO Need to handle minDist == maxDist
 local function Render(sl, player, force, wParams)
   return rendering.draw_arc(MakeArcParams(sl, player, force, wParams))
 end
 
 
 local function Unrender(epochAndRender)
-  if epochAndRender[2] then
+  if epochAndRender and epochAndRender[2] then
     rendering.destroy(epochAndRender[2])
   end
 end
@@ -70,49 +72,45 @@ local function ClearGestaltRender(gID)
 end
 
 
--- TODO Don't render for players on enemy force
--- TODO Stop showing radius for default-params light unless moused over, it's too big & annoying
---      (Unless the radius was just set from something else _to_ the default-params)
--- TODO Need to test setting hundreds of searchlight areas at once over circuit network
--- TODO creating a searchlight and immediately giving it circuit conditions
---      causes it to forever render its initial, default search area...
--- Map: gID -> 0/playerIndex -> {epochTick, render_id}
 export.DrawSearchArea = function(sl, player, force, forceRedraw)
-  game.print("Draw search area: " .. game.tick .. ": " .. sl.unit_number .. " " .. serpent.block(player) .. " " .. serpent.block(force) .. " " .. serpent.block(forceRedraw))
-
   local g = global.unum_to_g[sl.unit_number]
   if not g or not g.tAdjParams then
     return
   end
 
-  local gID = g.gID
-  local pIndex = 0
-  if player then
-    pIndex = player.index
+  -- Don't show radius for default-params light unless moused over, it's too big & annoying
+  -- (Unless the radius was just set from something else _to_ the default-params)
+  local params = g.tAdjParams
+  if  not forceRedraw
+      and params.angleStart == 0
+      and params.len == twoPi
+      and params.min == 1
+      and params.max == d.searchlightRange then
+    return
   end
+
+  local gID = g.gID
 
   if not global.slFOVRenders[gID] then
     global.slFOVRenders[gID] = {}
   end
 
-  local pIndexToEpochAndRenderMap = global.slFOVRenders[gID]
-
   -- If the whole force just saw this area, no need to redraw for just one of its players
-  -- (Which would case a double-draw and render it twice as bright as intended)
-  if  not forceRedraw
-      and (pIndexToEpochAndRenderMap[pIndex] or pIndexToEpochAndRenderMap[0]) then
-    return
-  else
-    pIndexToEpochAndRenderMap[pIndex] = {game.tick, nil}
+  -- (which would cause a double-draw and render it twice as bright as intended)
+  if player and not global.slFOVRenders[gID][0] then
+    local pIndex = player.index
+    Unrender(global.slFOVRenders[gID][pIndex])
+    global.slFOVRenders[gID][pIndex] = {game.tick, Render(sl, player, force, params)}
+  elseif force then
+    for index, _ in pairs(global.slFOVRenders[gID]) do
+      Unrender(global.slFOVRenders[gID][index])
+    end
+
+    global.slFOVRenders[gID][0] = {game.tick, Render(sl, player, force, params)}
   end
-
-  Unrender(pIndexToEpochAndRenderMap[pIndex])
-
-  pIndexToEpochAndRenderMap[pIndex] = {game.tick, Render(sl, player, force, g.tAdjParams)}
 end
 
 
--- Map: gID -> 0/playerIndex -> {epochTick, render_id}
 export.Update = function(tick)
   local added = {}
 
@@ -126,32 +124,27 @@ export.Update = function(tick)
         local player = nil
         local force = nil
 
-        if pIndex == 0 then
-          force = g.light.force
-        else
-          player = game.players[pIndex]
-        end
+        if pIndex == 0 and (game.tick - epochAndRender[1]) == wireFrameTTL then
+          local force = g.light.force
 
-        if force and (game.tick - epochAndRender[1]) == wireFrameTTL then
           -- If a player is still mousing over this light,
           -- then keep showing its range for that player
-          -- TODO Does this make sense in multiplayer?
           for _, p in pairs(force.players) do
             if p.selected == g.light then
-              -- Unsafe to add to map while iterating it
-              table.insert(added, {p = p, g = g})
+              -- Unsafe to add to map while iterating it, 
+              -- so push back to a temp variable and add later
+              table.insert(added, {g = g, p = p})
             end
           end
 
           Unrender(epochAndRender)
           pIndexToEpochAndRenderMap[pIndex] = nil
           -- If this just emptied the outer map, we'll clear it next tick by checking next()
-        elseif player and player.selected ~= g.light then
+        elseif pIndex > 0 and game.players[pIndex] and game.players[pIndex].selected ~= g.light then
           Unrender(epochAndRender)
           pIndexToEpochAndRenderMap[pIndex] = nil
           -- If this just emptied the outer map, we'll clear it next tick by checking next()
         end
-
       end
     end
 
@@ -160,6 +153,7 @@ export.Update = function(tick)
   for _, entry in pairs(added) do
     local g = entry.g
     local p = entry.p
+    Unrender(entry)
     global.slFOVRenders[g.gID][p.index] = {game.tick, Render(g.light, p, nil, g.tAdjParams)}
   end
 end

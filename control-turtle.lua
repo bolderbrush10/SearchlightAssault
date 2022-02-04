@@ -94,10 +94,9 @@ local function clampDeg(value, default)
 end
 
 
--- TODO Need to treat wanderParam values of 0 as unset / default
 -- tWanderParams = .radius, .rotation, .min, .max
 -- tAdjParams = .angleStart, .len, .min, .max
-local function ValidateAndSetParams(g)
+local function ValidateAndSetParams(g, forceRedraw)
   g.tAdjParams = {} -- init / reset
 
   -- Blueprints ignore orientation,
@@ -120,10 +119,10 @@ local function ValidateAndSetParams(g)
     g.tAdjParams.len = (rad / 180) * math.pi
   end
 
-  local min = clamp(g.tWanderParams.min, 1, bufferedRange, 1)
-  local max = bufferedRange
+  local min = clamp(g.tWanderParams.min, 1, d.searchlightRange, 1)
+  local max = d.searchlightRange
   if g.tWanderParams.max ~= 0 then
-    max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+    max = clamp(g.tWanderParams.max, 1, d.searchlightRange, d.searchlightRange)
   end
 
   if min > max then
@@ -134,7 +133,7 @@ local function ValidateAndSetParams(g)
   g.tAdjParams.max = max
 
   -- Show new search area
-  rd.DrawSearchArea(g.light, nil, g.light.force, true)  
+  rd.DrawSearchArea(g.light, nil, g.light.force, forceRedraw)  
 end
 
 
@@ -142,8 +141,6 @@ local function MakeWanderWaypoint(g)
   if not g.tAdjParams then
     ValidateAndSetParams(g)
   end
-
-  -- tAdjParams = .angleStart, .len, .min, .max
 
   -- math.random doesn't like floats, so, multiply by 100 and floor it
   local angle = nil
@@ -155,8 +152,8 @@ local function MakeWanderWaypoint(g)
     angle = math.random(start, start + len) / 100
   end
 
-  local min = g.tAdjParams.min
-  local max = g.tAdjParams.max
+  local min = clamp(g.tAdjParams.min, 1, bufferedRange, 1)
+  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
   if min < max then
     distance = math.random(min, max)
   else
@@ -360,10 +357,6 @@ end
 
 -- These parameters will be read in MakeWanderWaypoint
 export.UpdateWanderParams = function(g, rad, rot, min, max)
-  -- TODO won't this get called constantly if everything is unset? 
-  -- We were initially thinking we'd set tWanderParams to null to indicate none are set,
-  -- but that seems infeasible now.. 
-  -- We realized it's going to have to always be set to something.
   if  g.tWanderParams 
       and (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
     export.SetDefaultWanderParams(g)
@@ -388,7 +381,7 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
   end
 
   if change then
-    ValidateAndSetParams(g)
+    ValidateAndSetParams(g, true)
     export.WanderTurtle(g)
   end
 end
