@@ -59,7 +59,7 @@ end
 
 
 local function clamp(value, min, max, default)
-  if not value then
+  if not value or value == 0 then
     return default
   else
     if value < min then
@@ -347,28 +347,19 @@ end
 export.SetDefaultWanderParams = function(g)
   g.tWanderParams =
   {
-    radius = 360,
+    radius = 0,
     rotation = 0,
     min = 0,
-    max = d.searchlightRange
+    max = 0
   }
 end
 
 
 -- These parameters will be read in MakeWanderWaypoint
 export.UpdateWanderParams = function(g, rad, rot, min, max)
-  if  g.tWanderParams 
-      and (rad == 0) and (rot == 0) and (min == 0) and (max == 0) then
-    export.SetDefaultWanderParams(g)
-    ValidateAndSetParams(g)
-    -- No need to call export.WanderTurtle(g);
-    -- we can let it finish whatever it's currently doing
-    return
-  end
-  
   local change = false
   if not g.tWanderParams then
-    g.tWanderParams = {}
+    export.SetDefaultWanderParams(g)
     change = true
   end
 

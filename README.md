@@ -145,9 +145,15 @@ but this codebase would be drastically smaller if these issues weren't in place:
 0. [Mitigated by dev update; forums.factorio.com/100269] Attacks fail if a unit enters its target's hitbox
 0. Vehicles don't count as an entity_with_force, so you can't set their shooting target to one manually,
    even though turrets _can and do_ attack vehicles
+   (One must detect the vehicle, then check for a driver inside it and target the driver)
 0. Command complete events don't fire right when a distraction occurs,
    you have to wait for the distraction to be over to know if your command was interrupted
 0. The mod editor doesn't fire events while creating / destroying from some tabs.
+0. Developers have repeatedly stated they won't do an OnCircuitConnected/Disconnected
+   https://forums.factorio.com/viewtopic.php?p=369587#p369587
+   https://forums.factorio.com/viewtopic.php?p=509912#p509912
+0. Wires also don't trigger OnEntityCreated/Destroyed.
+   
 
 
 #### File Guide:
@@ -164,6 +170,7 @@ _control-items.lua_       - converts items in blueprints to the base versions of
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
 
 _sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights
+_sl-render.lua_           - displays the searchlight's search area
 _sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
 
 _info.json_            - information to display in the mod portal webpage, plus version / mod dependency information

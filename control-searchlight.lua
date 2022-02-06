@@ -96,6 +96,8 @@ end
 -- so roll that back by one unit to get 45 degree changes.
 -- We can compare oldDir to the current direction to figure out
 -- whether the player is rotating clockwise or counterclockwise.
+-- TODO Work this into the circuit signals somehow,
+--      so it actually affects things.
 local function RotateDirByOne(g, light, oldDir)
   local newDir = light.direction
 
