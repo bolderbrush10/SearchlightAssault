@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.0
+Date: 2022-02-05
+  Changes:
+    - Sending signals to control the search area now highlights the range to be searched
+    - Virtual signals added for searchlight own-position (migration file added to convert old O and P signals on existing searchlights)
+---------------------------------------------------------------------------------------------------
 Version: 1.1.3
 Date: 2022-01-19
   Changes:
