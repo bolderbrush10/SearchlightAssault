@@ -48,6 +48,7 @@ local function MakeBoost(currTable, newRange)
       local boostCopy = table.deepcopy(currTable[turret.name])
 
       -- Inspired by Mooncat. Thanks, Mooncat.
+      -- TODO This doesn't seem able to read names provided in other mod's locale folders...
       boostCopy.localised_name = {"entity-name." .. boostCopy.name}
       if {"entity-description." .. boostCopy.name} then
         boostCopy.localised_description = {"entity-description." .. boostCopy.name}

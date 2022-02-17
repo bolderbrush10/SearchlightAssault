@@ -77,6 +77,7 @@ local function handleModSettingsChanges(event)
   end
 
   handleUninstall()
+  cu.UpdateBlockList()
 end
 
 
