@@ -281,9 +281,9 @@ local Light_Layer_Searchlight_DayHaze =
                     },
   width = 200,
   height = 200,
-  scale = 1,
   blend_mode = "additive",
   tint = {r=230/255, g=150/255, b=0, a=0.1},
+  scale = settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius,
 }
 
 local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight_DayHaze)
@@ -295,10 +295,10 @@ local Light_Layer_Searchlight_NormLight =
   filename = "__SearchlightAssault__/graphics/searchlight-r.png",
   width = 200,
   height = 200,
-  scale = 2.2,
   frame_count = slFrameCount,
   frame_sequence = slStaticFrameSeq,
   flags = { "light" },
+  scale = 2.2 * (settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius),
 }
 
 

@@ -47,9 +47,16 @@ d.searchlightControlEnergyUsage = "900kW"
 -- Things that aren't interesting to mess with --
 -------------------------------------------------
 
+d.lightRadiusSetting = "searchlight-assault-setting-light-radius"
+
 -- Radius at which the searchlight beam detects foes
 -- Setting vision distance too low can cause turtles to get stuck in their foes
-d.searchlightSpotRadius = 4
+d.defaultSearchlightSpotRadius = 4
+d.searchlightSpotRadius = d.defaultSearchlightSpotRadius
+
+if settings then -- Have to have this check for when this file is used prior to prototype stage
+  d.searchlightSpotRadius = settings.startup[d.lightRadiusSetting].value
+end
 
 -- Speeds at which searchlight beam wanders / responds to circuit commands
 -- There is a maximum speed which you cannot exceed or else the turtle
@@ -107,6 +114,7 @@ d.turtleForceSuffix = "_SLATurtle"
 d.boostSuffix = "-sla_boosted"
 
 -- Mod settings keys
+-- d.lightRadiusSetting = defined above
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"

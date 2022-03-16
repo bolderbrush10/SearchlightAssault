@@ -28,3 +28,12 @@ data:extend({{
   setting_type = "runtime-global",
   default_value = true,
 }})
+
+data:extend({{
+  type = "double-setting",
+  name = d.lightRadiusSetting,
+  localised_name        = {"name.searchlight-assault-setting-light-radius"},
+  localised_description = {"description.searchlight-assault-setting-light-radius"},
+  setting_type = "startup",
+  default_value = d.defaultSearchlightSpotRadius,
+}})
