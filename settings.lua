@@ -36,4 +36,6 @@ data:extend({{
   localised_description = {"description.searchlight-assault-setting-light-radius"},
   setting_type = "startup",
   default_value = d.defaultSearchlightSpotRadius,
+  minimum_value = 0.1,
+  maximum_value = 50,
 }})
