@@ -24,7 +24,7 @@ d.searchlightRange = 100
 -- We can try making this bigger to capture bigger / non-square turrets
 d.searchlightMaxNeighborDistance = 3
 
--- Range boost effect provided to friendly turrets so they can attack the distant foe the searchlight spotted
+-- Range boost effect provided to friendly turrets & their ammo so they can attack the distant foe the searchlight spotted
 -- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.
 --  Since the maximum distance a boostable friend can be might not be a whole number, thanks to trigonometry,
 --  we'll just double that factor to keep it simple. (If we care, we can use something like:

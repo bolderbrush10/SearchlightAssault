@@ -48,8 +48,8 @@ local function ParseActDelivery(actDelivery, rangeMod)
     val = val * rangeMod
   end
 
-  if val and val < d.searchlightRange then
-  	actDelivery.max_range = d.searchlightRange
+  if val and val < d.rangeBoostAmount then
+  	actDelivery.max_range = d.rangeBoostAmount
   	return true
   end
 
