@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 1.2.4
+Date: 2022-03-23
+  Changes:
+    - Add mod setting 'Distance for finding turrets to boost' to support changing the maximum distance at which searchlights find turrets to range boost.
+      - Changes to underlying calculations may affect newly built searchlight-turret formations, but shouldn't affect any existing formations in saved games.
+      - The new default value will be 1, which requires turrets to be 'touching' the searchlight to receive a boost.
+      - A value of 2 may be used to restore the old behavior (which allowed a 1 tile gap between searchlight and turret). 
+      - A value of 0 may now be set to effectively disable the range-boosting feature.
+      - Excessive values (above 30) might cause lag when constructing turrets / searchlights.
+---------------------------------------------------------------------------------------------------
 Version: 1.2.3
 Date: 2022-03-20
   Changes:

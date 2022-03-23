@@ -47,7 +47,8 @@ end
 
 
 -- Initially, we'll search for all turrets within a fairly large area,
--- then fine-tune the search with edge-to-edge calculations later
+-- then fine-tune the search with edge-to-edge calculations later.
+-- This is useful for finding extra-large turrets of sizes like 5x5.
 local boostableArea =
 {
   x = d.searchlightMaxNeighborDistance + 10,
