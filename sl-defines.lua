@@ -8,21 +8,40 @@
 
 local d = {}
 
+-------------------------------------------------
+-- Things controlled by mod settings options   --
+-------------------------------------------------
+
+-- Radius at which the searchlight beam detects foes
+-- Setting vision distance too low can cause turtles to get stuck in their foes
+d.lightRadiusSetting = "searchlight-assault-setting-light-radius"
+d.defaultSearchlightSpotRadius = 4
+d.searchlightSpotRadius = d.defaultSearchlightSpotRadius
+
+-- Max distance at which the searchlight looks for same-force turrets to boost the range of
+-- This should mostly only be able to capture adjacent turrets of up to 3x3 size
+-- We can try making this bigger to capture bigger / non-square turrets
+-- (Or users can use the mod settings option to set it themselves)
+d.maxNeighborDistanceSetting = "searchlight-assault-max-neighbor-boost-distance"
+d.defaultSearchlightMaxNeighborDistance = 1
+d.searchlightMaxNeighborDistance = d.defaultSearchlightMaxNeighborDistance
+
+
+-- This check is necessary for when this file gets referenced prior to prototype stage
+if settings then 
+  d.searchlightSpotRadius = settings.startup[d.lightRadiusSetting].value
+  d.searchlightMaxNeighborDistance = settings.startup[d.maxNeighborDistanceSetting].value
+end
+
 
 -----------------------------
 -- Gameplay-related tweaks --
 -----------------------------
 
-
 -- Max range at which search light beam wanders
 -- (About the same size as the radar's continuous reveal,
 --  since the searchlight is built from a radar)
 d.searchlightRange = 100
-
--- Max distance at which the searchlight looks for same-force turrets to boost the range of
--- This should mostly only be able to capture adjacent turrets of up to 3x3 size
--- We can try making this bigger to capture bigger / non-square turrets
-d.searchlightMaxNeighborDistance = 3
 
 -- Range boost effect provided to friendly turrets & their ammo so they can attack the distant foe the searchlight spotted
 -- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.
@@ -43,20 +62,10 @@ d.searchlightCapacitorSize      = "1MJ"
 d.searchlightEnergyUsage = "332kW"
 d.searchlightControlEnergyUsage = "900kW"
 
+
 -------------------------------------------------
--- Things that aren't interesting to mess with --
+-- Things that aren't easy to mess with --
 -------------------------------------------------
-
-d.lightRadiusSetting = "searchlight-assault-setting-light-radius"
-
--- Radius at which the searchlight beam detects foes
--- Setting vision distance too low can cause turtles to get stuck in their foes
-d.defaultSearchlightSpotRadius = 4
-d.searchlightSpotRadius = d.defaultSearchlightSpotRadius
-
-if settings then -- Have to have this check for when this file is used prior to prototype stage
-  d.searchlightSpotRadius = settings.startup[d.lightRadiusSetting].value
-end
 
 -- Speeds at which searchlight beam wanders / responds to circuit commands
 -- There is a maximum speed which you cannot exceed or else the turtle
@@ -118,5 +127,6 @@ d.boostSuffix = "-sla_boosted"
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
+
 
 return d

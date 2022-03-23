@@ -396,8 +396,12 @@ end
 
 -- Called when a searchlight or turret is created
 export.CreateRelationship = function(g, t)
-  if      global.boostInfo[t.name] ~= NOT_BOOSTABLE
-      and u.RectangeDistSquared(u.UnpackRectangles(t.selection_box, g.light.selection_box)) <= 1 then
+  if global.boostInfo[t.name] == NOT_BOOSTABLE then
+    return
+
+  -- Fine-tune checking that a turret is in a good range to be neighbors
+  elseif u.RectangeDistSquared(u.UnpackRectangles(t.selection_box, g.light.selection_box))
+   < u.square(d.searchlightMaxNeighborDistance) then
 
     local tuID = getTuID(t)
     r.setRelation(global.GestaltTunionRelations, g.gID, tuID)
@@ -456,7 +460,9 @@ export.Boost = function(tunion, foe)
      or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
      or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
      or global.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
+
     return
+
   end
 
   local checkAmmoRange = not settings.global[d.overrideAmmoRange].value

@@ -45,10 +45,13 @@ function(a)
   return a*a
 end
 
+
+-- Initially, we'll search for all turrets within a fairly large area,
+-- then fine-tune the search with edge-to-edge calculations later
 local boostableArea =
 {
-  x = d.searchlightMaxNeighborDistance*2,
-  y = d.searchlightMaxNeighborDistance*2
+  x = d.searchlightMaxNeighborDistance + 10,
+  y = d.searchlightMaxNeighborDistance + 10
 }
 
 

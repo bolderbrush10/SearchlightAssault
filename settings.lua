@@ -39,3 +39,14 @@ data:extend({{
   minimum_value = 0.1,
   maximum_value = 50,
 }})
+
+data:extend({{
+  type = "double-setting",
+  name = d.maxNeighborDistanceSetting,
+  localised_name        = {"name.searchlight-assault-max-neighbor-boost-distance"},
+  localised_description = {"description.searchlight-assault-max-neighbor-boost-distance"},
+  setting_type = "startup",
+  default_value = d.defaultSearchlightMaxNeighborDistance,
+  minimum_value = 0.0,
+  maximum_value = 200,
+}})
