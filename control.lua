@@ -29,6 +29,12 @@ local militaryFilter =
   {filter = "type", type = "simple-entity-with-force"},
 }
 
+local militaryAndGhostsFilter =
+{
+  {filter = "type", type = "entity-ghost"},
+  table.unpack(militaryFilter)
+}
+
 --
 -- In the case where multiple event defines could ostensibly handle the same entity being created or destroyed,
 -- we'll register for the event definition which happens 'soonest'
@@ -330,11 +336,21 @@ end)
 -- DESTRUCTIONS
 --
 
+-- Make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
+local function ghostRemoved(ghost)
+  local signal = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
+                                                      position   = ghost.position,}
+  for _, s in pairs(signal) do
+    s.destroy()
+  end
+end
+
 local function entityRemoved(event)
   local entity = event.entity
 
-  if entity.name == d.searchlightBaseName or entity.name == d.searchlightAlarmName then
-
+  if entity.type == "entity-ghost" and entity.ghost_name == d.searchlightBaseName then
+    ghostRemoved(entity)
+  elseif entity.name == d.searchlightBaseName or entity.name == d.searchlightAlarmName then
     local onDeath = event.name == defines.events.on_entity_died 
     -- or event.name == defines.events.script_raised_destroy
     -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
@@ -356,7 +372,7 @@ for index, e in pairs
   defines.events.on_pre_player_mined_item,
   defines.events.on_robot_pre_mined,
 }) do
-  script.on_event(e, entityRemoved, militaryFilter)
+  script.on_event(e, entityRemoved, militaryAndGhostsFilter)
 end
 
 
@@ -428,14 +444,9 @@ script.on_event(defines.events.on_player_setup_blueprint,      ci.ScanBP_StacksA
 script.on_event(defines.events.on_player_configured_blueprint, ci.ScanBP_StacksAndSwapToBaseType)
 
 
--- Make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
-  local signal = event.ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
-                                                            position   = event.ghost.position,}
-  for _, s in pairs(signal) do
-    s.destroy()
-  end
+  ghostRemoved(event)
 end,
 {
   {filter = "ghost_name", name = d.searchlightBaseName}
