@@ -528,9 +528,11 @@ export.UnBoost = function(tunion)
   tunion.boosted = false
 
   local c = tunion.control
-  newT.surface.create_entity{name = "spark-explosion", position = c.position}
-  newT.surface.create_entity{name = "spark-explosion", position = c.position}
-  c.destroy()
+  if c then -- In some cases, other mods apparently can destroy our control entity...
+    newT.surface.create_entity{name = "spark-explosion", position = c.position}
+    newT.surface.create_entity{name = "spark-explosion", position = c.position}
+    c.destroy()
+  end
 
   tunion.control = nil
   tunion.turret  = newT
