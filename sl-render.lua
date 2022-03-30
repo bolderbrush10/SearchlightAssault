@@ -127,10 +127,11 @@ export.Update = function(tick)
         if pIndex == 0 and (game.tick - epochAndRender[1]) == wireFrameTTL then
           local force = g.light.force
 
-          -- If a player is still mousing over this light,
+          -- If a player is still mousing over this light, or has its GUI open,
           -- then keep showing its range for that player
           for _, p in pairs(force.players) do
-            if p.selected == g.light then
+            local gAndGUI = global.pIndexToGUI[p.index]
+            if p.selected == g.light or (gAndGUI and gAndGUI[1] == g.gID) then
               -- Unsafe to add to map while iterating it, 
               -- so push back to a temp variable and add later
               table.insert(added, {g = g, p = p})
@@ -140,10 +141,16 @@ export.Update = function(tick)
           Unrender(epochAndRender)
           pIndexToEpochAndRenderMap[pIndex] = nil
           -- If this just emptied the outer map, we'll clear it next tick by checking next()
+
         elseif pIndex > 0 and game.players[pIndex] and game.players[pIndex].selected ~= g.light then
-          Unrender(epochAndRender)
-          pIndexToEpochAndRenderMap[pIndex] = nil
-          -- If this just emptied the outer map, we'll clear it next tick by checking next()
+          local gAndGUI = global.pIndexToGUI[pIndex]
+          -- Keep delaying the Unrender while the player has the GUI open
+          if not gAndGUI or gAndGUI[1] ~= g.gID then
+            Unrender(epochAndRender)
+            pIndexToEpochAndRenderMap[pIndex] = nil
+            -- If this just emptied the outer map, we'll clear it next tick by checking next()
+
+          end
         end
       end
     end

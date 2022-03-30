@@ -166,6 +166,7 @@ _control-searchlight.lua_ - behaviors for the searchlight itself when created / 
 _control-tunion.lua_      - behaviors for range-boosting turrets and filtering incompatible turrets per mod settings
 _control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
 _control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
+_control-gui.lua_         - Graphical User Interface controls, for displaying windows allowing control of searchlights to players
 _control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
 
@@ -192,6 +193,8 @@ Prototypes contain the definitions for a unit's graphics, animations, and stats 
 
 _prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
+_prototypes/sl-gui.lua_            - defines GUI styles for later use in control-gui.lua
+_prototypes/sl-shortcuts.lua_      - defines / modifies in game hotkeys (used to open the searchlight GUI)
 _prototypes/sl-signals.lua_        - virtual signals for refined control over searchlights
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
 

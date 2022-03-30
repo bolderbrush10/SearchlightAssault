@@ -58,42 +58,6 @@ local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
 end
 
 
-local function clamp(value, min, max, default)
-  if not value or value == 0 then
-    return default
-  else
-    if value < min then
-      return min
-    elseif value > max then
-      return max
-    end
-  end
-
-  return value
-end
-
-
--- Clamps values to 1 - 360, treating 0 as 360
--- (rendering.draw_arc creates beautiful but glitchy lines
---  when given negative or excessive values)
-local function clampDeg(value, default)
-  if not value then
-    return default
-  end
-
-  if value == 0 or value == 360 then
-    return 360
-  elseif value > 0 then
-    return value % 360
-  else
-    -- return 360 - (value % 360)
-    -- Believe it or not, but factorio's version of lua acts like the above for negatives
-    -- (version 5.4.3 does not, and requires that line above)
-    return value % 360
-  end
-end
-
-
 -- tWanderParams = .radius, .rotation, .min, .max
 -- tAdjParams = .angleStart, .len, .min, .max
 local function ValidateAndSetParams(g, forceRedraw)
@@ -101,8 +65,8 @@ local function ValidateAndSetParams(g, forceRedraw)
 
   -- Blueprints ignore orientation,
   -- so we will ignore orientation
-  local rot = clampDeg(g.tWanderParams.rotation, 0)
-  local rad = clampDeg(g.tWanderParams.radius, 360)
+  local rot = u.clampDeg(g.tWanderParams.rotation, 0)
+  local rad = u.clampDeg(g.tWanderParams.radius, 360)
 
   if rad == 360 then
     g.tAdjParams.angleStart = 0
@@ -119,10 +83,10 @@ local function ValidateAndSetParams(g, forceRedraw)
     g.tAdjParams.len = (rad / 180) * math.pi
   end
 
-  local min = clamp(g.tWanderParams.min, 1, d.searchlightRange, 1)
+  local min = u.clamp(g.tWanderParams.min, 1, d.searchlightRange, 1)
   local max = d.searchlightRange
   if g.tWanderParams.max ~= 0 then
-    max = clamp(g.tWanderParams.max, 1, d.searchlightRange, d.searchlightRange)
+    max = u.clamp(g.tWanderParams.max, 1, d.searchlightRange, d.searchlightRange)
   end
 
   if min > max then
@@ -152,8 +116,8 @@ local function MakeWanderWaypoint(g)
     angle = math.random(start, start + len) / 100
   end
 
-  local min = clamp(g.tAdjParams.min, 1, bufferedRange, 1)
-  local max = clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
+  local min = u.clamp(g.tAdjParams.min, 1, bufferedRange, 1)
+  local max = u.clamp(g.tWanderParams.max, 1, bufferedRange, bufferedRange)
   if min < max then
     distance = math.random(min, max)
   else

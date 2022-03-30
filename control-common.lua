@@ -1,6 +1,7 @@
 local r  = require "sl-relation"
 local cf = require "control-forces"
 local cg = require "control-gestalt"
+local cgui = require "control-gui"
 local cu = require "control-tunion"
 local rd = require "sl-render"
 
@@ -19,6 +20,7 @@ export.InitTables = function()
   cg.InitTables_Gestalt()
   cu.InitTables_Turrets()
   rd.InitTables_Render()
+  cgui.InitTables_GUI()
 
   ----------------
   --  Relation  --

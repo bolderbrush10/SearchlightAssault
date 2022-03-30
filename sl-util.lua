@@ -136,6 +136,46 @@ function(origin, radTheta, distance)
 end
 
 
+u.clamp = function(value, min, max, default)
+  if not value or value == 0 then
+    return default
+  else
+    if value < min then
+      return min
+    elseif value > max then
+      return max
+    end
+  end
+
+  return value
+end
+
+
+-- Clamps values to 1 - 360, treating 0 as 360
+-- (rendering.draw_arc creates beautiful but glitchy lines
+--  when given negative or excessive values)
+u.clampDeg = function(value, default, returnZero)
+  if not value then
+    return default
+  end
+
+  if value == 0 or value == 360 then
+    if returnZero then
+      return 0
+    else
+      return 360
+    end
+  elseif value > 0 then
+    return value % 360
+  else
+    -- return 360 - (value % 360)
+    -- Believe it or not, but factorio's version of lua acts like the above for negatives
+    -- (version 5.4.3 does not, and requires that line above)
+    return value % 360
+  end
+end
+
+
 local function LookupArc(turret)
   if firing_arcs[turret.name] then
     return firing_arcs[turret.name]

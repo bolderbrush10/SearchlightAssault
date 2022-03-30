@@ -161,6 +161,7 @@ sl_c.energy_source =
 }
 sl_c.render_layer = "object"
 sl_c.flags = hiddenEntityFlags
+sl_c.selectable_in_game = false
 sl_c.corpse = "small-scorchmark"
 sl_c.create_ghost_on_death = false
 sl_c.vision_distance = 0
@@ -171,6 +172,7 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 
 
 -- Searchlight Signal Interface Entity
+-- TODO We can probably define a screen_light later
 local sl_s = {}
 sl_s.type = "constant-combinator"
 sl_s.name = d.searchlightSignalInterfaceName
@@ -182,7 +184,7 @@ sl_s.selection_box = {{-.8, .2}, {.8, 1}}
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.selection_priority = 255
-sl_s.item_slot_count = 8
+sl_s.item_slot_count = 20
 sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
 sl_s.circuit_wire_max_distance = 9
 sl_s.sprites = g.layerTransparentPixel
@@ -231,6 +233,7 @@ t.rotation_speed = 1.0
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
 t.flags = hiddenEntityFlags
+t.selectable_in_game = false
 t.pollution_to_join_attack = 0
 t.has_belt_immunity = true
 t.move_while_shooting = true
@@ -293,6 +296,7 @@ local spotter = {}
 spotter.name = d.spotterName
 spotter.type = "land-mine"
 spotter.flags = hiddenEntityFlags
+spotter.selectable_in_game = false
 spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 spotter.collision_mask = {} -- enable noclip for pathfinding too

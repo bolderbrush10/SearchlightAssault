@@ -1,22 +1,17 @@
 local d = require "sl-defines"
+local u = require "sl-util"
 
 local ct = require "control-turtle"
 local rd = require "sl-render"
 
+local cgui = require "control-gui"
+
 
 local export = {}
 
-
-local FoePositionXSlot = 1
-local FoePositionYSlot = 2
-local WarningSlot = 3
-local AlarmSlot = 4
-local OwnPositionXSlot = 5
-local OwnPositionYSlot = 6
-
 -- hardcoded name lookup below for an ever-so-slight speedup
--- local sigDirectX = {type="virtual", name="signal-X"}
--- local sigDirectY = {type="virtual", name="signal-Y"}
+local sigDirectX = {type="virtual", name="sl-x"}
+local sigDirectY = {type="virtual", name="sl-y"}
 local sigFoeX    = {type="virtual", name="foe-x-position"}
 local sigFoeY    = {type="virtual", name="foe-y-position"}
 local sigWarn    = {type="virtual", name="sl-warn"}
@@ -92,50 +87,36 @@ end
 
 
 -- valid directions: 0 - 7
--- Players rotate things in increments of 2 (90 degrees),
--- so roll that back by one unit to get 45 degree changes.
+-- Normally, players rotate things in increments of 2 (90 degrees),
+-- so we'll roll that back by one unit to get 45 degree changes.
 -- We can compare oldDir to the current direction to figure out
 -- whether the player is rotating clockwise or counterclockwise.
--- TODO Work this into the circuit signals somehow,
---      so it actually affects things.
 local function RotateDirByOne(g, light, oldDir)
   local newDir = light.direction
 
   -- Detect clockwise looparound
   if oldDir == 6 and newDir == 0 then
-    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
-    light.direction = 7
-    return
+    return 45
   end
   if oldDir == 7 and newDir == 1 then
-    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
-    light.direction = 0
-    return
+    return 45
   end
-
 
   -- Detect counter-clockwise looparound
   if oldDir == 0 and newDir == 6 then
-    g.tWanderParams.rotation = g.tWanderParams.rotation - 45
-    light.direction = 7
-    return
+    return -45
   end
   if oldDir == 1 and newDir == 7 then
-    g.tWanderParams.rotation = g.tWanderParams.rotation - 45
-    light.direction = 0
-    return
+    return -45
   end
 
   -- Detect clockwise procession
   if oldDir < newDir then
-    g.tWanderParams.rotation = g.tWanderParams.rotation + 45
-    light.direction = light.direction - 1
-    return
+    return 45
   end
 
   -- counterclockwise is the only remaining case
-  g.tWanderParams.rotation = g.tWanderParams.rotation - 45
-  light.direction = light.direction + 1
+  return -45
 end
 
 
@@ -160,10 +141,10 @@ export.ProcessAlarmClearSignals = function(g)
   local i = g.signal
   local c = i.get_control_behavior()
 
-  c.set_signal(FoePositionXSlot, {signal = sigFoeX, count = 0})
-  c.set_signal(FoePositionYSlot, {signal = sigFoeY, count = 0})
-  c.set_signal(AlarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(WarningSlot,      {signal = sigWarn, count = (g.turtle.distraction_command and 1 or 0)})
+  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = 0})
+  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = 0})
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = (g.turtle.distraction_command and 1 or 0)})
 
   local x = i.get_merged_signal({type="virtual", name="sl-x"})
   local y = i.get_merged_signal({type="virtual", name="sl-y"})
@@ -190,12 +171,12 @@ export.ProcessAlarmRaiseSignals = function(g)
 
   if g.light.shooting_target and g.light.shooting_target.valid then
     local pos = g.light.shooting_target.position
-    c.set_signal(FoePositionXSlot, {signal = sigFoeX, count = pos.x})
-    c.set_signal(FoePositionYSlot, {signal = sigFoeY, count = pos.y})
+    c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = pos.x})
+    c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = pos.y})
   end
 
-  c.set_signal(AlarmSlot,        {signal = sigAlarm, count = 1})
-  c.set_signal(WarningSlot,      {signal = sigWarn, count = 0})
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 1})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})
 end
 
 
@@ -208,19 +189,26 @@ export.SpawnSignalInterface = function(sl)
   i.rotatable = false
   i.destructible = false
 
-  i.get_control_behavior().set_signal(FoePositionXSlot, {signal = sigFoeX, count = 0})
-  i.get_control_behavior().set_signal(FoePositionYSlot, {signal = sigFoeY, count = 0})
-  i.get_control_behavior().set_signal(AlarmSlot,        {signal = sigAlarm, count = 0})
-  i.get_control_behavior().set_signal(WarningSlot,      {signal = sigWarn, count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.minSlot,    {signal = sigMin,     count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.maxSlot,    {signal = sigMax,     count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.dirXSlot,   {signal = sigDirectX, count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.dirYSlot,   {signal = sigDirectY, count = 0})
 
-  i.get_control_behavior().set_signal(OwnPositionXSlot, {signal = sigOwnX, count = i.position.x})
-  i.get_control_behavior().set_signal(OwnPositionYSlot, {signal = sigOwnY, count = i.position.y})
+  i.get_control_behavior().set_signal(d.circuitSlots.ownPositionXSlot, {signal = sigOwnX,  count = i.position.x})
+  i.get_control_behavior().set_signal(d.circuitSlots.ownPositionYSlot, {signal = sigOwnY,  count = i.position.y})
+  i.get_control_behavior().set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
+  i.get_control_behavior().set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
 
   return i
 end
 
 
-export.Rotated = function(g, light, oldDir)
+-- TODO Rotate the current turtle waypoint by 45 degrees when patrol options aren't set
+export.Rotated = function(g, light, oldDir, pIndex)
   if not g.tWanderParams then
     g.tWanderParams = {}
   end
@@ -228,10 +216,24 @@ export.Rotated = function(g, light, oldDir)
     g.tWanderParams.rotation = 0
   end
 
-  RotateDirByOne(g, light, oldDir)
-  ct.UpdateWanderParams(g, g.tWanderParams.radius, g.tWanderParams.rotation, 
+  local newRot = RotateDirByOne(g, light, oldDir)
+
+  ct.UpdateWanderParams(g, g.tWanderParams.radius, g.tWanderParams.rotation + newRot, 
                         g.tWanderParams.min, g.tWanderParams.max)
   rd.DrawSearchArea(g.light, nil, g.light.force)
+
+  local control = g.signal.get_control_behavior()
+  local sig = control.get_signal(d.circuitSlots.rotateSlot)
+
+  -- We'll clamp the value down here so we don't try to factor in circuit signals
+  sig.count = u.clampDeg(sig.count + newRot, 0, true)
+  control.set_signal(d.circuitSlots.rotateSlot, sig)
+
+  local player = game.players[pIndex]
+  if player and player.valid then
+    player.play_sound{path="utility/rotated_big", position=light.position}
+    cgui.Rotated(g) -- Treat rotation like it was a text input
+  end
 end
 
 

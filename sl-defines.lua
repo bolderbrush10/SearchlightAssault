@@ -128,5 +128,28 @@ d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
 
+-- Shortcut/Custom Input keys
+d.openSearchlightGUI = "sla_gui_open_shortcut"
+d.closeSearchlightGUI = "sla_gui_close_shortcut"
+d.closeSearchlightGUIalt = "sla_gui_close_shortcut_alt"
+d.guiClose = "sla_sl_gui_close"
+
+-- The circuit network slots are used in the hidden-combinator entity 
+-- to express which signals map to which concepts.
+d.circuitSlots = {
+  radiusSlot = 1,
+  rotateSlot = 2,
+  minSlot    = 3,
+  maxSlot    = 4,
+  dirXSlot   = 5,
+  dirYSlot   = 6,
+
+  ownPositionXSlot = 11,
+  ownPositionYSlot = 12,
+  warningSlot      = 13,
+  alarmSlot        = 14,
+  foePositionXSlot = 15,
+  foePositionYSlot = 16,
+}
 
 return d

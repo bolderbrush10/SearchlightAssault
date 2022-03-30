@@ -4,6 +4,7 @@ local u  = require "sl-util"
 local cs = require "control-searchlight"
 local ct = require "control-turtle"
 local cu = require "control-tunion"
+local cgui = require "control-gui"
 
 
 -- Not quite as fast as declaring locally in a function,
@@ -130,6 +131,7 @@ local function makeGestalt(sl, sigInterface, turtle)
   global.gestalts[g.gID] = g
   global.unum_to_g[sl.unit_number] = g
   global.unum_to_g[turtle.unit_number] = g
+  global.unum_to_g[sigInterface.unit_number] = g
 
   ct.SetDefaultWanderParams(g)
 
@@ -166,6 +168,8 @@ local function RaiseAlarm(g, spottedFoe)
   cs.ProcessAlarmRaiseSignals(g)
 
   BoostFriends(g, spottedFoe)
+
+  cgui.updateOnEntity(g)
 end
 
 
@@ -174,6 +178,8 @@ local function ClearAlarm(g, escapedFoe)
   ResumeTargetingTurtle(g, escapedFoe.position)
   cs.ProcessAlarmClearSignals(g)
   export.FoeSuspected(g.turtle, escapedFoe.position)
+
+  cgui.updateOnEntity(g)
 end
 
 
@@ -274,6 +280,12 @@ end
 export.SearchlightRemoved = function(sl, killed, g)
   if not g then
     g = global.unum_to_g[sl.unit_number]
+  end
+
+  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+    if gAndGUI[1] == g.gID then
+      cgui.CloseSearchlightGUI(pIndex)
+    end
   end
 
   -- Stuff gets a little more complicated because we have to deal

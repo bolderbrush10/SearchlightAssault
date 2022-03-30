@@ -3,3 +3,5 @@
 
 require("menu-simulations.sl-menu-simulations")
 require("prototypes.sl-signals")
+require("prototypes.sl-shortcuts")
+require("prototypes.sl-gui")

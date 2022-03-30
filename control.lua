@@ -9,6 +9,8 @@ local cs = require "control-searchlight"
 local ct = require "control-turtle"
 local cu = require "control-tunion"
 
+local cgui = require "control-gui"
+
 local rd = require "sl-render"
 
 
@@ -71,6 +73,13 @@ end
 
 
 local function handleModSettingsChanges(event)
+  -- In case this mod was updated, close any open windows
+  -- so we don't have to worry about obsolete GUI
+  -- elements being available
+  for pIndex, _ in pairs(game.players) do
+    cgui.CloseSearchlightGUI(pIndex)
+  end
+
   if not event or event.setting == d.ignoreEntriesList then
     cu.UpdateBlockList()
     cu.UnboostBlockedTurrets()
@@ -201,6 +210,15 @@ function(event)
     global.watch_circles[event.tick] = nil
   end
 
+  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+    if cgui.validatePlayerAndLight(pIndex, gAndGUI[1]) then
+      cgui.updateOnTick(global.gestalts[gAndGUI[1]], gAndGUI[2])
+    else
+      -- Should be safe to remove from table while iterating in lua
+      cgui.CloseSearchlightGUI(pIndex)
+    end
+  end
+
   rd.Update(event.tick)
 end)
 
@@ -211,6 +229,55 @@ function(event)
 
   cs.CheckCircuitConditions()
 
+end)
+
+
+-- Circuit conditions / GUI events
+script.on_event(d.openSearchlightGUI, function(event)
+  if event.selected_prototype 
+    and (event.selected_prototype.name == d.searchlightBaseName 
+      or event.selected_prototype.name == d.searchlightAlarmName
+      or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
+    cgui.OpenSearchlightGUI(event.player_index)
+  end
+end)
+
+
+script.on_event(d.closeSearchlightGUI, function(event)
+  cgui.CloseSearchlightGUI(event.player_index)
+end)
+
+
+script.on_event(d.closeSearchlightGUIalt, function(event)
+  cgui.CloseSearchlightGUI(event.player_index)
+end)
+
+
+script.on_event(defines.events.on_gui_click, function(event)
+  if event.element and event.element.name == d.guiClose then
+    cgui.CloseSearchlightGUI(event.player_index)
+  end
+end)
+
+
+-- Close our GUI if something else opens
+script.on_event(defines.events.on_gui_opened, function(event)
+  cgui.CloseSearchlightGUI(event.player_index)
+end)
+
+
+script.on_event(defines.events.on_gui_text_changed, function(event)
+  local gAndGUI = global.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  if not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1]) then
+    cgui.CloseSearchlightGUI(event.player_index)
+    return
+  end
+
+  cgui.updateOnTextInput(global.gestalts[gAndGUI[1]], gAndGUI[2])
 end)
 
 
@@ -269,11 +336,11 @@ function(event)
     -- Detect if a player rotated a turret with an arc (eg, a flame turret)
     -- and check if it can still hit that foe.
     -- If it can target something in its new direction, it'll get reboosted in a moment.
-    if    not e.shooting_target then
+    if not e.shooting_target then
       cu.UnBoost(tu)
     end
   elseif g then
-    cs.Rotated(g, e, event.previous_direction)
+    cs.Rotated(g, e, event.previous_direction, event.player_index)
   end
 end)
 
