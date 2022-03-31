@@ -370,7 +370,9 @@ end
 for index, e in pairs
 ({
   defines.events.on_pre_player_mined_item,
-  defines.events.on_robot_pre_mined,
+  -- We used to check 'on_robot_pre_mined' but it turns out,
+  -- robots doing a fast-replace doesn't trigger that call
+  defines.events.on_robot_mined_entity,
 }) do
   script.on_event(e, entityRemoved, militaryAndGhostsFilter)
 end
