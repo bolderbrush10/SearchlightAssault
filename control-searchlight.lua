@@ -23,6 +23,7 @@ local sigMin     = {type="virtual", name="sl-minimum"}
 local sigMax     = {type="virtual", name="sl-maximum"}
 local sigRotate  = {type="virtual", name="sl-rotation"}
 
+
 --------------------
 --  Helper Funcs  --
 --------------------
@@ -77,12 +78,12 @@ local function FindSignalInterface(sl)
 end
 
 
-local function OutputCircuitSignals(g)
-  if g.light.name == d.searchlightBaseName then
-    export.ProcessAlarmClearSignals(g)
-  else
+local function OutputCircuitSignals(g, tick)
+  if g.light.name == d.searchlightAlarmName then
     export.ProcessAlarmRaiseSignals(g)
-  end
+  else
+    export.ProcessAlarmClearSignals(g, tick)
+  end  
 end
 
 
@@ -124,27 +125,60 @@ end
 --     Events     --
 --------------------
 
+export.ReadWanderParameters = function(g, i, c)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  local connected = (i.get_circuit_network(defines.wire_type.red)
+                  or i.get_circuit_network(defines.wire_type.green))
+  local rad = 0
+  local rot = 0
+  local min = 0
+  local max = 0
+
+  if connected then
+    rad = i.get_merged_signal(sigRadius)
+    rot = i.get_merged_signal(sigRotate)
+    min = i.get_merged_signal(sigMin)
+    max = i.get_merged_signal(sigMax)
+  else
+    rad = c.get_signal(d.circuitSlots.radiusSlot).count
+    rot = c.get_signal(d.circuitSlots.rotateSlot).count
+    min = c.get_signal(d.circuitSlots.minSlot).count
+    max = c.get_signal(d.circuitSlots.maxSlot).count
+  end
+
+  ct.UpdateWanderParams(g, rad, rot, min, max)
+end
+
+
 -- Checked only a few times a second
 export.CheckCircuitConditions = function()
-  for gID, g in pairs(global.gestalts) do
-    if     g.light.energy > 0
-       and (g.signal.get_circuit_network(defines.wire_type.red)
-         or g.signal.get_circuit_network(defines.wire_type.green)) then
-      OutputCircuitSignals(g)
+  local tick = game.tick
+  for gID, g in pairs(global.check_power) do
+    if g.light.energy > 0 then
+      OutputCircuitSignals(g, tick)
     end
   end
 end
 
 
 -- Called by CheckCircuitConditions, but also when an alarm is cleared
-export.ProcessAlarmClearSignals = function(g)
+export.ProcessAlarmClearSignals = function(g, tick)
   local i = g.signal
   local c = i.get_control_behavior()
 
-  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = 0})
-  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = 0})
+  local warning = 0
+  -- Do I want to use d.searchlightSafeTime? A constant 2 seconds seems good...
+  if g.lastSpotted and (tick - g.lastSpotted) < 120 then
+    warning = 1
+  end
+
+  -- TODO It turns out that setting signals every nth tick is pretty expensive. (reads are fairly cheap)
+  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
+  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
   c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = (g.turtle.distraction_command and 1 or 0)})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = warning})
 
   local x = i.get_merged_signal({type="virtual", name="sl-x"})
   local y = i.get_merged_signal({type="virtual", name="sl-y"})
@@ -153,14 +187,10 @@ export.ProcessAlarmClearSignals = function(g)
     ct.ManualTurtleMove(g, {x=x, y=y})
   elseif g.tState ~= ct.FOLLOW then
     g.tState = ct.WANDER
-
-    local rad = i.get_merged_signal(sigRadius)
-    local rot = i.get_merged_signal(sigRotate)
-    local min = i.get_merged_signal(sigMin)
-    local max = i.get_merged_signal(sigMax)
-
-    ct.UpdateWanderParams(g, rad, rot, min, max)
   end
+
+  -- TODO This is another expensive function
+  export.ReadWanderParameters(g, i, c)  
 end
 
 
@@ -176,7 +206,16 @@ export.ProcessAlarmRaiseSignals = function(g)
   end
 
   c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 1})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})  
+end
+
+
+export.ProcessSafeSignals = function(g)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
 end
 
 
@@ -186,7 +225,6 @@ export.SpawnSignalInterface = function(sl)
   local i = FindSignalInterface(sl)
 
   i.operable = false
-  i.rotatable = false
   i.destructible = false
 
   i.get_control_behavior().set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
@@ -207,7 +245,6 @@ export.SpawnSignalInterface = function(sl)
 end
 
 
--- TODO Rotate the current turtle waypoint by 45 degrees when patrol options aren't set
 export.Rotated = function(g, light, oldDir, pIndex)
   if not g.tWanderParams then
     g.tWanderParams = {}
@@ -231,7 +268,6 @@ export.Rotated = function(g, light, oldDir, pIndex)
 
   local player = game.players[pIndex]
   if player and player.valid then
-    player.play_sound{path="utility/rotated_big", position=light.position}
     cgui.Rotated(g) -- Treat rotation like it was a text input
   end
 end

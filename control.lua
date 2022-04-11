@@ -186,11 +186,32 @@ function(event)
 
   local p = game.players[event.player_index]
   local entity = p.selected
-  if entity and 
-    (entity.name == d.searchlightBaseName 
-      or entity.name == d.searchlightAlarmName)
-    and entity.force == p.force then
-    rd.DrawSearchArea(entity, p, nil)
+  if entity and entity.force == p.force then
+    if     entity.name == d.searchlightBaseName 
+        or entity.name == d.searchlightSafeName
+        or entity.name == d.searchlightAlarmName then
+      local g = global.unum_to_g[entity.unit_number]
+      if g then
+        -- 'Wake' safe-mode'd searchlights so they update wander parameters
+        cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+
+        -- Shouldn't double draw if already drawn for whole force by above call
+        rd.DrawSearchArea(entity, p, nil)
+
+        -- If player is holding a wire, hide the "can not connect" icon
+        local cursorStack = p.cursor_stack
+        if      cursorStack 
+            and cursorStack.valid
+            and cursorStack.valid_for_read then
+
+          if     cursorStack.name == "red-wire"
+              or cursorStack.name == "green-wire" then
+                p.selected = g.signal
+            return
+          end
+        end
+      end
+    end
   end
 end)
 
@@ -198,6 +219,8 @@ end)
 -- On Tick
 script.on_event(defines.events.on_tick,
 function(event)
+  local tick = event.tick
+
   -- Run seperate loops for gestalts vs turrets since they
   -- could possibly be in seperate electric networks
   cg.CheckElectricNeeds()
@@ -205,14 +228,28 @@ function(event)
 
   cg.CheckGestaltFoes()
 
-  if global.watch_circles[event.tick] then
-    cg.CloseWatchCircle(global.watch_circles[event.tick])
-    global.watch_circles[event.tick] = nil
+  if global.spotter_timeouts[tick] then
+    cg.CloseWatch(global.spotter_timeouts[tick])
+    global.spotter_timeouts[tick] = nil
+  end
+
+  for syncTick, list in pairs(global.animation_sync) do
+    if tick == syncTick then
+      cg.SyncReady(list)
+      -- Should be safe to remove from table while iterating in lua      
+      global.animation_sync[tick] = nil
+    else
+      cg.CheckSync(list)
+    end
   end
 
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
-    if cgui.validatePlayerAndLight(pIndex, gAndGUI[1]) then
-      cgui.updateOnTick(global.gestalts[gAndGUI[1]], gAndGUI[2])
+    local gID = gAndGUI[1]
+    if cgui.validatePlayerAndLight(pIndex, gID) then
+      local g = global.gestalts[gID]
+      cgui.updateOnTick(g, gAndGUI[2])
+      -- Update the wander parameters, just in case this searchlight is in safe mode
+      cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
     else
       -- Should be safe to remove from table while iterating in lua
       cgui.CloseSearchlightGUI(pIndex)
@@ -236,6 +273,7 @@ end)
 script.on_event(d.openSearchlightGUI, function(event)
   if event.selected_prototype 
     and (event.selected_prototype.name == d.searchlightBaseName 
+      or event.selected_prototype.name == d.searchlightSafeName
       or event.selected_prototype.name == d.searchlightAlarmName
       or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
     cgui.OpenSearchlightGUI(event.player_index)
@@ -277,18 +315,23 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
     return
   end
 
-  cgui.updateOnTextInput(global.gestalts[gAndGUI[1]], gAndGUI[2])
+  local g = global.gestalts[gAndGUI[1]]
+  cgui.updateOnTextInput(g, gAndGUI[2])
+
+  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
 end)
 
 
--- On Script Trigger (turtle attack)
+-- On Script Trigger (turtle/spotter attack)
 script.on_event(defines.events.on_script_trigger_effect,
 function(event)
-  if event.source_entity and event.target_entity then
-    if event.effect_id == d.spottedEffectID then
-      cg.FoeSuspected(event.source_entity, event.target_entity.position)
-    elseif event.effect_id == d.confirmedSpottedEffectID then
-      cg.OpenWatchCircle(event.source_entity, event.target_entity, game.tick + 1)
+  if event.effect_id == d.spottedEffectID then
+    if event.source_entity then
+      cg.FoeSuspected(event.source_entity)
+    end
+  elseif event.effect_id == d.confirmedSpottedEffectID then
+    if event.source_entity and event.target_entity then
+      cg.FoeFound(event.source_entity, event.target_entity)
     end
   end
 end)
@@ -310,11 +353,8 @@ function(event)
   ct.CheckForTurtleEscape(g)
 
   -- Triggers after the distraction finishes or command finishes failing
-  -- If a turtle is having trouble attacking something, we'll manually spawn a spotter for it
   local failed = event.result == defines.behavior_result.fail
   if event.was_distracted or failed then
-    cg.FoeSuspected(g.turtle, g.turtle.position)
-
     if failed then
       ct.TurtleFailed(g.turtle)
     end

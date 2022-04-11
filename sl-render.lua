@@ -131,7 +131,8 @@ export.Update = function(tick)
           -- then keep showing its range for that player
           for _, p in pairs(force.players) do
             local gAndGUI = global.pIndexToGUI[p.index]
-            if p.selected == g.light or (gAndGUI and gAndGUI[1] == g.gID) then
+            if     (p.selected == g.light or p.selected == g.signal)
+                or (gAndGUI and gAndGUI[1] == g.gID) then
               -- Unsafe to add to map while iterating it, 
               -- so push back to a temp variable and add later
               table.insert(added, {g = g, p = p})

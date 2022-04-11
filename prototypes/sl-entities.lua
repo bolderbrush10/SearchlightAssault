@@ -5,7 +5,7 @@ local a = require "audio.sl-audio"
 local sounds = require("__base__/prototypes/entity/sounds")
 local hit_effects = require ("__base__/prototypes/entity/hit-effects")
 
-require "util" -- for table.deepcopy
+require "util" -- for table.deepcopy and util.empty_sprite(animation_length)
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
@@ -59,6 +59,8 @@ sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
 sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}} -- Controls drawing-bounds in the info-panel
 sl_b.flags = {"placeable-player", "player-creation"}
+sl_b.is_military_target  = true
+sl_b.allow_run_time_change_of_is_military_target = false
 sl_b.call_for_help_radius = 40
 sl_b.minable =
 {
@@ -77,10 +79,13 @@ sl_b.attacking_animation = nil
 sl_b.damaged_trigger_effect = hit_effects.entity()
 sl_b.dying_explosion = "laser-turret-explosion"
 sl_b.corpse = d.remnantsName
+sl_b.rotated_sound = {filename = "__core__/sound/rotate-big.ogg"}
 sl_b.vehicle_impact_sound = sounds.generic_impact
 sl_b.working_sound = a.working
 sl_b.turret_base_has_direction = true
 sl_b.shoot_in_prepare_state = true
+sl_b.allow_turning_when_starting_attack = true
+sl_b.rotation_speed = 0.05
 -- Affects "hop" time between despawning the turtle and attacking directly, etc
 -- Too low will cause lighting to overlap
 local attackCooldownDuration = 25
@@ -90,6 +95,7 @@ sl_b.attack_parameters =
   range = d.searchlightRange,
   cooldown = attackCooldownDuration,
   -- Undocumented, but I'd guess that this is the count of directions that the beam can emit out from
+  -- Higher == smoother
   source_direction_count = 256,
   source_offset = {0, 1.2},
   ammo_type =
@@ -111,6 +117,49 @@ sl_b.attack_parameters =
 }
 
 
+-- Searchlight Safe Entity
+local sl_f = table.deepcopy(sl_b)
+sl_f.name = d.searchlightSafeName
+-- Since folded/prepare/attack_animation don't animate, 
+-- only face toward foes, we'll use the base picture to simulate a radar spin
+sl_f.base_picture = {layers = {g.searchlightSafeHeadAnimated, 
+                               g.searchlightSafeMaskAnimated, 
+                               g.searchlightSafeShadowAnimated, 
+                               g.searchlightSafeBaseAnimated}}
+-- We need to tweak the render layers so the head and mask don't act like they're also on the ground
+sl_f.base_picture_render_layer = "object"
+-- energy_glow_animation can actually spin if you let it know it has animation frames,
+-- which is great since it'll stop glowing when the power goes out
+sl_f.energy_glow_animation = g.searchlightSafeGlowAnimation
+sl_f.folded_animation = util.empty_sprite(1)
+sl_f.prepared_animation = util.empty_sprite(1)
+-- Little trick to let us blueprint / copy-paste as the base searchlight, instead
+sl_f.placeable_by = {item = d.searchlightItemName, count = 1}
+sl_f.shoot_in_prepare_state = true
+sl_f.prepare_range = 1 -- The spotter will use the actual d.searchlightSafeRange to detect foes
+sl_f.attack_parameters =
+{
+  type = "beam",
+  range = 0.1, -- We don't care about actually hitting anything with this light
+  cooldown = attackCooldownDuration,
+  ammo_type =
+  {
+    category = "beam",
+    energy_consumption = "1J", -- If zero, info panel won't show an electricy bar
+    action =
+    {
+      type = "direct",
+      action_delivery =
+      {
+        type = "beam",
+        beam = "searchlight-beam-safe",
+        duration = attackCooldownDuration,
+      }
+    }
+  }
+}
+
+
 -- Searchlight Alarm Entity
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = d.searchlightAlarmName
@@ -118,6 +167,8 @@ sl_a.alert_when_attacking = true
 sl_a.base_picture = g.searchlightBaseAnimated
 sl_a.energy_glow_animation = g.searchlightAlarmGlowAnimation
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "searchlight-beam-alarm"
+sl_a.rotation_speed = 1 -- 1 is instant
+-- Little trick to let us blueprint / copy-paste as the base searchlight, instead
 sl_a.placeable_by = {item = d.searchlightItemName, count = 1}
 
 
@@ -162,6 +213,8 @@ sl_c.energy_source =
 sl_c.render_layer = "object"
 sl_c.flags = hiddenEntityFlags
 sl_c.selectable_in_game = false
+sl_c.is_military_target  = false
+sl_c.allow_run_time_change_of_is_military_target = false
 sl_c.corpse = "small-scorchmark"
 sl_c.create_ghost_on_death = false
 sl_c.vision_distance = 0
@@ -172,7 +225,6 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 
 
 -- Searchlight Signal Interface Entity
--- TODO We can probably define a screen_light later
 local sl_s = {}
 sl_s.type = "constant-combinator"
 sl_s.name = d.searchlightSignalInterfaceName
@@ -180,15 +232,17 @@ sl_s.icon = baseIcon
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
-sl_s.selection_box = {{-.8, .2}, {.8, 1}}
+sl_s.is_military_target  = false
+sl_s.allow_run_time_change_of_is_military_target = false
+sl_s.selection_box = sl_b.selection_box -- {{-.8, .2}, {.8, 1}}
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
-sl_s.selection_priority = 255
+sl_s.selection_priority = 1 -- In control.lua we'll detect if the player is holding a wire and fix things there
 sl_s.item_slot_count = 20
 sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
 sl_s.circuit_wire_max_distance = 9
-sl_s.sprites = g.layerTransparentPixel
-sl_s.activity_led_sprites = g.layerTransparentPixel
+sl_s.sprites = util.empty_sprite()
+sl_s.activity_led_sprites = util.empty_sprite()
 sl_s.activity_led_light_offsets =
 {
   {0, 0},
@@ -219,14 +273,14 @@ sl_s.circuit_wire_connection_points =
 
 
 -- The Searchlight's beam lights up the turtle's location
--- The turtle also helps out by using its very small radius of vision to spot foes of the searchlight
+-- The turtle uses its very small radius of vision to spot foes of the searchlight
 -- Many of the values are the product of hours of trial-and-error
 -- Do not tweak them without careful observation
 local t = {}
 t.name = d.turtleName
 t.type = "unit"
 t.movement_speed = d.searchlightWanderSpeed -- Can update during runtime for wander vs track mode
-t.run_animation = g.layerTransparentAnimation
+t.run_animation = util.empty_sprite()
 t.working_sound = a.scan
 t.distance_per_frame = 1 -- speed at which the run animation plays, in tiles per frame
 t.rotation_speed = 1.0
@@ -234,38 +288,32 @@ t.rotation_speed = 1.0
 t.corpse = "small-scorchmark"
 t.flags = hiddenEntityFlags
 t.selectable_in_game = false
+t.is_military_target  = true
+t.allow_run_time_change_of_is_military_target = false
 t.pollution_to_join_attack = 0
 t.has_belt_immunity = true
-t.move_while_shooting = true
-t.distraction_cooldown = 0 -- undocumented, mandatory
-t.min_pursue_time = 0
-t.vision_distance = d.searchlightSpotRadius + 2
--- max_pursue_distance meeds to be about as big as vision / attack range
--- when firing at big / moving targets (which require the turtle to reposition itself).
--- Using a value of 0 / 1 may break the unit if it chases 
--- then fails to attack - it will afterward return to its original 
--- destination / location and freeze in place at its home semi-permanently,
--- ignoring any new distractions.
-t.max_pursue_distance = t.vision_distance + 1
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 t.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
--- "not-colliding-with-itself" seems to slightly help avoid entering unit's hitboxes,
--- otherwise we'd use an empty set
-t.collision_mask = {"not-colliding-with-itself"}
+t.collision_mask = {}
 t.ai_settings =
 {
   allow_try_return_to_spawner = false,
-  destroy_when_commands_fail = false,
+  destroy_when_commands_fail = false, -- We'll destroy it ourselves if this happens
   do_separation = false,
 }
+t.distraction_cooldown = 0 -- undocumented, mandatory
+t.min_pursue_time = 0
+t.vision_distance = d.searchlightSpotRadius + 1
+t.max_pursue_distance = t.vision_distance + 10
+t.move_while_shooting = true
 t.attack_parameters =
 {
-  range = d.searchlightSpotRadius,
+  range = 1,
   type = "projectile",
   cooldown = 60, -- measured in ticks
-  animation = g.layerTransparentAnimation,
-  range_mode = "bounding-box-to-bounding-box",
+  animation = util.empty_sprite(),
+  range_mode = "center-to-center",
   movement_slow_down_factor = 0,
   movement_slow_down_cooldown = 0,
   activation_type = "activate",
@@ -281,61 +329,13 @@ t.attack_parameters =
         type = "instant",
         target_effects =
         {
-          type = "script",
-          effect_id = d.spottedEffectID,
-        }
-      }
-    }
-  }
-}
-
-
--- After a turtle has 'found' a foe, have the spotter warm up
--- before firing so the foe has a chance to escape
-local spotter = {}
-spotter.name = d.spotterName
-spotter.type = "land-mine"
-spotter.flags = hiddenEntityFlags
-spotter.selectable_in_game = false
-spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
-spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
-spotter.collision_mask = {} -- enable noclip for pathfinding too
-spotter.picture_safe = g.layerTransparentPixel
-spotter.picture_set = g.layerTransparentPixel
-spotter.trigger_radius = d.searchlightSpotRadius
--- Keeping the spotter alive will make handling on_script_event calls slightly easier.
--- We'll destroy it ourselves the tick after this fires, when we're done collecting events.
-spotter.force_die_on_attack = false
-spotter.timeout = d.searchlightArmTime
-spotter.action =
-{
-  type = "direct",
-  action_delivery =
-  {
-    type = "instant",
-    source_effects =
-    {
-      type = "nested-result",
-      affects_target = true,
-      action =
-      {
-        type = "area",
-        radius = d.searchlightSpotRadius,
-        force = "enemy",
-        action_delivery =
-        {
           {
-            type = "instant",
-            target_effects =
-            {
-              type = "script",
-              effect_id = d.confirmedSpottedEffectID,
-            },
-            source_effects =
-            {
-              type = "play-sound",
-              sound = a.spotted,
-            }
+            type = "script",
+            effect_id = d.confirmedSpottedEffectID,
+          },
+          {
+            type = "play-sound",
+            sound = a.spotted,
           }
         }
       }
@@ -344,5 +344,50 @@ spotter.action =
 }
 
 
+local spotter = {}
+spotter.name = d.spotterName
+spotter.type = "turret"
+spotter.flags = hiddenEntityFlags
+spotter.selectable_in_game = false
+spotter.is_military_target  = false
+spotter.allow_run_time_change_of_is_military_target = false
+spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
+spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
+spotter.collision_mask = {} -- enable noclip for pathfinding too
+spotter.base_picture = util.empty_sprite()
+spotter.folded_animation = util.empty_sprite()
+spotter.call_for_help_radius = 1
+spotter.attack_parameters =
+{
+  range = d.searchlightSafeRange,
+  type = "projectile",
+  cooldown = 60, -- measured in ticks
+  animation = util.empty_sprite(),
+  range_mode = "center-to-center",
+  movement_slow_down_factor = 0,
+  movement_slow_down_cooldown = 0,
+  ammo_type =
+  {
+    category= "melee",
+    target_type = "entity",
+    action =
+    {
+      type = "direct",
+      action_delivery =
+      {
+        type = "instant",
+        source_effects =
+        {
+          {
+            type = "script",
+            effect_id = d.spottedEffectID,
+          },
+        }
+      }
+    }
+  }
+}
+
+
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, sl_c, sl_r, sl_s, spotter, t}
+data:extend{sl_a, sl_b, sl_c, sl_f, sl_r, sl_s, spotter, t}

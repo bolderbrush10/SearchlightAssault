@@ -234,7 +234,7 @@ export.TurtleFailed = function(turtle)
 
   if g.tState == export.MOVE then
     local translatedCoord = TranslateCoordinate(g, g.tCoord)
-    IssueMoveCommand(turtle, translatedCoord, false)
+    IssueMoveCommand(g.turtle, translatedCoord, false)
   elseif g.tState == export.FOLLOW then
     export.TurtleChase(g, g.tCoord)
   else
@@ -337,7 +337,10 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
 
   if change then
     ValidateAndSetParams(g, true)
-    export.WanderTurtle(g)
+    
+    if g.tState == export.WANDER then
+      export.WanderTurtle(g)
+    end
   end
 end
 

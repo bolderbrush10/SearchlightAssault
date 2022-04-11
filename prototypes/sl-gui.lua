@@ -57,12 +57,12 @@ styles["sla_deep_frame"] = {
     bottom_margin = 4,
 }
 
--- TODO mess around with effect  /  graphical_set/glow/background_blur, etc
---      https://wiki.factorio.com/Types/EmptyWidgetStyleSpecification
 styles["sla_cam"] = {
   type = "camera_style",
   width=250,
   height=250,
+  effect = "compilatron-hologram",
+  -- fun fact: setting effect_opacity < 1 results in making the compilatron-hologram effect wobble like crazy
 }
 
 styles["sla_minimap"] = {

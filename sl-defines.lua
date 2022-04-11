@@ -13,7 +13,6 @@ local d = {}
 -------------------------------------------------
 
 -- Radius at which the searchlight beam detects foes
--- Setting vision distance too low can cause turtles to get stuck in their foes
 d.lightRadiusSetting = "searchlight-assault-setting-light-radius"
 d.defaultSearchlightSpotRadius = 4
 d.searchlightSpotRadius = d.defaultSearchlightSpotRadius
@@ -43,6 +42,9 @@ end
 --  since the searchlight is built from a radar)
 d.searchlightRange = 100
 
+-- Distance from foes at which the searchlight leaves 'safe' mode and starts looking for foes
+d.searchlightSafeRange = d.searchlightRange + 10
+
 -- Range boost effect provided to friendly turrets & their ammo so they can attack the distant foe the searchlight spotted
 -- (Should equal the maximum spotting radius + maximum distance of a boostable friend from the searchlight.
 --  Since the maximum distance a boostable friend can be might not be a whole number, thanks to trigonometry,
@@ -62,34 +64,25 @@ d.searchlightCapacitorSize      = "1MJ"
 d.searchlightEnergyUsage = "332kW"
 d.searchlightControlEnergyUsage = "900kW"
 
+-- If a searchlight's spotter doesn't fire by this many ticks,
+-- we'll put that searchlight back into safe mode
+d.searchlightSafeTime = 5 * 60
+
 
 -------------------------------------------------
 -- Things that aren't easy to mess with --
 -------------------------------------------------
 
 -- Speeds at which searchlight beam wanders / responds to circuit commands
--- There is a maximum speed which you cannot exceed or else the turtle
--- has a high chance to run inside the collision box of an enemy before
--- it has a chance to fire its attack. (About 0.4 is too fast)
--- This results in the turtle getting 'stuck' without attacking,
--- and thus results in us having to rely on the
--- ai_command_complete event fired when the distraction attack-event is done
--- (which is a process that is seemingly-impossible to speed up)
 d.searchlightWanderSpeed = 0.1
 
 d.searchlightRushSpeed = 0.13  -- Just barely slower than base player speed
 
--- Ticks until a searchlight stops being suspicious and goes back to its search pattern
-d.searchlightSpotTime = 1.5 * 60
-
--- Ticks from when a searchlight becomes suspicious
--- until the searchlight can confirm it has spotted a foe.
--- This timeout can't be too short or else the game won't 
--- be able to process the landmine arming fast enough,
--- and players won't get a chance to get away.
--- It can't be too long or else it's easy to just run straight 
--- through the spotlight without getting spotted.
-d.searchlightArmTime = 20
+-- How slow the searchlight spins while in safe mode (idle)
+d.idleSpinRate = 0.125
+d.spinFrames = 64
+d.spinFactor = (d.spinFrames/d.idleSpinRate)
+-- If spinFactor is set too low (less than 21), Safe Mode might fail to be entered
 
 
 -------------------------------------------------
@@ -103,6 +96,7 @@ d.searchlightRecipeName = "searchlight-assault"
 d.searchlightTechnologyName = "searchlight-assault"
 
 d.searchlightBaseName = "searchlight-assault-base"
+d.searchlightSafeName = "searchlight-assault-safe"
 d.searchlightAlarmName = "searchlight-assault-alarm"
 d.searchlightSignalInterfaceName = "searchlight-assault-signal-interface"
 d.searchlightControllerName = "searchlight-assault-control"

@@ -368,7 +368,11 @@ local function updateModeStatus(rightContent, g)
     label.caption     = {"sla.sla-gui-status-warn"}
     label.style       = "sla_warn_label"
   else
-    modeFrame.style   = "sla_safe_frame"
+    if g.light.name == d.searchlightSafeName then
+      modeFrame.style   = "sla_safe_frame"
+    else
+      modeFrame.style   = "sla_warn_frame"
+    end
     modeFrame.tooltip = {"sla.sla-gui-status-safe-tt"}
     label.tooltip     = {"sla.sla-gui-status-safe-tt"}
     label.caption     = {"sla.sla-gui-status-safe"}
@@ -520,8 +524,18 @@ cgui.Rotated = function(g, GUI)
 end
 
 
+-- Don't open a GUI if the player is holding a non-item in cursor,
+-- or if they're holding a wire (in which case, connect it to the signal interface),
+-- or if they're holding a repair pack / capsule / blueprint / etc
+-- (Basically, mirror the behavior of opening a gui for vanilla entities)
 cgui.OpenSearchlightGUI = function(pIndex)
   local player = game.players[pIndex]
+
+  -- Ignore players in map mode, etc
+  if player.render_mode ~= defines.render_mode.game then
+    return
+  end
+
   local sl = player.selected
   local g = global.unum_to_g[sl.unit_number]
 
@@ -533,7 +547,31 @@ cgui.OpenSearchlightGUI = function(pIndex)
     return -- GUI for this searchlight was already open
   end
 
+  -- We'll be splitting up the cursorStack logic to better replicate the
+  -- vanilla entity-gui behavior where holding a capsule, etc,
+  -- doesn't trigger flying text about can't reach, etc
+  local cursorStack = player.cursor_stack
+  if      cursorStack 
+      and cursorStack.valid
+      and cursorStack.valid_for_read then
+
+    local iPrototype = cursorStack.prototype
+
+    if     iPrototype.place_result
+        or iPrototype.has_flag("only-in-cursor") -- these flags are pretty good for
+        or iPrototype.has_flag("spawnable")      -- spotting the blueprint-like tools
+        or iPrototype.type == "repair-tool"
+        or iPrototype.type == "capsule" then
+      return
+    end
+  else
+    cursorStack = nil
+  end
+
   if player.force ~= sl.force then
+      local pos = sl.position
+      player.create_local_flying_text{text={"cant-open-enemy-structures"}, 
+                                      position=pos,}
     return
   end
 
@@ -546,26 +584,12 @@ cgui.OpenSearchlightGUI = function(pIndex)
     return
   end
 
-  if player.render_mode ~= defines.render_mode.game then
+  if cursorStack and
+       (cursorStack.name == "red-wire"
+     or cursorStack.name == "green-wire") then
+        player.selected = g.signal
+        player.drag_wire{position=g.signal.position}
     return
-  end
-
-  -- Don't open a GUI if the player is holding a non-item in cursor,
-  -- or if they're holding a wire (in which case, connect it to the signal interface)
-  local cursorStack = player.cursor_stack
-  if      cursorStack 
-      and cursorStack.valid
-      and cursorStack.valid_for_read then
-    if cursorStack.prototype.place_result then
-      return
-    end
-
-    if     cursorStack.name == "red-wire"
-        or cursorStack.name == "green-wire" then
-          player.selected = g.signal
-          player.drag_wire{position=g.signal.position}
-      return
-    end
   end
 
   local main_gui = player.gui.screen

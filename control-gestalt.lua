@@ -12,6 +12,10 @@ local cgui = require "control-gui"
 local pairs = pairs
 local next  = next
 
+-- Assume it'll take n ticks at worst for searchlight to spin to direction 0, orientation 0.25
+-- (the facing used when targeting something occupying the exact same-position, such as the spotter)
+-- Setting this too high can break entering safe mode (above d.spinFactor * 0.25, for instance)
+local turnDelay = 10
 
 local export = {}
 
@@ -21,17 +25,18 @@ local export = {}
 -------------------------
 --[[
 {
-  gID       = int (gestalt ID),
-  light     = Searchlight / Alarmlight,
-  signal    = SignalInterface,
-  turtle    = Turtle,
-  tState    = WANDER / FOLLOW  / MOVE
-  tCoord    = WANDER / &entity / {x, y} (Raw signal coords)
-  tOldState = WANDER / MOVE
-  tOldCoord = WANDER / {x, y} (Raw signal coords)
+  gID           = int (gestalt ID),
+  light         = Searchlight / Alarmlight,
+  signal        = SignalInterface,
+  spotter       = Spotter,
+  lastSpotted   = nil / tick,
+  turtle        = Turtle,
+  tState        = WANDER / FOLLOW  / MOVE
+  tCoord        = WANDER / &entity / {x, y} (Raw signal coords)
+  tOldState     = WANDER / MOVE
+  tOldCoord     = WANDER / {x, y} (Raw signal coords)
   tWanderParams = .radius (deg), .rotation (deg), .min, .max (raw values)
   tAdjParams    = .angleStart(rad), .len(rad), .min, .max (bounds-checked)
-  spotter   = nil / Spotter,
 }
 ]]--
 
@@ -42,12 +47,18 @@ export.InitTables_Gestalt = function()
   -- Map: gID -> Gestalt
   global.gestalts = {}
 
+  -- Map: gID -> Gestalt
+  global.check_power = {}
+
   -- Map: unit_number -> Gestalt
   -- Currently tracking: baselight/alarmlight, spotter, turtle -> Gestalt
   global.unum_to_g = {}
 
-  -- Map: game tick -> Map: gID -> [potential foes]
-  global.watch_circles = {}
+  -- Map: game tick -> {gID}
+  global.spotter_timeouts = {}
+
+  -- Map: game tick -> {gID}
+  global.animation_sync = {}
 end
 
 
@@ -72,6 +83,8 @@ local function SpawnAlarmLight(gestalt)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[raised.unit_number] = gestalt
   gestalt.light = raised
+  -- Note how many times we've spotted a foe, just for fun
+  raised.kills = raised.kills + 1 
 
   base.destroy()
 end
@@ -93,18 +106,37 @@ local function SpawnBaseLight(gestalt)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[cleared.unit_number] = gestalt
   gestalt.light = cleared
-  -- Note how many times we've spotted a foe, just for fun
-  cleared.kills = cleared.kills + 1 
 
   base.destroy()
 end
 
 
-local function SpawnSpotter(g, foePos)
-  local spotter = g.turtle.surface.create_entity{name = d.spotterName,
-                                                 position = foePos,
-                                                 force = g.turtle.force,
-                                                 create_build_effect_smoke = false}
+local function SpawnSafeLight(gestalt)
+  if gestalt.light.name == d.searchlightSafeName then
+    return -- Already in safe mode
+  end
+
+  local base = gestalt.light
+  local safe = base.surface.create_entity{name = d.searchlightSafeName,
+                                          position = base.position,
+                                          force = base.force,
+                                          fast_replace = false,
+                                          create_build_effect_smoke = false}
+
+  u.CopyTurret(base, safe)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[safe.unit_number] = gestalt
+  gestalt.light = safe
+
+  base.destroy()
+end
+
+
+export.SpawnSpotter = function(sl, turtleForce)
+  local spotter = sl.surface.create_entity{name = d.spotterName,
+                                           position = sl.position,
+                                           force = turtleForce,
+                                           create_build_effect_smoke = false}
   spotter.destructible = false
 
   return spotter
@@ -122,16 +154,20 @@ local function newGID()
 end
 
 
-local function makeGestalt(sl, sigInterface, turtle)
+local function makeGestalt(sl, sigInterface, turtle, spotter)
   local g = {gID = newGID(),
              light = sl,
              signal = sigInterface,
-             turtle = turtle}
+             turtle = turtle,
+             spotter = spotter,}
 
   global.gestalts[g.gID] = g
   global.unum_to_g[sl.unit_number] = g
   global.unum_to_g[turtle.unit_number] = g
   global.unum_to_g[sigInterface.unit_number] = g
+  global.unum_to_g[spotter.unit_number] = g
+
+  global.check_power[g.gID] = g
 
   ct.SetDefaultWanderParams(g)
 
@@ -157,8 +193,12 @@ local function ResumeTargetingTurtle(g, turtlePositionToResume)
 end
 
 
-local function RaiseAlarm(g, spottedFoe)
+local function EnterAlarmMode(g, spottedFoe)
   SpawnAlarmLight(g)
+
+  -- No need to keep firing the spotter while we're targeting a foe
+  -- (in fact, we don't want it to fire and kick us back to warn mode)
+  g.spotter.active = false
 
   r.setRelation(global.FoeGestaltRelations, spottedFoe.unit_number, g.gID, spottedFoe)
 
@@ -173,13 +213,74 @@ local function RaiseAlarm(g, spottedFoe)
 end
 
 
-local function ClearAlarm(g, escapedFoe)
+local function EnterWarnMode(g, escapedFoe)
+  if g.light.name == d.searchlightBaseName then
+    return -- Alarm already cleared
+  end
+
+  -- If we were spinning around in safe mode,
+  -- match up our orientation to that spin so
+  -- it looks smoother when we retarget the turtle
+  local val = nil
+  if g.light.shooting_target and g.light.shooting_target == g.spotter then
+    val = ((game.tick % d.spinFactor) / d.spinFactor)
+  end
+
   SpawnBaseLight(g)
-  ResumeTargetingTurtle(g, escapedFoe.position)
-  cs.ProcessAlarmClearSignals(g)
-  export.FoeSuspected(g.turtle, escapedFoe.position)
+
+  if val then
+    g.light.orientation = val
+  end
+
+  g.spotter.active = true
+
+  -- If the spotter doesn't fire again by this time,
+  -- we'll go back to safe mode
+  export.OpenWatch(g.gID)
+
+  global.check_power[g.gID] = g
+
+  if escapedFoe then
+    ResumeTargetingTurtle(g, escapedFoe.position)
+  else
+    ResumeTargetingTurtle(g, nil)
+  end
+
+  cs.ProcessAlarmClearSignals(g, game.tick)
 
   cgui.updateOnEntity(g)
+end
+
+
+local function EnterSafeMode(g)
+  if g.light.name == d.searchlightSafeName then
+    return -- Already in safe mode
+  end
+
+  SpawnSafeLight(g)
+
+  g.turtle.active = false
+  g.light.shooting_target = g.spotter
+
+  cs.ProcessSafeSignals(g)
+
+  global.check_power[g.gID] = nil
+
+  cgui.updateOnEntity(g)
+end
+
+
+local function EnterSafeModeSync(g)
+  g.turtle.active = false
+  local light = g.light
+  light.shooting_target = g.spotter
+
+  local tickTurnDelay = game.tick + turnDelay
+  if not global.animation_sync[tickTurnDelay] then
+    global.animation_sync[tickTurnDelay] = {}
+  end
+
+  table.insert(global.animation_sync[tickTurnDelay], g.gID)
 end
 
 
@@ -190,7 +291,7 @@ end
 
 -- Wouldn't need this function if there was an event for when entities run out of power
 export.CheckElectricNeeds = function()
-  for _, g in pairs(global.gestalts) do
+  for _, g in pairs(global.check_power) do
     g.turtle.active = g.light.energy > 0
   end
 end
@@ -215,9 +316,10 @@ export.CheckGestaltFoes = function()
           or g.light.shooting_target.unit_number ~= fun then
 
         if foe.valid then
-          ClearAlarm(g, foe)
+          -- Retarget turtle, teleport turtle to roughly the foe's location
+          EnterWarnMode(g, foe)
         else
-          ClearAlarm(g, g.turtle)
+          EnterWarnMode(g, g.turtle)
         end
 
         -- In lua, it's usually safe to remove from a table while iterating
@@ -246,7 +348,7 @@ export.FoeDied = function(foe)
   local gIDs = r.popRelationLHS(fgRelations, foe.unit_number)
 
   for gID, _ in pairs(gIDs) do
-    ClearAlarm(gestalts[gID], foe)
+    EnterWarnMode(gestalts[gID], foe)
     cu.FoeGestaltRelationRemoved(gestalts[gID])
   end
 
@@ -260,12 +362,16 @@ export.SearchlightAdded = function(sl)
     return
   end
 
+  local turtle = ct.SpawnTurtle(sl, sl.surface, nil)
   local g = makeGestalt(sl,
                         cs.SpawnSignalInterface(sl),
-                        ct.SpawnTurtle(sl, sl.surface, nil))
+                        turtle,
+                        export.SpawnSpotter(sl, turtle.force))
 
-  sl.shooting_target = g.turtle
-  ct.WindupTurtle(g, g.turtle)
+  sl.shooting_target = turtle
+  ct.WindupTurtle(g, turtle)
+
+  export.OpenWatch(g.gID)
 
   local friends = sl.surface.find_entities_filtered{area=u.GetBoostableAreaFromPosition(sl.position),
                                                     type={"fluid-turret", "electric-turret", "ammo-turret"},
@@ -311,6 +417,10 @@ export.SearchlightRemoved = function(sl, killed, g)
     global.unum_to_g[g.spotter.unit_number] = nil
   end
 
+  if g.spotter then
+    g.spotter.destroy()
+  end
+
   -- Preserve wire connections when killed by leaving a ghost
   if killed then
     g.signal.destructible = true
@@ -321,9 +431,6 @@ export.SearchlightRemoved = function(sl, killed, g)
 
   g.turtle.destroy()
 
-  if g.spotter then
-    g.spotter.destroy()
-  end
 
   local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
 
@@ -338,93 +445,107 @@ export.SearchlightRemoved = function(sl, killed, g)
   end
 
   global.gestalts[g.gID] = nil
+  global.check_power[g.gID] = nil
 
-  -- global.watch_circles:
+  -- global.spotter_timeouts/animation_sync:
   -- Instead of iterating for a gID that might not even be in it
   -- so we can clean up any possible watch circle for this gestalt,
   -- we'll just check if our gestalt is still valid when that tick comes.
-
 end
 
 
+export.FoeFound = function(turtle, foe)
+  if not foe.valid then
+    return
+  end
 
-
-export.FoeSuspected = function(turtle, foePos)
   local g = global.unum_to_g[turtle.unit_number]
 
-  -- If there's a foe in the spotter's radius after a few moments,
-  -- we'll sound the alarm and target it
-  g.spotter = SpawnSpotter(g, foePos)
-  global.unum_to_g[g.spotter.unit_number] = g
-
-  ct.TurtleChase(g, g.spotter)
-
-  -- If the searchlight hasn't found anything by the given tick, we'll close its circle
-  -- (note that it takes quite a few extra ticks for the landmine to do its business,
-  --  but we still want to make sure the circle is closed by the time the searchlight
-  --  would spawn a new spotter and be 'rearmed')
-  -- A new watch circle will be opened if the spotter has foes in range after arming;
-  -- in which case, this watch circle will just silently expire.
-  export.OpenWatchCircle(g.spotter, nil, game.tick + d.searchlightSpotTime)
+  EnterAlarmMode(g, foe)
 end
 
 
--- When a spotter has finished arming and spotted a foe, it fires
--- an event for each entity in its range.
--- So, we'll wait one tick to make sure we've collected a list of all those entities,
--- which we can sort through by distance from the spotter later.
--- Those entities will be put into a list, here.
--- If the list of foes is empty when the tickToClose is reached, 
--- then we'll know we have not spotted any foes.
--- (control.lua will handle freeing our table entries when their tick comes)
-export.OpenWatchCircle = function(spotter, foe, tickToClose)
-  local gID = global.unum_to_g[spotter.unit_number].gID
-
-  if global.watch_circles[tickToClose] == nil then
-    global.watch_circles[tickToClose] = {}
+export.FoeSuspected = function(spotter)
+  local g = global.unum_to_g[spotter.unit_number]
+  if not g then
+    return
   end
 
-  if global.watch_circles[tickToClose][gID] == nil then
-    global.watch_circles[tickToClose][gID] = {}
-  end
+  g.lastSpotted = game.tick
+  export.OpenWatch(g.gID)
 
-  table.insert(global.watch_circles[tickToClose][gID], foe)
+  if g.light.energy > 0 then
+    -- Leave safe mode, start hunting for foes
+    EnterWarnMode(g, nil)
+  end
 end
 
 
-export.CloseWatchCircle = function(gIDFoeMap)
+export.OpenWatch = function(gID)
+  local tickToClose = game.tick + d.searchlightSafeTime
+  -- Align to base_picture rotation so we transition smoothly
+  tickToClose = tickToClose + (d.spinFactor - (tickToClose % d.spinFactor))
+  tickToClose = tickToClose + (d.spinFactor * 0.25) - turnDelay
 
-  for gID, foeList in pairs(gIDFoeMap) do
-    -- Check if our searchlight was destroyed in the ticks since the circle was opened
-    if not global.gestalts[gID] then
-      goto continue
-    end
+  if not global.spotter_timeouts[tickToClose] then
+    global.spotter_timeouts[tickToClose] = {}
+  end
 
+  table.insert(global.spotter_timeouts[tickToClose], gID)
+end
+
+
+-- If our watch has expired with no foes in range, then go back to safe mode
+export.CloseWatch = function(gIDs)
+  local tick = game.tick
+
+  for _, gID in pairs(gIDs) do
     local g = global.gestalts[gID]
 
-    -- Case: This is just the original, stale watch circle expiring
-    if not g.spotter then
-      goto continue
+    -- Check if our searchlight was destroyed in the ticks since the watch was opened
+    if g and g.light.name == d.searchlightBaseName then
+
+      if     not g.lastSpotted 
+          or (tick - g.lastSpotted) >= d.searchlightSafeTime then
+        if g.light.energy > 0 then
+          EnterSafeModeSync(g)
+        else
+          -- If we're out of power, try again later
+          export.OpenWatch(gID)
+        end
+      -- else
+        -- Another watch-tick was already opened for whenever the last foe-spotting was
+      end
     end
-
-    local sPos = g.spotter.position
-    global.unum_to_g[g.spotter.unit_number] = nil
-    g.spotter.destroy()
-    g.spotter = nil
-
-    local foe = u.GetNearestShootableEntFromList(sPos, foeList)
-
-    if foe then
-      -- Case: Foe spotted successfully
-      RaiseAlarm(g, foe)
-    else
-      -- Case: No valid foes spotted
-      ResumeTargetingTurtle(g, nil)
-    end
-
-    ::continue::
   end
+end
 
+
+export.SyncReady = function(gIDs)
+  for _, gID in pairs(gIDs) do
+    local g = global.gestalts[gID]
+
+    if g then
+      EnterSafeMode(g)
+    end
+  end
+end
+
+
+-- If a searchlight has reached the desired orientation,
+-- disable the spotlight effect from rendering on the spotter, which looks ugly
+export.CheckSync = function(gIDs)
+  for _, gID in pairs(gIDs) do
+    local g = global.gestalts[gID]
+
+    if g then
+      local light = g.light
+      -- The light will be renabled in a few ticks in EnterSafeMode() by the spawn(), don't worry
+      if light.orientation > 0.2 and light.orientation < 0.3 then
+        light.active = false
+      end
+    end
+  end
 end
 
 

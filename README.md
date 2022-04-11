@@ -135,14 +135,15 @@ And in this mod, our turtle, instead of drawing a line, will help render a searc
 I enjoyed the challenge of making this mod with as few changes to the base game as possible,
 but this codebase would be drastically smaller if these issues weren't in place:
 
-0. No mechanism in the API to modify shooting range during runtime
+0. Developers have stated that they won't allow modifying shooting range during runtime
+   https://forums.factorio.com/viewtopic.php?f=221&t=101902
 0. No mechanism in the API to modify ammo max range during runtime
 0. API doesn't provide some info in on_player_setup_blueprint event for some blueprint use cases
 0. Unsophisticated technique to "fire" the searchlight effect when
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
-0. [Mitigated by dev update; forums.factorio.com/100269] Attacks fail if a unit enters its target's hitbox
+0. [Mitigated by dev update; https://forums.factorio.com/100269] Attacks fail if a unit enters its target's hitbox
 0. Vehicles don't count as an entity_with_force, so you can't set their shooting target to one manually,
    even though turrets _can and do_ attack vehicles
    (One must detect the vehicle, then check for a driver inside it and target the driver)

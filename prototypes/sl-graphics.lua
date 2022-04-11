@@ -1,7 +1,7 @@
 local d = require "sl-defines"
 local a = require "audio.sl-audio"
 
-require "util" -- for table.deepcopy
+require "util" -- for table.deepcopy, util.empty_sprite(animation_length)
 
 -- Be sure to declare functions and vars as 'local' in prototype / data*.lua files,
 -- because other mods may have inadvertent access to functions at this step.
@@ -34,16 +34,6 @@ local slStaticFrameSeq = {}
 for index = 1, slFrameCount do
   table.insert(slStaticFrameSeq, 1)
 end
-
-export.layerTransparentAnimation_Seq =
-{
-  filename = "__SearchlightAssault__/graphics/transparent-pixel.png",
-  width = 1,
-  height = 1,
-  direction_count = 1,
-  frame_count = slFrameCount,
-  frame_sequence = slStaticFrameSeq,
-}
 
 
 ------------------------------------------------------------
@@ -104,14 +94,12 @@ local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                       1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
                       2,2,3,3,4,4,5,5,6,6,7,7,8,}
 
-
 export.searchlightBaseLayer =
 {
   filename = "__SearchlightAssault__/graphics/sl-base.png",
   priority = "high",
   axially_symmetrical = false,
   frame_count = 1,
-  line_length = 4,
   width = 75,
   height = 53,
   scale = 0.66,
@@ -122,7 +110,6 @@ export.searchlightBaseLayer =
     priority = "high",
     axially_symmetrical = false,
     frame_count = 1,
-    line_length = 4,
     width = 150,
     height = 107,
     scale = 0.33,
@@ -134,8 +121,10 @@ export.searchlightBaseLayer =
 export.searchlightBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
 export.searchlightBaseAnimated.frame_count = 8
 export.searchlightBaseAnimated.frame_sequence = baseFrameSeq
+export.searchlightBaseAnimated.line_length = 4
 export.searchlightBaseAnimated.hr_version.frame_count = 8
 export.searchlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
+export.searchlightBaseAnimated.hr_version.line_length = 4
 
 
 export.searchlightShadowLayer =
@@ -174,7 +163,7 @@ local maskFlags = { "mask", "low-object" }
 
 
 -- args:
--- filename, (optional) flags, (optional) drawAsGlow, (optional) runtimeTint
+-- filename, (optional) flags, (optional) drawAsGlow, (optional) runtimeTint, (optional) tint
 local function make_searchlight(inputs)
 return
 {
@@ -182,6 +171,7 @@ return
   priority = "high",
   flags = (inputs.flags or {}),
   apply_runtime_tint = (inputs.runtimeTint or false),
+  tint = inputs.tint or nil,
   line_length = 8,
   width = modelW,
   height = modelH,
@@ -195,6 +185,7 @@ return
     priority = "high",
     flags = (inputs.flags or {}),
     apply_runtime_tint = (inputs.runtimeTint or false),
+    tint = inputs.tint or nil,
     line_length = 8,
     width = modelW*2,
     height = modelH*2,
@@ -209,10 +200,36 @@ end
 
 
 export.searchlightHeadAnimation = make_searchlight{filename="sl-head"}
-export.searchlightGlowAnimation = make_searchlight{filename="sl-glow", flags={"light"}, drawAsGlow=true}
-export.searchlightAlarmGlowAnimation = make_searchlight{filename="sl-alarm", flags={"light"}, drawAsGlow=true}
+export.searchlightGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
+                                                   drawAsGlow=true, tint={255/255, 200/255, 0/255}}
+export.searchlightAlarmGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
+                                                        drawAsGlow=true, tint={200/255, 0/255, 0/255}}
 export.searchlightMaskAnimation = make_searchlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
 
+
+local function make_slow_spin(animation)
+  animation.frame_count = d.spinFrames
+  animation.hr_version.frame_count = d.spinFrames
+  animation.direction_count = 1
+  animation.hr_version.direction_count = 1
+  animation.animation_speed = d.idleSpinRate
+  animation.hr_version.animation_speed = d.idleSpinRate
+end
+
+
+export.searchlightSafeGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
+                                                       drawAsGlow=true, tint={20/255, 230/255, 10/255}}
+make_slow_spin(export.searchlightSafeGlowAnimation)
+export.searchlightSafeHeadAnimated = table.deepcopy(export.searchlightHeadAnimation)
+make_slow_spin(export.searchlightSafeHeadAnimated)
+export.searchlightSafeMaskAnimated = table.deepcopy(export.searchlightMaskAnimation)
+make_slow_spin(export.searchlightSafeMaskAnimated)
+export.searchlightSafeShadowAnimated = table.deepcopy(export.searchlightShadowLayer)
+make_slow_spin(export.searchlightSafeShadowAnimated)
+
+export.searchlightSafeBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
+export.searchlightSafeBaseAnimated.repeat_count = d.spinFrames
+export.searchlightSafeBaseAnimated.hr_version.repeat_count = d.spinFrames
 
 ------------------------------------------------------------
 -- Searchlight Remants
@@ -282,6 +299,7 @@ local Light_Layer_Searchlight_DayHaze =
   width = 200,
   height = 200,
   blend_mode = "additive",
+  draw_as_glow = true,
   tint = {r=230/255, g=150/255, b=0, a=0.1},
   scale = settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius,
 }
@@ -303,6 +321,7 @@ local Light_Layer_Searchlight_NormLight =
 
 
 local redTint = {r=0.9, g=0.1, b=0.1, a=1}
+local greenTint = {r=0.1, g=0.9, b=0.1, a=1}
 
 local Light_Layer_Searchlight_StartLight = table.deepcopy(Light_Layer_Searchlight_NormLight)
 Light_Layer_Searchlight_StartLight.scale = 0.6
@@ -318,6 +337,16 @@ Light_Layer_Searchlight_StartLight_Red.scale = 0.6
 Light_Layer_Searchlight_StartLight_Red.tint = redTint
 
 local Light_Layer_Searchlight_DimLight_Red = table.deepcopy(Light_Layer_Searchlight_DimLight)
+
+local Light_Layer_Searchlight_RingLight =
+{
+  filename = "__SearchlightAssault__/graphics/searchlight-ring.png",
+  width = 95,
+  height = 95,
+  flags = { "light" },
+  tint = greenTint,
+  scale = 1.5,
+}
 
 ------------------------------------------------------------
 -- Searchlight Beams
@@ -349,9 +378,9 @@ local SearchlightBeamPassive =
     }
   },
   ending = Light_Layer_Searchlight_DayHaze,
-  tail = export.layerTransparentAnimation_Seq,
-  head = export.layerTransparentAnimation_Seq,
-  body = export.layerTransparentAnimation_Seq,
+  tail = util.empty_sprite(60),
+  head = util.empty_sprite(60),
+  body = util.empty_sprite(60),
 }
 
 
@@ -378,7 +407,30 @@ SearchlightBeamAlarm.ground_light_animations =
 }
 
 
-data:extend{SearchlightBeamPassive, SearchlightBeamAlarm}
+local SearchlightBeamSafe =
+{
+  type = "beam",
+  name = "searchlight-beam-safe",
+  flags = {"not-on-map"},
+  width = 1,
+  damage_interval = 1,
+  random_end_animation_rotation = false,
+  tail = util.empty_sprite(),
+  head = util.empty_sprite(),
+  body = util.empty_sprite(),
+  ground_light_animations =
+  {
+    ending =
+    {
+      layers =
+      {
+        Light_Layer_Searchlight_RingLight,
+      }
+    },
+  },
+}
+
+data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, SearchlightBeamSafe}
 
 
 return export
