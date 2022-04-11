@@ -448,7 +448,7 @@ script.on_event(defines.events.on_player_configured_blueprint, ci.ScanBP_StacksA
 
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
-  ghostRemoved(event)
+  ghostRemoved(event.ghost)
 end,
 {
   {filter = "ghost_name", name = d.searchlightBaseName}
