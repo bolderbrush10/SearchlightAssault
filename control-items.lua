@@ -39,7 +39,9 @@ local function SwapToBaseEntityType(itemStack)
     table.insert(newi, icon)
   end
 
-  itemStack.blueprint_icons = newi
+  if next(newi) then
+    itemStack.blueprint_icons = newi
+  end
 end
 
 
