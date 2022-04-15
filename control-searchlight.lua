@@ -146,10 +146,14 @@ end
 -- Checked only a few times a second
 export.CheckCircuitConditions = function()
   for gID, g in pairs(global.gestalts) do
-    if     g.light.energy > 0
-       and (g.signal.get_circuit_network(defines.wire_type.red)
-         or g.signal.get_circuit_network(defines.wire_type.green)) then
-      OutputCircuitSignals(g)
+    if g.light.valid and g.signal.valid then
+      if     g.light.energy > 0
+         and (g.signal.get_circuit_network(defines.wire_type.red)
+           or g.signal.get_circuit_network(defines.wire_type.green)) then
+        OutputCircuitSignals(g)
+      end
+    -- else
+      -- Something nuked our mod's searchlight, we'll clean up in the next on_tick()
     end
   end
 end
