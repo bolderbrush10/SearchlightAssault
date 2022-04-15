@@ -3,7 +3,7 @@ Version: 1.2.9
 Date: 2022-04-15
   Changes:
     - Fix map editor crash
-    -  make mod more robust to rogue entity.destroy() calls
+    - Make mod more robust to rogue entity.destroy() calls
 ---------------------------------------------------------------------------------------------------
 Version: 1.2.8
 Date: 2022-04-14
