@@ -11,7 +11,7 @@ local export = {}
 -- tState states
 export.MOVE = 0
 export.WANDER = 1
-export.FOLLOW = 2
+export.FOLLOW = 2 -- TODO Does this state still make sense? We don't chase things after spotting them so much, now...
 
 -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
 -- too close to the max range of the searchlight
@@ -82,6 +82,13 @@ local function ValidateAndSetParams(g, forceRedraw)
     g.tAdjParams.angleStart = (angleLHS / 180) * math.pi
     g.tAdjParams.len = (rad / 180) * math.pi
   end
+
+  -- And adjust again so that 0/360 is at the 'top' and
+  -- then proceeds clockwise
+  -- (Instead of 0/360 being on the x axis and proceeding clockwise,
+  --  which isn't even how the unit circle works! 
+  --  So, we might as well make our rotation resemble an actual clock )
+  g.tAdjParams.angleStart = g.tAdjParams.angleStart - (math.pi/2)
 
   local min = u.clamp(g.tWanderParams.min, 1, d.searchlightRange, 1)
   local max = d.searchlightRange
@@ -284,14 +291,20 @@ end
 -- If we set our first waypoint in the same direction as the searchlight orientation,
 -- but further away, it makes the searchlight appear to "start up"
 export.WindupTurtle = function(gestalt, turtle)
+  local c = gestalt.signal.get_control_behavior()
+  gestalt.tWanderParams.rotation = c.get_signal(d.circuitSlots.rotateSlot).count
+  gestalt.tWanderParams.radius   = c.get_signal(d.circuitSlots.radiusSlot).count
+  gestalt.tWanderParams.min      = c.get_signal(d.circuitSlots.minSlot).count
+  gestalt.tWanderParams.max      = c.get_signal(d.circuitSlots.maxSlot).count
+  ValidateAndSetParams(gestalt, false)
+
   local windupWaypoint = u.OrientationToPosition(gestalt.light.position,
                                                  gestalt.light.orientation,
                                                  math.random(d.searchlightRange / 8,
                                                              d.searchlightRange - 2))
 
-  export.WanderTurtle(gestalt, windupWaypoint)
 
-  ValidateAndSetParams(gestalt)
+  export.WanderTurtle(gestalt, windupWaypoint)
 end
 
 

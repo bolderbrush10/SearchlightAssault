@@ -113,3 +113,18 @@ end
 MakeBoost(data.raw["ammo-turret"],     d.rangeBoostAmount)
 MakeBoost(data.raw["fluid-turret"],    d.rangeBoostAmount)
 MakeBoost(data.raw["electric-turret"], d.rangeBoostAmount)
+
+
+-- Make it possible to copy-paste from constant combinators into searchlights
+local cc = table.deepcopy(data.raw["constant-combinator"])
+local pastables = cc.additional_pastable_entities
+if not pastables then
+  pastables = {}
+end
+table.insert(pastables, d.searchlightBaseName)
+table.insert(pastables, d.searchlightAlarmName)
+table.insert(pastables, d.searchlightSafeName)
+table.insert(pastables, d.searchlightSignalInterfaceName)
+cc["constant-combinator"].additional_pastable_entities = pastables
+
+data.raw["constant-combinator"] = cc

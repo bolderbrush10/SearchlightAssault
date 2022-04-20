@@ -14,7 +14,6 @@ require "util" -- for table.deepcopy and util.empty_sprite(animation_length)
 local baseHiddenEntityFlags =
 {
   "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
-  "no-copy-paste",
   "no-automated-item-insertion",
   "not-deconstructable",
   "not-flammable",
@@ -22,7 +21,6 @@ local baseHiddenEntityFlags =
   "not-on-map",
   "not-repairable",
   "not-rotatable",
-  "not-selectable-in-game",
   "not-upgradable",
   "placeable-off-grid",
 }
@@ -33,6 +31,7 @@ table.insert(circuitInterfaceFlags, "placeable-neutral")
 
 local hiddenEntityFlags = table.deepcopy(baseHiddenEntityFlags)
 table.insert(hiddenEntityFlags, "not-blueprintable")
+table.insert(hiddenEntityFlags, "not-selectable-in-game")
 
 
 local baseIcon = "__SearchlightAssault__/graphics/searchlight-icon.png"
@@ -58,6 +57,8 @@ sl_b.energy_source =
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
 sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}} -- Controls drawing-bounds in the info-panel
+sl_b.allow_copy_paste = true
+sl_b.additional_pastable_entities = {d.searchlightAlarmName, d.searchlightSafeName, d.searchlightSignalInterfaceName}
 sl_b.flags = {"placeable-player", "player-creation"}
 sl_b.is_military_target  = true
 sl_b.allow_run_time_change_of_is_military_target = false
@@ -120,6 +121,8 @@ sl_b.attack_parameters =
 -- Searchlight Safe Entity
 local sl_f = table.deepcopy(sl_b)
 sl_f.name = d.searchlightSafeName
+sl_f.allow_copy_paste = true
+sl_f.additional_pastable_entities = {d.searchlightBaseName, d.searchlightAlarmName, d.searchlightSignalInterfaceName}
 -- Since folded/prepare/attack_animation don't animate, 
 -- only face toward foes, we'll use the base picture to simulate a radar spin
 sl_f.base_picture = {layers = {g.searchlightSafeHeadAnimated, 
@@ -163,6 +166,8 @@ sl_f.attack_parameters =
 -- Searchlight Alarm Entity
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = d.searchlightAlarmName
+sl_a.allow_copy_paste = true
+sl_a.additional_pastable_entities = {d.searchlightBaseName, d.searchlightSafeName, d.searchlightSignalInterfaceName}
 sl_a.alert_when_attacking = true
 sl_a.base_picture = g.searchlightBaseAnimated
 sl_a.energy_glow_animation = g.searchlightAlarmGlowAnimation
@@ -228,10 +233,13 @@ sl_c.collision_mask = {} -- enable noclip for pathfinding too
 local sl_s = {}
 sl_s.type = "constant-combinator"
 sl_s.name = d.searchlightSignalInterfaceName
+sl_s.allow_copy_paste = true
+sl_s.additional_pastable_entities = {d.searchlightBaseName, d.searchlightAlarmName, d.searchlightSafeName}
 sl_s.icon = baseIcon
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
+sl_s.allow_copy_paste = true
 sl_s.is_military_target  = false
 sl_s.allow_run_time_change_of_is_military_target = false
 sl_s.selection_box = sl_b.selection_box -- {{-.8, .2}, {.8, 1}}

@@ -29,18 +29,16 @@ local sigRotate  = {type="virtual", name="sl-rotation"}
 --------------------
 
 
-local function FindSignalInterfaceGhosts(sl)
+local function ReviveInterfaceGhosts(sl)
   local ghosts = sl.surface.find_entities_filtered{position = sl.position,
                                                    ghost_name = d.searchlightSignalInterfaceName,
                                                    force = sl.force,
                                                    limit = 1}
 
   if ghosts and ghosts[1] and ghosts[1].valid then
-    -- The revived entity should be returned as the 2nd return value, or nil if that fails
-    return ghosts[1].revive{raise_revive = false}[2]
+    ghosts[1].silent_revive{raise_revive = false}
+    -- No point in returning anything, revive()'s return values never seem to work
   end
-
-  return nil
 end
 
 
@@ -59,16 +57,13 @@ end
 
 
 local function FindSignalInterface(sl)
+
   -- If there's already a ghost / ghost-built signal interface,
   -- just create / use it before trying to spawn a new one
-  local i = FindSignalInterfaceGhosts(sl)
-  if i then
-    return i
-  end
-
+  ReviveInterfaceGhosts(sl)
   i = FindSignalInterfacePrebuilt(sl)
   if i then
-    return i
+    return i, true
   end
 
   return sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
@@ -184,8 +179,18 @@ export.ProcessAlarmClearSignals = function(g, tick)
   c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
   c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = warning})
 
-  local x = i.get_merged_signal({type="virtual", name="sl-x"})
-  local y = i.get_merged_signal({type="virtual", name="sl-y"})
+  local connected = (i.get_circuit_network(defines.wire_type.red)
+                  or i.get_circuit_network(defines.wire_type.green))
+  local x = 0
+  local y = 0
+
+  if connected then
+    x = i.get_merged_signal({type="virtual", name="sl-x"})
+    y = i.get_merged_signal({type="virtual", name="sl-y"})
+  else
+    x = c.get_signal(d.circuitSlots.dirXSlot).count
+    y = c.get_signal(d.circuitSlots.dirYSlot).count
+  end
 
   if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
     ct.ManualTurtleMove(g, {x=x, y=y})
@@ -226,24 +231,34 @@ end
 -- Called when a new searchlight is built
 export.SpawnSignalInterface = function(sl)
   -- Attempts to find existing / ghost interfaces before spawning a new one
-  local i = FindSignalInterface(sl)
+  local i, revived = FindSignalInterface(sl)
 
   i.operable = false
   i.destructible = false
 
-  i.get_control_behavior().set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.minSlot,    {signal = sigMin,     count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.maxSlot,    {signal = sigMax,     count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.dirXSlot,   {signal = sigDirectX, count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.dirYSlot,   {signal = sigDirectY, count = 0})
+  local c = i.get_control_behavior()
 
-  i.get_control_behavior().set_signal(d.circuitSlots.ownPositionXSlot, {signal = sigOwnX,  count = i.position.x})
-  i.get_control_behavior().set_signal(d.circuitSlots.ownPositionYSlot, {signal = sigOwnY,  count = i.position.y})
-  i.get_control_behavior().set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
-  i.get_control_behavior().set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
+  local slRotation = u.clampDeg(360 * sl.orientation, 0, true) -- orientation goes 0.0-1
+  if not revived then
+    c.set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
+    c.set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = slRotation})
+    c.set_signal(d.circuitSlots.minSlot,    {signal = sigMin,     count = 0})
+    c.set_signal(d.circuitSlots.maxSlot,    {signal = sigMax,     count = 0})
+    c.set_signal(d.circuitSlots.dirXSlot,   {signal = sigDirectX, count = 0})
+    c.set_signal(d.circuitSlots.dirYSlot,   {signal = sigDirectY, count = 0})
+  else
+    local oldRotation = c.get_signal(d.circuitSlots.rotateSlot).count
+    local diff = oldRotation - slRotation
+    local newRot = u.clampDeg(oldRotation - diff, 0, true)
+    c.set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = newRot})
+  end
+
+  c.set_signal(d.circuitSlots.ownPositionXSlot, {signal = sigOwnX,  count = i.position.x})
+  c.set_signal(d.circuitSlots.ownPositionYSlot, {signal = sigOwnY,  count = i.position.y})
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
+  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
+  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
 
   return i
 end

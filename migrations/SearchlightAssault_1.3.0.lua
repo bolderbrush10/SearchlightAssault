@@ -38,3 +38,22 @@ for gID, g in pairs(global.gestalts) do
 
   cg.OpenWatch(g.gID)
 end
+
+-- Adjust existing rotation signals back 90 degrees so that
+-- we can all use 0/360 as "12 o'clock" and proceed clockwise
+-- instead of treating the x-axis as 0/360
+for _, s in pairs(game.surfaces) do
+  combinators = s.find_entities_filtered{name="constant-combinator"}
+
+  for _, c in pairs(combinators) do
+    if c.valid then
+      local cc = c.get_control_behavior()
+      for _, p in pairs(cc.parameters) do
+        if p.signal.name == "sl-rotation" then
+          p.count = p.count - 90
+          cc.set_signal(p.index, p)
+        end
+      end
+    end
+  end
+end

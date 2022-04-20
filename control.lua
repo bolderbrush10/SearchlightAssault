@@ -37,6 +37,17 @@ local militaryAndGhostsFilter =
   table.unpack(militaryFilter)
 }
 
+local pastableSignals =
+{
+  d.circuitSlots.radiusSlot,
+  d.circuitSlots.rotateSlot,
+  d.circuitSlots.minSlot   ,
+  d.circuitSlots.maxSlot   ,
+  d.circuitSlots.dirXSlot  ,
+  d.circuitSlots.dirYSlot  ,
+}
+
+
 --
 -- In the case where multiple event defines could ostensibly handle the same entity being created or destroyed,
 -- we'll register for the event definition which happens 'soonest'
@@ -440,6 +451,7 @@ end)
 --
 
 -- Detect destructions registered through LuaBootstrap.register_on_entity_destroyed
+-- TODO Do I need to register ghost-entities for the searchlight & interface, too?
 script.on_event(defines.events.on_entity_destroyed, function(event)
   if event.unit_number then
     cg.SearchlightRemoved(event.unit_number)
@@ -447,14 +459,22 @@ script.on_event(defines.events.on_entity_destroyed, function(event)
 end)
 
 
--- Make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
+-- Make sure all destroyed searchlight ghosts and signal-interface ghosts have their counterparts destroyed too
 local function ghostRemoved(ghost)
-  local signal = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
+  local complements = nil
+  if ghost.ghost_name == d.searchlightBaseName then
+    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
                                                       position   = ghost.position,}
-  for _, s in pairs(signal) do
-    s.destroy()
+  else
+    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightBaseName,
+                                                       position   = ghost.position,}
+  end
+
+  for _, g in pairs(complements) do
+    g.destroy()
   end
 end
+
 
 local function entityRemoved(event)
   local entity = event.entity
@@ -549,6 +569,23 @@ end)
 -- BLUEPRINTS & GHOSTS
 --
 
+local function CopyCombinatorToSignalInterface(source, dest)
+  local sourceParams = source.parameters
+
+  for _, slotNum in pairs(pastableSignals) do
+    local currSig = dest.get_signal(slotNum)
+    currSig.count = 0
+    
+    for _, p in pairs(sourceParams) do
+      if p.signal.name == currSig.signal.name and p.count then
+        currSig.count = currSig.count + p.count
+      end
+    end
+
+    dest.set_signal(slotNum, currSig)
+  end
+end
+
 
 -- When the player sets up / configures a blueprint,
 -- convert any boosted / alarm-mode entities
@@ -562,7 +599,8 @@ function(event)
   ghostRemoved(event.ghost)
 end,
 {
-  {filter = "ghost_name", name = d.searchlightBaseName}
+  {filter = "ghost_name", name = d.searchlightBaseName},
+  {filter = "ghost_name", name = d.searchlightSignalInterfaceName}
 })
 
 
@@ -575,7 +613,8 @@ function(event)
   end
 
   local unboostedName = ""
-  if event.prototype.name == d.searchlightAlarmName then
+  if     event.prototype.name == d.searchlightAlarmName
+      or event.prototype.name == d.searchlightSafeName then
     unboostedName = d.searchlightBaseName
   else
     unboostedName = event.prototype.name:gsub(d.boostSuffix, "")
@@ -603,6 +642,44 @@ function(event)
 end, {{filter = "type", type = "ammo-turret"},
       {filter = "type", type = "fluid-turret"},
       {filter = "type", type = "electric-turret"},})
+
+
+script.on_event(defines.events.on_entity_settings_pasted,
+function(event)
+  local source = event.source
+  local dest = event.destination
+
+  if not source.valid and not source.unit_number then
+    return
+  end
+
+  if not dest.valid and not dest.unit_number then
+    return
+  end
+
+  local gDest = global.unum_to_g[dest.unit_number]
+
+  if not gDest then
+    return
+  end
+
+  if source.name == "constant-combinator" then
+    CopyCombinatorToSignalInterface(source.get_control_behavior(), 
+                                    gDest.signal.get_control_behavior())
+  else
+    local gSource = global.unum_to_g[source.unit_number]
+
+    if not gSource then
+      return
+    end
+
+    local sourceC = gSource.signal.get_control_behavior()
+    local destC = gDest.signal.get_control_behavior()
+    for _, slotNum in pairs(pastableSignals) do
+      destC.set_signal(slotNum, sourceC.get_signal(slotNum))
+    end      
+  end
+end)
 
 
 --

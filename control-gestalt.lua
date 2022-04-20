@@ -82,6 +82,8 @@ local function SpawnAlarmLight(gestalt)
   u.CopyTurret(base, raised)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[raised.unit_number] = gestalt
+  script.register_on_entity_destroyed(raised)
+
   gestalt.light = raised
   -- Note how many times we've spotted a foe, just for fun
   raised.kills = raised.kills + 1 
@@ -105,6 +107,8 @@ local function SpawnBaseLight(gestalt)
   u.CopyTurret(base, cleared)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[cleared.unit_number] = gestalt
+  script.register_on_entity_destroyed(cleared)
+
   gestalt.light = cleared
 
   base.destroy()
@@ -126,6 +130,8 @@ local function SpawnSafeLight(gestalt)
   u.CopyTurret(base, safe)
   global.unum_to_g[base.unit_number] = nil
   global.unum_to_g[safe.unit_number] = gestalt
+  script.register_on_entity_destroyed(safe)
+  
   gestalt.light = safe
 
   base.destroy()
