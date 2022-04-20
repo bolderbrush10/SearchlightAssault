@@ -8,7 +8,7 @@ fi
 oldVersion=$(cat version.txt)
 echo "${oldVersion}"
 if [ $# -eq 0 ] ; then
-    printf "\nArg 1: Changelog messages as a semicolon-delimited \"string\"\r\nArg 2: (optional) 1 if minor version should be rev'd"
+    printf "\nArg 1: Changelog messages as a semicolon-delimited \"string\"\r\nArg 2: (optional) '1' if minor version should be rev'd\r\n\t'2' if this should just amend an existing release (input empty \"\" for first arg)"
     exit
 fi
 
@@ -22,6 +22,8 @@ elif [ $2 -eq 1 ] ; then
   version[2]=0
   (( version[1]++ ))
   newVersion="${version[*]}"
+elif [ $2 -eq 2 ] ; then
+  newVersion=$oldVersion
 fi
 
 clDelim="---------------------------------------------------------------------------------------------------"
@@ -30,7 +32,11 @@ printf "Version: " >> tempCL.txt
 printf "${newVersion}" >> tempCL.txt
 printf "\nDate: " >> tempCL.txt
 printf '%(%Y-%m-%d)T' -1  >> tempCL.txt
-printf "\n  Changes:\n" >> tempCL.txt
+if [ $2 -ne 2 ] ; then
+  printf "\n  Changes:\n" >> tempCL.txt
+else
+  printf "\n  (No changelog update)\n" >> tempCL.txt
+fi
 
 IFS=';'          # Change IFS to split on semicolon
 splitMessage=($1)
@@ -46,10 +52,16 @@ echo "Proceed? (y/n)"
 read approve
 
 if [ "${approve,,}" == "y" ]; then #convert user input to lower case with ,,
-  cat changelog.txt >> tempCL.txt
-  mv tempCL.txt changelog.txt 
-  echo "${newVersion}" > version.txt
-  sed -i '3s/.*/  "version": "'${newVersion}'",/' info.json
+
+  if [ $2 -ne 2 ] ; then
+    cat changelog.txt >> tempCL.txt
+    mv tempCL.txt changelog.txt 
+    echo "${newVersion}" > version.txt
+    sed -i '3s/.*/  "version": "'${newVersion}'",/' info.json
+  else
+    rm "../SearchlightAssault_${newVersion}.zip"
+    rm tempCL.txt
+  fi
   cd ..
   7z a "SearchlightAssault_${newVersion}.zip" SearchlightAssault -r -xr@SearchlightAssault/exclude.txt
   7z rn "SearchlightAssault_${newVersion}.zip" SearchlightAssault SearchlightAssault_${newVersion}

@@ -292,7 +292,13 @@ end
 -- Wouldn't need this function if there was an event for when entities run out of power
 export.CheckElectricNeeds = function()
   for _, g in pairs(global.check_power) do
-    g.turtle.active = g.light.energy > 0
+    if g.light.valid and g.turtle.valid and g.signal.valid then
+      g.turtle.active = g.light.energy > 0
+    else
+      -- Something nuked our mod's searchlight, gotta remove it now
+      -- (It should be safe in lua to remove from a table while iterating)
+      export.SearchlightRemoved(nil, false, g)
+    end
   end
 end
 
@@ -368,6 +374,10 @@ export.SearchlightAdded = function(sl)
                         turtle,
                         export.SpawnSpotter(sl, turtle.force))
 
+  -- Register our searchlight so if it gets removed by the map editor or another mod,
+  -- and thus no on_mined / on_died event is called, we can still destroy our gestalt
+  script.register_on_entity_destroyed(sl)
+
   sl.shooting_target = turtle
   ct.WindupTurtle(g, turtle)
 
@@ -383,9 +393,13 @@ export.SearchlightAdded = function(sl)
 end
 
 
-export.SearchlightRemoved = function(sl, killed, g)
+export.SearchlightRemoved = function(sl_unit_number, killed, g)
   if not g then
-    g = global.unum_to_g[sl.unit_number]
+    g = global.unum_to_g[sl_unit_number]
+  end
+
+  if not g then
+    return
   end
 
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
@@ -395,15 +409,15 @@ export.SearchlightRemoved = function(sl, killed, g)
   end
 
   -- Stuff gets a little more complicated because we have to deal
-  -- with the map editor not firing events
-  if not sl then
+  -- with the map editor / other mods not firing events
+  if not sl_unit_number then
     for lhs, rhs in pairs(global.unum_to_g) do
       if rhs.gID == g.gID then
         global.unum_to_g[lhs] = nil
       end
     end
   else
-    global.unum_to_g[sl.unit_number] = nil
+    global.unum_to_g[sl_unit_number] = nil
   end
 
   -- Above for loop should have cleared out this unum,

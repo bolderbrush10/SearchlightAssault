@@ -56,7 +56,7 @@ local function handleUninstall()
   if settings.global[d.uninstallMod].value then
     for _, g in pairs(global.gestalts) do
       local b = g.light;
-      cg.SearchlightRemoved(b);
+      cg.SearchlightRemoved(b.unit_number);
       b.destroy()
     end
 
@@ -152,6 +152,9 @@ local function detectEditorChanges()
 end
 
 
+-- This is the best we can do for detecting when
+-- a player is messing with stuff in the map editor
+-- (Since events don't fire in some editor tabs)
 local function checkEditor()
   global.editorSurfaces = nil
 
@@ -175,15 +178,8 @@ end
 script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
 
 
--- This is the best we can do for detecting when
--- a player is messing with stuff in the mod editor
--- (Since events don't fire in some editor tabs)
 script.on_event(defines.events.on_selected_entity_changed,
 function(event)
-  if global.editorSurfaces then
-    detectEditorChanges()
-  end
-
   local p = game.players[event.player_index]
   local entity = p.selected
   if entity and entity.force == p.force then
@@ -443,6 +439,14 @@ end)
 -- DESTRUCTIONS
 --
 
+-- Detect destructions registered through LuaBootstrap.register_on_entity_destroyed
+script.on_event(defines.events.on_entity_destroyed, function(event)
+  if event.unit_number then
+    cg.SearchlightRemoved(event.unit_number)
+  end
+end)
+
+
 -- Make sure all searchlight ghosts destroyed also have their signal-interface ghost destroyed too
 local function ghostRemoved(ghost)
   local signal = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
@@ -462,7 +466,7 @@ local function entityRemoved(event)
     -- or event.name == defines.events.script_raised_destroy
     -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
     
-    cg.SearchlightRemoved(entity, onDeath)
+    cg.SearchlightRemoved(entity.unit_number, onDeath)
   elseif entity.type:match "-turret" and entity.type ~= "artillery-turret" then
     cu.TurretRemoved(entity)
   end
@@ -504,7 +508,7 @@ for index, e in pairs
     local entities = game.surfaces[event.surface_index].find_entities_filtered{name = {d.searchlightBaseName,
                                                                                        d.searchlightAlarmName}}
     for _, e in pairs(entities) do
-      cg.SearchlightRemoved(e)
+      cg.SearchlightRemoved(e.unit_number)
     end
   end)
 end
@@ -523,13 +527,13 @@ function(event)
 
       for _, e in pairs(entities) do
         if e.name == d.searchlightBaseName or e.name == d.searchlightAlarmName then
-          cg.SearchlightRemoved(e)
+          cg.SearchlightRemoved(e.unit_number)
         elseif e.name == d.turtleName
           or e.name == d.spotterName
           or e.name == d.searchlightControllerName then
 
           -- Just destroy the searchlight as collateral damage
-          cg.SearchlightRemoved(e)
+          cg.SearchlightRemoved(e.unit_number)
           e.destroy()
 
         elseif e.unit_number then
@@ -555,7 +559,7 @@ script.on_event(defines.events.on_player_configured_blueprint, ci.ScanBP_StacksA
 
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
-  ghostRemoved(event)
+  ghostRemoved(event.ghost)
 end,
 {
   {filter = "ghost_name", name = d.searchlightBaseName}

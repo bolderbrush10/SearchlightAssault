@@ -156,8 +156,12 @@ end
 export.CheckCircuitConditions = function()
   local tick = game.tick
   for gID, g in pairs(global.check_power) do
-    if g.light.energy > 0 then
-      OutputCircuitSignals(g, tick)
+    if g.light.valid and g.signal.valid then
+      if g.light.energy > 0 then
+        OutputCircuitSignals(g, tick)
+      end
+    -- else
+      -- Something nuked our mod's searchlight, we'll clean up in the next on_tick()
     end
   end
 end
