@@ -416,7 +416,7 @@ export.CloseWatchCircle = function(gIDFoeMap)
 
     local foe = u.GetNearestShootableEntFromList(sPos, foeList)
 
-    if foe then
+    if foe and foe.valid then
       -- Case: Foe spotted successfully
       RaiseAlarm(g, foe)
     else
