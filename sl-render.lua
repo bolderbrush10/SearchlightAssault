@@ -82,7 +82,6 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
   -- (Unless the radius was just set from something else _to_ the default-params)
   local params = g.tAdjParams
   if  not forceRedraw
-      and params.angleStart == 0
       and params.len == twoPi
       and params.min == 1
       and params.max == d.searchlightRange then
