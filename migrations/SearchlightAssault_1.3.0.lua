@@ -1,5 +1,8 @@
-local d  = require "sl-defines"
+local d = require "sl-defines"
+local u = require "sl-util"
+
 local cgui = require "control-gui"
+
 local cg = require "control-gestalt"
 local cs = require "control-searchlight"
 
@@ -30,6 +33,10 @@ for gID, g in pairs(global.gestalts) do
   -- Just reset all the circuit signal slots so the GUI doesn't break,
   -- biters don't just squat at own positiion, etc
   g.signal = cs.SpawnSignalInterface(g.light)
+  -- Try not to break any existing rotations players have
+  g.signal.get_control_behavior().set_signal(d.circuitSlots.rotateSlot, 
+                                             {signal = {type="virtual", name="sl-rotation"},  
+                                              count = 0})
 
   global.unum_to_g[g.light.unit_number] = g
   global.unum_to_g[g.signal.unit_number] = g
@@ -39,7 +46,7 @@ for gID, g in pairs(global.gestalts) do
   cg.OpenWatch(g.gID)
 end
 
--- Adjust existing rotation signals back 90 degrees so that
+-- Adjust existing rotation signals forward 90 degrees so that
 -- we can all use 0/360 as "12 o'clock" and proceed clockwise
 -- instead of treating the x-axis as 0/360
 for _, s in pairs(game.surfaces) do
@@ -50,7 +57,7 @@ for _, s in pairs(game.surfaces) do
       local cc = c.get_control_behavior()
       for _, p in pairs(cc.parameters) do
         if p.signal.name == "sl-rotation" then
-          p.count = p.count - 90
+          p.count = u.clampDeg(p.count + 90, 0, true)
           cc.set_signal(p.index, p)
         end
       end
