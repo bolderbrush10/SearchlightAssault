@@ -86,11 +86,18 @@ local function handleModSettingsChanges(event)
   cu.UpdateBlockList()
 end
 
+local function handleConfigurationChanged(event)
+  for _, force in pairs(game.forces) do
+    cf.UpdateTForceRelationships(force)
+  end
+
+  handleModSettingsChanges(event)
+end
 
 -- On Mod Settings Changed
 script.on_event(defines.events.on_runtime_mod_setting_changed, handleModSettingsChanges)
 -- (Doesn't handle runtime changes or changes from the main menu, unless another mod is enabled/diabled)
-script.on_configuration_changed(handleModSettingsChanges)
+script.on_configuration_changed(handleConfigurationChanged)
 -- script.on_load()
 -- on_load doesn't provide access to game.* functions,
 -- and mod settings changed at the main menu don't seem to persist

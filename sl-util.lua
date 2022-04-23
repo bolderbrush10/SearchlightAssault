@@ -358,12 +358,12 @@ local function CheckEntityOrDriver(entity)
 
   -- Checking for existence of energy_per_hit_point is the best way I can figure out to easily
   -- check if we're looking at a vehicle
-  if entity.valid and entity.destructible and entity.prototype.energy_per_hit_point then
+  if entity and entity.valid and entity.destructible and entity.prototype.energy_per_hit_point then
     local driver = entity.get_driver()
     if driver and driver.valid and driver.is_entity_with_force and driver.destructible then
       return driver
     end
-  elseif entity.valid and entity.is_entity_with_force and entity.destructible then
+  elseif entity and entity.valid and entity.is_entity_with_force and entity.destructible then
     return entity
   else
     return nil
