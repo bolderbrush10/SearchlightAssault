@@ -59,21 +59,9 @@ export.controlUnitSprite =
   frame_count = 10,
   frame_sequence = controlFrameSeq,
   line_length = 5,
-  width = 45,
-  height = 60,
-  scale = 0.4,
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/sl-control-hr.png",
-    priority = "high",
-    axially_symmetrical = false,
-    frame_count = 10,
-    frame_sequence = controlFrameSeq,
-    line_length = 5,
-    width = 90,
-    height = 120,
-    scale = 0.2,
-  }
+  width = 90,
+  height = 120,
+  scale = 0.2,
 }
 
 
