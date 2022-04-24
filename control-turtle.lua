@@ -15,7 +15,7 @@ export.FOLLOW = 2 -- TODO Does this state still make sense? We don't chase thing
 
 -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
 -- too close to the max range of the searchlight
-local bufferedRange = d.searchlightRange - 5
+local bufferedRange = d.searchlightRange - (d.searchlightSpotRadius)
 
 ------------------------
 --  Helper Functions  --

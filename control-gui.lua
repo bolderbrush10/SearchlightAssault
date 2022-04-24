@@ -501,7 +501,7 @@ cgui.updateOnEntity = function(g, GUI)
 
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
+      if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
         updateEntitiesInGUI(g, gAndGUI[2])
       else
         cgui.CloseSearchlightGUI(pIndex)
@@ -523,9 +523,9 @@ end
 
 -- validity checked here
 cgui.Rotated = function(g)
-  for _, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
+      if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
         updateForRotation(g, gAndGUI[2])
       else
         cgui.CloseSearchlightGUI(pIndex)
