@@ -285,6 +285,33 @@ export.Rotated = function(g, light, oldDir, pIndex)
   sig.count = u.clampDeg(sig.count + newRot, 0, true)
   control.set_signal(d.circuitSlots.rotateSlot, sig)
 
+  -- If there's a direct waypoint set, go ahead and rotate that
+  if     g.tState == ct.MOVE 
+      or g.tWanderParams.radius == 360 
+      or g.tWanderParams.radius == 0 then
+    if g.tState == ct.MOVE then
+      local distSq = u.lensquared(u.TranslateCoordinate(g, g.tCoord), light.position)
+
+      local theta = math.atan2(g.tCoord.y, g.tCoord.x)
+      newCoord = u.ScreenOrientationToPosition(light.position, theta + newRot, math.sqrt(distSq))
+
+      local dirX = control.get_signal(d.circuitSlots.dirXSlot)
+      local dirY = control.get_signal(d.circuitSlots.dirYSlot)
+      dirX.count = newCoord.x - light.position.x
+      dirY.count = newCoord.y - light.position.y
+
+      control.set_signal(d.circuitSlots.dirXSlot, dirX)
+      control.set_signal(d.circuitSlots.dirYSlot, dirY)
+    else
+      local distSq = u.lensquared(g.turtle.position, light.position)
+      local theta = (g.tWanderParams.rotation*math.pi)/180
+
+      newCoord = u.ScreenOrientationToPosition(light.position, theta, math.sqrt(distSq))
+
+      ct.WanderTurtle(g, newCoord)
+    end
+  end
+
   local player = game.players[pIndex]
   if player and player.valid then
     cgui.Rotated(g) -- Treat rotation like it was a text input

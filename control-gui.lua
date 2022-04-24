@@ -464,6 +464,14 @@ local function updateForRotation(g, GUI)
 
   local rotateText = leftFlow["sla-gui-table-patrol"]["sla_gui_" .. rotateSig.signal.name]
   rotateText.text = tostring(rotateSig.count)
+
+  local dirXSig = control.get_signal(d.circuitSlots.dirXSlot)
+  local dirYSig = control.get_signal(d.circuitSlots.dirYSlot)
+
+  local dirXText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirXSig.signal.name]
+  dirXText.text = tostring(dirXSig.count)
+  local dirYText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirYSig.signal.name]
+  dirYText.text = tostring(dirYSig.count)
 end
 
 

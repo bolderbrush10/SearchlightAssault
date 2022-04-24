@@ -24,6 +24,7 @@ DirectionToVector[defines.direction.southeast] = {x =  1, y =  1}
 DirectionToVector[defines.direction.east]      = {x =  1, y =  0}
 DirectionToVector[defines.direction.northeast] = {x =  1, y = -1}
 
+local bufferedRange = d.searchlightRange - (d.searchlightSpotRadius)
 
 u.EndsWith =
 function(str, suffix)
@@ -133,6 +134,22 @@ u.ScreenOrientationToPosition =
 function(origin, radTheta, distance)
   return {x = origin.x + math.cos(radTheta) * distance,
           y = origin.y + math.sin(radTheta) * distance,}
+end
+
+
+u.TranslateCoordinate =
+function(gestalt, coord)
+  local translatedCoord = {x=coord.x, y=coord.y}
+
+  -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
+  if u.lensquared(coord, {x=0, y=0}) > u.square(bufferedRange) then
+    translatedCoord = u.ClampCoordToDistance(translatedCoord, bufferedRange)
+  end
+
+  translatedCoord.x = translatedCoord.x + gestalt.light.position.x
+  translatedCoord.y = translatedCoord.y + gestalt.light.position.y
+
+  return translatedCoord
 end
 
 

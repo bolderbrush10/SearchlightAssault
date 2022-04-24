@@ -135,21 +135,6 @@ local function MakeWanderWaypoint(g)
 end
 
 
-local function TranslateCoordinate(gestalt, coord)
-  local translatedCoord = {x=coord.x, y=coord.y}
-
-  -- Clamp excessive ranges so the turtle doesn't go past the searchlight max radius
-  if u.lensquared(coord, {x=0, y=0}) > u.square(bufferedRange) then
-    translatedCoord = u.ClampCoordToDistance(translatedCoord, bufferedRange)
-  end
-
-  translatedCoord.x = translatedCoord.x + gestalt.light.position.x
-  translatedCoord.y = translatedCoord.y + gestalt.light.position.y
-
-  return translatedCoord
-end
-
-
 local function RespawnTurtle(turtle, position)
   local g = global.unum_to_g[turtle.unit_number]
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
@@ -240,7 +225,7 @@ export.TurtleFailed = function(turtle)
   local g = RespawnTurtle(turtle, turtle.position)
 
   if g.tState == export.MOVE then
-    local translatedCoord = TranslateCoordinate(g, g.tCoord)
+    local translatedCoord = u.TranslateCoordinate(g, g.tCoord)
     IssueMoveCommand(g.turtle, translatedCoord, false)
   elseif g.tState == export.FOLLOW then
     export.TurtleChase(g, g.tCoord)
@@ -372,10 +357,10 @@ export.ManualTurtleMove = function(gestalt, coord)
     return
   end
 
-  local translatedCoord = TranslateCoordinate(gestalt, coord)
+  local translatedCoord = u.TranslateCoordinate(gestalt, coord)
 
   if gestalt.tState == export.MOVE then    
-    local trans_tCoord = TranslateCoordinate(gestalt, gestalt.tCoord)
+    local trans_tCoord = u.TranslateCoordinate(gestalt, gestalt.tCoord)
 
     if      trans_tCoord.x == translatedCoord.x
         and trans_tCoord.y == translatedCoord.y then
