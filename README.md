@@ -73,10 +73,6 @@ Some turrets may not be boostable to begin with, and are automatically ignored b
 
 - Workarounds: Add turrets from incompatible mods into the turret-boost block list. (See above section)
 
-- Performance: The first few hundred searchlights should have almost no impact on UPS. After two thousand even a high end system should expect to see about 10 UPS lost.
-
-- Megabases: This mod hasn't been tested against any megabases, but shouldn't present major issues as long as the number of searchlights themselves are kept below one thousand. Searchlights are always searching, so, they never make use of internal sleep methods like other entities in a megabase.
-
 
 ## Contact
 
@@ -89,16 +85,8 @@ If you have any feedback or footage featuring my mod, please share with me! I wo
 
 ### Known Issues:
 
-- [Mitigated] The map editor doesn't fire events when creating / removing entities in some tabs,
-  which would cause crashes, so we must manually search for turrets while the editor runs, causing lag
-
-- [Mitigated] Players right clicking to destroy a ghost searchlight can leave behind ghost signal-interfaces
-
 - [Mitigated] It's possible to 'fake out' the turtle near the edge of the searchlight range
   and desync the searchlight from attacking its turtle or make the turtle "lock up"
-
-- [Mitigated] Some mods limit the range on ammo, which results in range-boosted turrets having to swap out
-   the ammo they use in real-time (and also try to detect other entities taking that boosted ammo, causing lag)
 
 - [Cheat Mode] Mass-deconstructing alarm-mode searchlights and boosted turrets at
   the same exact time causes the searchlights to re-boost turrets as they die,
@@ -143,7 +131,6 @@ but this codebase would be drastically smaller if these issues weren't in place:
     no enemies present by creating a dummy entity in a dummy force (turtle)
 0. No mechanism in the API to blacklist units from being attacked by artilery, capsule robots, etc
     (TargetMasks seems to only affect turrets)
-0. [Mitigated by dev update; https://forums.factorio.com/100269] Attacks fail if a unit enters its target's hitbox
 0. Vehicles don't count as an entity_with_force, so you can't set their shooting target to one manually,
    even though turrets _can and do_ attack vehicles
    (One must detect the vehicle, then check for a driver inside it and target the driver)
@@ -252,7 +239,6 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
   And how it's seemingly-impossible to set up a blocklist for an entity that you don't want even-just-turrets to attack.
 
 - 'on_save' event, or a way in general to make sure that uninstalling our mod will give people back their original turrets.
-  (Alternatively, ask for the simple ability to increase turret range during run time)
 
 - Report prefer_straight_paths = true as bug? Seems to do the opposite of what it says
 
@@ -301,8 +287,6 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 
 - Searchlight color controlled by circuit signals
 
-- Don't show searchlights in the turret coverage map mode
-
 - Mod compatability setting feature: \nWildcard matching possible with asterisk *
 
 - Look more into teleporting or somehow... hiding the entities we're replacing.
@@ -316,10 +300,6 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 
 
 ### Art:
-- Further crop the mask sprite, figure out the offset it needs
-
-- Optimize file sizes better, maybe increase the file compression and see if it loads faster or slower
-
 - Make a dirt estucheon for where wires reach into the ground
 
 - Re-render everything with some kind of smudge / blur post-processing effect
@@ -330,5 +310,3 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 - Shadow layer cleanup:
   I think I need to go into photoshop or blender and rig it so that any pixels from the base layer
   exclude pixels from the shadow layer
-
-- UI sound when rotating searchlight

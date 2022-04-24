@@ -1,4 +1,24 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.0
+Date: 2022-04-24
+  Changes:
+    - [Major] Added GUI for directly setting searchlight commands
+      - Searchlights can now be meaningfully rotated with 'R'/'Shift-R' after being built like other structures
+      - Searchlights now internally track their rotation & other command settings
+      - Rotation settings changed to treat 0/360 degrees as "12 o'clock"
+      - [migration] Update constant-combinator's rotation signals accordingly for existing saves
+    - [Major] Added 'Safe Mode' to allow searchlights to enter an idle mode when no foes present
+      - "Warning" signal reworked to indicate if searchlight suspects foes are near, should be much more noticable
+      - Significant performance increase for saves with over 1000 searchlights
+    - Allow copy-paste between searchlights and from constant-combinators to searchlights
+    - Connecting searchlights with wires improved
+    - Blueprint reliability improved
+    - Hovering over a searchlight now highlights its spotlight
+    - Hovering over a searchlight to show patrol settings now renders the area more distinctly
+    - Patrol settings for searchlight now less likely to cause spotlight to wander out of range
+    - Reduced filesize of graphics by ~45%
+    - Updated prisonbreak scenario to use the new signal types
+---------------------------------------------------------------------------------------------------
 Version: 1.2.11
 Date: 2022-04-22
   Changes:
