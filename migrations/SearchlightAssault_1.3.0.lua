@@ -22,25 +22,38 @@ global.unum_to_g = {}
 for gID, g in pairs(global.gestalts) do
   global.check_power[gID] = g
 
+  if not g.tOldCoord then
+    g.tOldCoord = {x=g.turtle.position.x, y=g.turtle.position.y}
+  end
+
   -- Changing the prototype type for the spotter will have invalidated all existing spotters,
   -- so spawn in a new one and let the engine handle cleaning up the invalid entities
   g.spotter = cg.SpawnSpotter(g.light, g.turtle.force)
-
-  if g.signal then
-    g.signal.destroy()
-  end
+  
+  local c = g.signal.get_control_behavior()
 
   -- Just reset all the circuit signal slots so the GUI doesn't break,
   -- biters don't just squat at own positiion, etc
-  g.signal = cs.SpawnSignalInterface(g.light)
-  -- Try not to break any existing rotations players have
-  g.signal.get_control_behavior().set_signal(d.circuitSlots.rotateSlot, 
-                                             {signal = {type="virtual", name="sl-rotation"},  
-                                              count = 0})
+  c.parameters = nil
 
-  global.unum_to_g[g.light.unit_number] = g
-  global.unum_to_g[g.signal.unit_number] = g
-  global.unum_to_g[g.turtle.unit_number] = g
+  -- If an alarm-mode light gets migrated through this, it should update its signals again next tick
+  -- Don't 'update' rotation, we don't want to break existing setups
+  c.set_signal(d.circuitSlots.rotateSlot,       {signal = {type="virtual", name="sl-rotation"},    count = 0})
+  c.set_signal(d.circuitSlots.radiusSlot,       {signal = {type="virtual", name="sl-radius"},      count = 0})
+  c.set_signal(d.circuitSlots.minSlot,          {signal = {type="virtual", name="sl-minimum"},     count = 0})
+  c.set_signal(d.circuitSlots.maxSlot,          {signal = {type="virtual", name="sl-maximum"},     count = 0})
+  c.set_signal(d.circuitSlots.dirXSlot,         {signal = {type="virtual", name="sl-x"},           count = 0})
+  c.set_signal(d.circuitSlots.dirYSlot,         {signal = {type="virtual", name="sl-y"},           count = 0})
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = {type="virtual", name="sl-alarm"},       count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = {type="virtual", name="sl-warn"},        count = 0})
+  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = {type="virtual", name="foe-x-position"}, count = 0})
+  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = {type="virtual", name="foe-y-position"}, count = 0})
+  c.set_signal(d.circuitSlots.ownPositionXSlot, {signal = {type="virtual", name="sl-own-x"},       count = g.signal.position.x})
+  c.set_signal(d.circuitSlots.ownPositionYSlot, {signal = {type="virtual", name="sl-own-y"},       count = g.signal.position.y})
+
+  global.unum_to_g[g.light.unit_number]   = g
+  global.unum_to_g[g.signal.unit_number]  = g
+  global.unum_to_g[g.turtle.unit_number]  = g
   global.unum_to_g[g.spotter.unit_number] = g
 
   cg.OpenWatch(g.gID)
