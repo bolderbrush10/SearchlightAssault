@@ -259,7 +259,7 @@ function(event)
 
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     local gID = gAndGUI[1]
-    if cgui.validatePlayerAndLight(pIndex, gID) then
+    if cgui.validatePlayerAndLight(pIndex, gID) and cgui.validateGUI(gAndGUI[2]) then
       local g = global.gestalts[gID]
       cgui.updateOnTick(g, gAndGUI[2])
       -- Update the wander parameters, just in case this searchlight is in safe mode
@@ -324,7 +324,8 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
     return
   end
 
-  if not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1]) then
+  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
+      or not cgui.validateGUI(gAndGUI[2]) then
     cgui.CloseSearchlightGUI(event.player_index)
     return
   end

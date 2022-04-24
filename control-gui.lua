@@ -170,7 +170,7 @@ end
 
 
 local function create(main_gui, g)
-  local main_frame = main_gui.add{type="frame", name="test", direction="vertical",}
+  local main_frame = main_gui.add{type="frame", name=d.guiName, direction="vertical",}
   main_frame.force_auto_center()
 
   local title_flow = main_frame.add{type = "flow", name = "titlebar",}
@@ -467,11 +467,21 @@ local function updateForRotation(g, GUI)
 end
 
 
+cgui.validateGUI = function(GUI)
+  if GUI and GUI.valid and GUI.name == d.guiName then
+    return true
+  else
+    return false
+  end
+end
+
+
 cgui.validatePlayerAndLight = function(pIndex, gID)
   return game.players[pIndex] and game.players[pIndex].valid and global.gestalts[gID]
 end
 
 
+-- validity checked by caller
 cgui.updateOnTick = function(g, GUI)
   local contentFlow = GUI.children[2]
   local leftContent = contentFlow.children[1]
@@ -482,26 +492,27 @@ cgui.updateOnTick = function(g, GUI)
 end
 
 
+-- validity should be checked by caller when GUI specified
 cgui.updateOnEntity = function(g, GUI)
   if GUI then
     updateEntitiesInGUI(g, GUI)
     return
   end
 
-  for _, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      updateEntitiesInGUI(g, gAndGUI[2])
+      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
+        updateEntitiesInGUI(g, gAndGUI[2])
+      else
+        cgui.CloseSearchlightGUI(pIndex)
+      end
     end
   end
 end
 
 
+-- validity checked by caller
 cgui.updateOnTextInput = function(g, GUI)
-  if GUI then
-    updateForTextFieldInGUI(g, GUI)
-    return
-  end
-
   for _, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       updateForTextFieldInGUI(g, gAndGUI[2])
@@ -510,15 +521,15 @@ cgui.updateOnTextInput = function(g, GUI)
 end
 
 
-cgui.Rotated = function(g, GUI)
-  if GUI then
-    updateForRotation(g, GUI)
-    return
-  end
-
+-- validity checked here
+cgui.Rotated = function(g)
   for _, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      updateForRotation(g, gAndGUI[2])
+      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
+        updateForRotation(g, gAndGUI[2])
+      else
+        cgui.CloseSearchlightGUI(pIndex)
+      end
     end
   end
 end
