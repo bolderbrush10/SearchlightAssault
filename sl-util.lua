@@ -128,7 +128,7 @@ function(origin, theta, distance)
 end
 
 
--- theta given as radians, assumes screen-coordiantes already in use
+-- theta given as radians, assumes screen-coordinates already in use
 u.ScreenOrientationToPosition =
 function(origin, radTheta, distance)
   return {x = origin.x + math.cos(radTheta) * distance,

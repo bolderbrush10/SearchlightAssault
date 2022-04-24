@@ -211,6 +211,8 @@ function(event)
 
         -- Shouldn't double draw if already drawn for whole force by above call
         rd.DrawSearchArea(entity, p, nil)
+        
+        rd.DrawTurtlePos(p, g)
 
         -- If player is holding a wire, hide the "can not connect" icon
         local cursorStack = p.cursor_stack

@@ -173,7 +173,7 @@ local function Turtleport(turtle, origin, position)
     return
   end
 
-  local tpBufferRange = d.searchlightRange - 3
+  local tpBufferRange = bufferedRange + 2
 
   -- If position is too far from the origin for the searchlight to attack it,
   -- calculate a slightly-closer position with the same angle and use that

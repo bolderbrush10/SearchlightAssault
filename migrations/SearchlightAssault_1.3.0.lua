@@ -12,9 +12,11 @@ cgui.InitTables_GUI()
 global.watch_circles = nil -- Renaming
 global.spotter_timeouts = {}
 
+global.check_power = {}
+
 global.animation_sync = {}
 
-global.check_power = {}
+global.tposRenders = {}
 
 -- It's easiest to just rebuild this from scratch
 global.unum_to_g = {}
@@ -77,3 +79,13 @@ for _, s in pairs(game.surfaces) do
     end
   end
 end
+
+-- Wipe out any rendering instances so we can redraw them
+for _, pIndexToEpochAndRenderMap in pairs(global.slFOVRenders) do
+  for _, epochAndRender in pairs(pIndexToEpochAndRenderMap) do
+    for _, render in pairs(epochAndRender) do
+      rendering.destroy(render)
+    end
+  end
+end
+global.slFOVRenders = {}
