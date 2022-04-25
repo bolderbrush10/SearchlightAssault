@@ -132,6 +132,12 @@ local function MakeAmmoBoost(currTable)
 	        boostCopy.localised_description = {"item-description." .. boostCopy.name}
 	      end
 
+        if boostCopy.flags == nil then
+          boostCopy.flags = {}
+        end
+        -- Just hides from some GUIs (logistics requests, etc)
+        table.insert(boostCopy.flags, "hidden")
+
 	      boostCopy.name = boostedName
   			data:extend{boostCopy}
   		end

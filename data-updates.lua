@@ -47,8 +47,11 @@ local function MakeBoost(currTable, newRange)
 
       local boostCopy = table.deepcopy(currTable[turret.name])
 
-      -- Inspired by Mooncat. Thanks, Mooncat.
-      boostCopy.localised_name = {"entity-name." .. boostCopy.name}
+      -- Preserve existing localised_names other mods might have made
+      if boostCopy.localised_name == nil then
+        boostCopy.localised_name = {"entity-name." .. boostCopy.name}
+      end
+      
       if {"entity-description." .. boostCopy.name} then
         boostCopy.localised_description = {"entity-description." .. boostCopy.name}
       end

@@ -417,10 +417,10 @@ local function CheckEntityOrDriver(entity)
   -- check if we're looking at a vehicle
   if entity and entity.valid and entity.destructible and entity.prototype.energy_per_hit_point then
     local driver = entity.get_driver()
-    if driver and driver.valid and driver.is_entity_with_force and driver.destructible then
+    if driver and driver.valid and driver.is_military_target and driver.destructible then
       return driver
     end
-  elseif entity and entity.valid and entity.is_entity_with_force and entity.destructible then
+  elseif entity and entity.valid and entity.is_military_target and entity.destructible then
     return entity
   else
     return nil
