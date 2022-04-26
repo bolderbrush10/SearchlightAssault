@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.0.1
+Date: 2022-04-26
+  Changes:
+    - Attempt to fix entities without owner being targeted
+    - Hide boosted ammo from logistics & some other GUIs
+    - Fix localization of boosted turrets in some cases
+    - Remove deprecated call to is_entity_with_force
+---------------------------------------------------------------------------------------------------
 Version: 2.0.0
 Date: 2022-04-24
   Changes:
