@@ -386,10 +386,10 @@ end)
 script.on_event(defines.events.on_player_rotated_entity,
 function(event)
   local e = event.entity
-  local tu = global.boosted_to_tunion[e.unit_number]
+  local tu = global.tun_to_tunion[e.unit_number]
   local g = global.unum_to_g[e.unit_number]
 
-  if tu then
+  if tu and tu.boosted then
     -- Detect if a player rotated a turret with an arc (eg, a flame turret)
     -- and check if it can still hit that foe.
     -- If it can target something in its new direction, it'll get reboosted in a moment.

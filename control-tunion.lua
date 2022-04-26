@@ -35,7 +35,7 @@ export.InitTables_Turrets = function()
   -- Map: turret unit_number -> TUnion
   global.tun_to_tunion = {}
 
-  -- Map: boosted turret unit_number -> TUnion
+  -- Map: tuID -> TUnion
   global.boosted_to_tunion = {}
 
   -- Map: turret name -> true
@@ -275,6 +275,79 @@ local function BoostAmmo(turret)
 end
 
 
+local function AmplifyRange(tunion, foe)
+  if  tunion.boosted
+     or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
+     or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
+     or global.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
+
+    return
+
+  end
+
+  local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
+  local turret = tunion.turret
+
+  if not (turret.valid and u.IsPositionWithinTurretArc(foe.position, turret, checkAmmoRange)) then
+    return
+  end
+
+  local newT = turret.surface.create_entity{name = turret.name .. d.boostSuffix,
+                                            position = turret.position,
+                                            force = turret.force,
+                                            direction = turret.direction,
+                                            fast_replace = false,
+                                            create_build_effect_smoke = false}
+
+  u.CopyTurret(turret, newT)
+  tunion.boosted = true
+  tunion.turret  = newT
+  global.tun_to_tunion[newT.unit_number] = tunion
+  global.tun_to_tunion[turret.unit_number] = nil
+  turret.destroy()
+  -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
+  -- not actually "destroy" the entity (We'll put the original back soon
+  -- (albeit with a new unit_number...))
+  -- On the other hand, what if the other mod has its own hidden entities
+  -- mapped to what we're destroying? We're messing up their unit_number too...
+  -- Would we be better off just setting active=false on the original entity
+  -- and somehow hiding it / synchronizing its movement & firing animations?
+
+  newT.shooting_target = foe
+
+ return newT
+end
+
+
+local function DeamplifyRange(tunion)
+  local turret = tunion.turret
+
+  if not turret.valid or not tunion.boosted then
+    return
+  end
+
+  local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
+                                            position = turret.position,
+                                            force = turret.force,
+                                            direction = turret.direction,
+                                            fast_replace = false,
+                                            create_build_effect_smoke = false}
+
+  u.CopyTurret(turret, newT)
+  tunion.boosted = false
+
+  tunion.turret  = newT
+  global.tun_to_tunion[newT.unit_number] = tunion
+  global.tun_to_tunion[turret.unit_number] = nil
+  turret.destroy()
+  -- As with AmplifyRange(), don't raise script_raised_destroy
+
+  UnBoostAmmo(newT)
+
+  return newT
+end
+
+
 ----------------------
 --  On Tick Events  --
 ----------------------
@@ -284,19 +357,26 @@ end
 export.CheckAmmoElectricNeeds = function()
   local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
 
-  for _, t in pairs(global.boosted_to_tunion) do
+  for tuID, t in pairs(global.boosted_to_tunion) do
     local turret = t.turret
-    -- Inactive units don't die, so we need to fix that here
-    turret.active = turret.health == 0 or t.control.energy > 0
+    local foe = t.foe
     
     -- Some mods put a limited range on ammo, so check for that here
-    if  not turret.shooting_target 
-        or not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret, checkAmmoRange) then
+    if turret.shooting_target and not u.IsPositionWithinTurretArc(turret.shooting_target.position, turret, checkAmmoRange) then
       export.UnBoost(t)
-
-    elseif not checkAmmoRange then
-      BoostAmmo(turret)
+    elseif not foe or not foe.valid then
+      if not ReassignTurret(turret, tuID) then
+        export.UnBoost(t)
+      end
+    elseif t.control.energy > 5000 then
+      AmplifyRange(t, foe) -- will invalidate t
+      if not checkAmmoRange then
+        BoostAmmo(t.turret)
+      end
+    elseif t.control.energy < 100 then
+      DeamplifyRange(t)
     end
+    
   end
 end
 
@@ -340,7 +420,7 @@ function export.TurretRemoved(turret, tu)
     end
 
     global.tun_to_tunion[turret.unit_number] = nil
-    global.boosted_to_tunion[turret.unit_number] = nil
+    global.boosted_to_tunion[tu.tuID] = nil
     global.tunions[tu.tuID] = nil
   else
     -- Some workarounds are necessary here
@@ -352,6 +432,7 @@ function export.TurretRemoved(turret, tu)
       tu.control = nil
     end
 
+    -- TODO I don't remember writing these 3 loops of garbage
     for lhs, rhs in pairs(global.tun_to_tunion) do
       if rhs.tuID == tu.tuID then
         global.tun_to_tunion[lhs] = nil
@@ -389,7 +470,7 @@ function export.GestaltRemoved(tuID)
   end
 
   global.tun_to_tunion[tu.turret.unit_number] = nil
-  global.boosted_to_tunion[tu.turret.unit_number] = nil
+  global.boosted_to_tunion[tu.tuID] = nil
   global.tunions[tu.tuID] = nil
 end
 
@@ -434,7 +515,7 @@ end
 -- Called when the override max ammo range mod setting changes to false,
 -- which means we need to find and swap back any taboo'd ammo
 export.RespectMaxAmmoRange = function()
-  for tun, tu in pairs(global.boosted_to_tunion) do
+  for _, tu in pairs(global.boosted_to_tunion) do
     local turret = tu.turret
     local entities = turret.surface.find_entities_filtered{position=turret.position,
                                                            radius=4
@@ -455,96 +536,40 @@ end
 ------------------------
 
 
+-- After being added to the map of boostables,
+-- we'll check if it's time to actually swap to
+-- the range-boosted turret in CheckAmmoElectricNeeds()
+-- via onTick()
 export.Boost = function(tunion, foe)
-  if  tunion.boosted
-     or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
-     or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
-     or global.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
-
-    return
-
-  end
-
-  local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
-  local turret = tunion.turret
-
-  if not (turret.valid and u.IsPositionWithinTurretArc(foe.position, turret, checkAmmoRange)) then
+  if global.boosted_to_tunion[tunion.tuID] then
     return
   end
 
-  local newT = turret.surface.create_entity{name = turret.name .. d.boostSuffix,
-                                            position = turret.position,
-                                            force = turret.force,
-                                            direction = turret.direction,
-                                            fast_replace = false,
-                                            create_build_effect_smoke = false}
-
-  u.CopyTurret(turret, newT)
-  tunion.boosted = true
-  tunion.control = SpawnControl(newT)
-  tunion.turret  = newT
-  global.tun_to_tunion[newT.unit_number] = tunion
-  global.tun_to_tunion[turret.unit_number] = nil
-  global.boosted_to_tunion[newT.unit_number] = tunion
-  turret.destroy()
-  -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
-  -- not actually "destroy" the entity (We'll put the original back soon
-  -- (albeit with a new unit_number...))
-  -- On the other hand, what if the other mod has its own hidden entities
-  -- mapped to what we're destroying? We're messing up their unit_number too...
-  -- Would we be better off just setting active=false on the original entity
-  -- and somehow hiding it / synchronizing its movement & firing animations?
-
-  if not checkAmmoRange then
-    BoostAmmo(newT)
-  end
-
-  newT.shooting_target = foe
-
- return newT
+  global.boosted_to_tunion[tunion.tuID] = tunion
+  tunion.control = SpawnControl(tunion.turret)
+  tunion.foe = foe
 end
 
 
 export.UnBoost = function(tunion)
-  if not tunion.boosted then
+  if not global.boosted_to_tunion[tunion.tuID] then
     return
   end
 
-  local turret = tunion.turret
-
-  if not turret.valid then
-    log("SearchlightAssault: Unable to unboost a turret, something else has invalidated it")
-    return
-  end
-
-  local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
-                                            position = turret.position,
-                                            force = turret.force,
-                                            direction = turret.direction,
-                                            fast_replace = false,
-                                            create_build_effect_smoke = false}
-
-  u.CopyTurret(turret, newT)
-  tunion.boosted = false
-
+  global.boosted_to_tunion[tunion.tuID] = nil
   local c = tunion.control
   if c then -- In some cases, other mods apparently can destroy our control entity...
-    newT.surface.create_entity{name = "spark-explosion", position = c.position}
-    newT.surface.create_entity{name = "spark-explosion", position = c.position}
+    c.surface.create_entity{name = "spark-explosion", position = c.position}
+    c.surface.create_entity{name = "spark-explosion", position = c.position}
     c.destroy()
   end
 
   tunion.control = nil
-  tunion.turret  = newT
-  global.tun_to_tunion[newT.unit_number] = tunion
-  global.tun_to_tunion[turret.unit_number] = nil
-  global.boosted_to_tunion[turret.unit_number] = nil
-  turret.destroy()
-  -- As with Boost(), don't raise script_raised_destroy
+  tunion.foe = nil
 
-  UnBoostAmmo(newT)
-
-  return newT
+  if tunion.boosted then
+    DeamplifyRange(tunion)
+  end
 end
 
 
