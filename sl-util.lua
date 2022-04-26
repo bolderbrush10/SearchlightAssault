@@ -411,16 +411,16 @@ function(oldT, newT)
   end
 end
 
-local function CheckEntityOrDriver(entity)
-
+u.CheckEntityOrDriver =
+function(entity)
   -- Checking for existence of energy_per_hit_point is the best way I can figure out to easily
   -- check if we're looking at a vehicle
   if entity and entity.valid and entity.destructible and entity.prototype.energy_per_hit_point then
     local driver = entity.get_driver()
-    if driver and driver.valid and driver.is_military_target and driver.destructible then
+    if driver and driver.valid and driver.is_entity_with_owner and driver.destructible then
       return driver
     end
-  elseif entity and entity.valid and entity.is_military_target and entity.destructible then
+  elseif entity and entity.valid and entity.is_entity_with_owner and entity.destructible then
     return entity
   else
     return nil
@@ -440,14 +440,14 @@ function(position, entityList)
   end
 
   if entityList[2] == nil then
-    return CheckEntityOrDriver(e1)
+    return u.CheckEntityOrDriver(e1)
   end
 
   local bestDist = 999999
   local bestE = nil
 
   for _, e in pairs(entityList) do
-    local eCheck = CheckEntityOrDriver(e)
+    local eCheck = u.CheckEntityOrDriver(e)
     if eCheck then
       local dist = u.lensquared(position, eCheck.position)
       if dist < bestDist then

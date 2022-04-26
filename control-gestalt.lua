@@ -475,7 +475,9 @@ end
 
 
 export.FoeFound = function(turtle, foe)
-  if not foe.valid then
+  -- If something's in a vehicle, target the driver instead of the vehicle
+  local foeOrDriver = u.CheckEntityOrDriver(foe)
+  if not foeOrDriver then
     return
   end
 
