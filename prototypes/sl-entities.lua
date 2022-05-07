@@ -210,7 +210,7 @@ sl_c.continuous_animation = true
 sl_c.energy_source =
 {
   type = "electric",
-  usage_priority = "primary-input",
+  usage_priority = "secondary-input",
   buffer_capacity = d.searchlightCapacitorSize,
   input_flow_limit = "500kW",
   drain = d.searchlightControlEnergyUsage,
