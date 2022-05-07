@@ -292,7 +292,7 @@ script.on_event(d.openSearchlightGUI, function(event)
       or event.selected_prototype.name == d.searchlightSafeName
       or event.selected_prototype.name == d.searchlightAlarmName
       or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
-    cgui.OpenSearchlightGUI(event.player_index)
+    cgui.OpenSearchlightGUI(event.player_index, event.cursor_position)
   end
 end)
 

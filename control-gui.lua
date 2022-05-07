@@ -547,7 +547,7 @@ end
 -- or if they're holding a wire (in which case, connect it to the signal interface),
 -- or if they're holding a repair pack / capsule / blueprint / etc
 -- (Basically, mirror the behavior of opening a gui for vanilla entities)
-cgui.OpenSearchlightGUI = function(pIndex)
+cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   local player = game.players[pIndex]
 
   -- Ignore players in map mode, etc
@@ -556,6 +556,17 @@ cgui.OpenSearchlightGUI = function(pIndex)
   end
 
   local sl = player.selected
+  if not sl then
+    local res = player.surface.find_entities_filtered{position=cursor_pos, type="turret", force=player.force, limit=1}
+    if res then
+      sl = res[1]
+    end
+  end
+
+  if not sl then
+    return
+  end
+
   local g = global.unum_to_g[sl.unit_number]
 
   if not g then
