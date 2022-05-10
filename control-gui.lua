@@ -625,7 +625,7 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   local main_gui = player.gui.screen
 
   -- Give other mods a chance to clean themselves up
-  if remote.call("LtnManager", "is_gui_open", pIndex) then
+  if remote.interfaces["LtnManager"] and remote.call("LtnManager", "is_gui_open", pIndex) then
     remote.call("LtnManager", "toggle_gui", pIndex)
   end
 
