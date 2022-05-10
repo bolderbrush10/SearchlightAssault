@@ -623,7 +623,14 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   end
 
   local main_gui = player.gui.screen
-  main_gui.clear()
+
+  -- Give other mods a chance to clean themselves up
+  if remote.call("LtnManager", "is_gui_open", pIndex) then
+    remote.call("LtnManager", "toggle_gui", pIndex)
+  end
+
+  -- Make sure we clear any guis for other searchlights we might have open
+  cgui.CloseSearchlightGUI(pIndex)
 
   local main_frame = create(main_gui, g)
 
