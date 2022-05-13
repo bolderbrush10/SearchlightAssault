@@ -158,7 +158,8 @@ local function detectEditorChanges()
     for _, t in pairs(turrets) do
       -- Then check for searchlights without a gestalt
       if  t.name == d.searchlightBaseName
-          or t.name == d.searchlightAlarmName then
+          or t.name == d.searchlightAlarmName
+          or t.name == d.searchlightSafeName then
         if not global.unum_to_g[t.unit_number] then SearchlightAdded(t) end
       -- Then check for turrets neighboring gestalts to make sure they got added
       elseif not global.tun_to_tunion[t.unit_number] then
@@ -559,7 +560,9 @@ function(event)
       local entities = s.get_entities_with_force(chunkPos, force)
 
       for _, e in pairs(entities) do
-        if e.name == d.searchlightBaseName or e.name == d.searchlightAlarmName then
+        if     e.name == d.searchlightBaseName 
+            or e.name == d.searchlightAlarmName
+            or e.name == d.searchlightSafeName then
           cg.SearchlightRemoved(e.unit_number)
         elseif e.name == d.turtleName
           or e.name == d.spotterName
