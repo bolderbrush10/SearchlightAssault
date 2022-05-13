@@ -491,7 +491,9 @@ local function entityRemoved(event)
 
   if entity.type == "entity-ghost" and entity.ghost_name == d.searchlightBaseName then
     ghostRemoved(entity)
-  elseif entity.name == d.searchlightBaseName or entity.name == d.searchlightAlarmName then
+  elseif entity.name == d.searchlightBaseName 
+      or entity.name == d.searchlightAlarmName 
+      or entity.name == d.searchlightSafeName then
     local onDeath = event.name == defines.events.on_entity_died 
     -- or event.name == defines.events.script_raised_destroy
     -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
@@ -536,7 +538,8 @@ for index, e in pairs
   script.on_event(e,
   function(event)
     local entities = game.surfaces[event.surface_index].find_entities_filtered{name = {d.searchlightBaseName,
-                                                                                       d.searchlightAlarmName}}
+                                                                                       d.searchlightAlarmName,
+                                                                                       d.searchlightSafeName}}
     for _, e in pairs(entities) do
       cg.SearchlightRemoved(e.unit_number)
     end
