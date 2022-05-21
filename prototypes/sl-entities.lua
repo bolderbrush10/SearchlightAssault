@@ -227,6 +227,8 @@ sl_c.selectable_in_game = false
 sl_c.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 sl_c.collision_box = {{-3, -3}, {3, 0}} -- expand bounding box so we can leech electricity reliably
 sl_c.collision_mask = {} -- enable noclip for pathfinding too
+-- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
+sl_c.se_allow_in_space = true
 
 
 -- Searchlight Signal Interface Entity
@@ -245,6 +247,8 @@ sl_s.allow_run_time_change_of_is_military_target = false
 sl_s.selection_box = sl_b.selection_box
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
 sl_s.collision_mask = {} -- enable noclip for pathfinding too
+-- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
+sl_s.se_allow_in_space = true
 sl_s.selection_priority = 1 -- In control.lua we'll detect if the player is holding a wire and fix things there
 sl_s.item_slot_count = 20
 sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
@@ -304,6 +308,8 @@ t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 t.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
 t.collision_mask = {}
+-- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
+t.se_allow_in_space = true
 t.ai_settings =
 {
   allow_try_return_to_spawner = false,
@@ -362,6 +368,8 @@ spotter.allow_run_time_change_of_is_military_target = false
 spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
 spotter.collision_mask = {} -- enable noclip for pathfinding too
+-- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
+spotter.se_allow_in_space = true
 spotter.base_picture = util.empty_sprite()
 spotter.folded_animation = util.empty_sprite()
 spotter.call_for_help_radius = 1

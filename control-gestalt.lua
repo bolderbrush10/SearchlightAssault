@@ -441,6 +441,10 @@ export.SearchlightRemoved = function(sl_unit_number, killed, g)
     g.spotter.destroy()
   end
 
+  if g.signal and g.signal.valid then
+    global.unum_to_g[g.signal.unit_number] = nil
+  end
+
   -- Preserve wire connections when killed by leaving a ghost
   if killed then
     g.signal.destructible = true
