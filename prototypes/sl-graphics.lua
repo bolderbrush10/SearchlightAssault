@@ -339,6 +339,7 @@ local Light_Layer_Searchlight_RingLight =
 ------------------------------------------------------------
 -- Searchlight Beams
 
+local enableHaze = settings.startup[d.enableLightAnimation].value
 local SearchlightBeamPassive =
 {
   type = "beam",
@@ -365,7 +366,7 @@ local SearchlightBeamPassive =
       }
     }
   },
-  ending = Light_Layer_Searchlight_DayHaze,
+  ending = (enableHaze and Light_Layer_Searchlight_DayHaze or nil),
   tail = util.empty_sprite(60),
   head = util.empty_sprite(60),
   body = util.empty_sprite(60),
@@ -374,7 +375,7 @@ local SearchlightBeamPassive =
 
 local SearchlightBeamAlarm = table.deepcopy(SearchlightBeamPassive)
 SearchlightBeamAlarm.name = "searchlight-beam-alarm"
-SearchlightBeamAlarm.ending = Light_Layer_Searchlight_AlarmHaze
+SearchlightBeamAlarm.ending = (enableHaze and Light_Layer_Searchlight_AlarmHaze or nil)
 SearchlightBeamAlarm.ground_light_animations =
 {
   start =

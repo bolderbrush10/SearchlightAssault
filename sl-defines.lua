@@ -121,6 +121,7 @@ d.boostSuffix = "-sla_boosted"
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
+d.enableLightAnimation = "searchlight-assault-enable-light-animation"
 
 -- Shortcut/Custom Input/GUI keys
 d.openSearchlightGUI = "sla_gui_open_shortcut"

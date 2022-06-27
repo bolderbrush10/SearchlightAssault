@@ -50,3 +50,12 @@ data:extend({{
   minimum_value = 0.0,
   maximum_value = 200,
 }})
+
+data:extend({{
+  type = "bool-setting",
+  name = d.enableLightAnimation,
+  localised_name        = {"name.searchlight-assault-enable-light-animation"},
+  localised_description = {"description.searchlight-assault-enable-light-animation"},
+  setting_type = "startup",
+  default_value = true,
+}})
