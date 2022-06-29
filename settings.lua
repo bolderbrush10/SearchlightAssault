@@ -32,6 +32,7 @@ data:extend({{
 data:extend({{
   type = "double-setting",
   name = d.lightRadiusSetting,
+  order="ad",
   localised_name        = {"name.searchlight-assault-setting-light-radius"},
   localised_description = {"description.searchlight-assault-setting-light-radius"},
   setting_type = "startup",
@@ -43,6 +44,7 @@ data:extend({{
 data:extend({{
   type = "double-setting",
   name = d.maxNeighborDistanceSetting,
+  order="ae",
   localised_name        = {"name.searchlight-assault-max-neighbor-boost-distance"},
   localised_description = {"description.searchlight-assault-max-neighbor-boost-distance"},
   setting_type = "startup",
@@ -54,8 +56,45 @@ data:extend({{
 data:extend({{
   type = "bool-setting",
   name = d.enableLightAnimation,
+  order="ca",
   localised_name        = {"name.searchlight-assault-enable-light-animation"},
   localised_description = {"description.searchlight-assault-enable-light-animation"},
   setting_type = "startup",
   default_value = true,
+}})
+
+data:extend({{
+  type = "string-setting",
+  name = d.warnColorDefault,
+  order="cf",
+  localised_name        = {"name.searchlight-assault-warn-color"},
+  localised_description = {"description.searchlight-assault-warn-color"},
+  setting_type = "startup",
+  default_value = d.warnColorDefault,
+  auto_trim = true,
+  allow_blank = true,
+}})
+
+data:extend({{
+  type = "string-setting",
+  name = d.alarmColorDefault,
+  order="cg",
+  localised_name        = {"name.searchlight-assault-alarm-color"},
+  localised_description = {"description.searchlight-assault-alarm-color"},
+  setting_type = "startup",
+  default_value = d.alarmColorDefault,
+  auto_trim = true,
+  allow_blank = true,
+}})
+
+data:extend({{
+  type = "string-setting",
+  name = d.safeColorDefault,
+  order="ch",
+  localised_name        = {"name.searchlight-assault-safe-color"},
+  localised_description = {"description.searchlight-assault-safe-color"},
+  setting_type = "startup",
+  default_value = d.safeColorDefault,
+  auto_trim = true,
+  allow_blank = true,
 }})

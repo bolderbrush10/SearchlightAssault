@@ -14,6 +14,63 @@ require "util" -- for table.deepcopy, util.empty_sprite(animation_length)
 local export = {}
 
 
+local function parseRGB(str)
+  local table = {}
+  local keys = {"r", "g", "b", "a"}
+  local i = 1
+  for token in string.gmatch(str, "[^,]+") do
+    if i > 4 then
+      return false
+    end
+
+    local key = keys[i]
+    table[key] = tonumber(token)
+
+    if not table[key] then
+      return false
+    else
+      table[key] = table[key] / 255
+    end
+
+    i = i + 1
+  end
+
+  if i ~= 5 then
+    return false
+  end
+
+  return table
+end
+
+
+warnSetting  = settings.startup[d.warnColorDefault].value
+alarmSetting = settings.startup[d.alarmColorDefault].value
+safeSetting  = settings.startup[d.safeColorDefault].value
+
+local warnTint = parseRGB(warnSetting)
+if not warnTint then
+  warnTint = parseRGB(d.warnColorDefault)
+end
+local alarmTint = parseRGB(alarmSetting)
+if not alarmTint then
+  alarmTint = parseRGB(d.alarmColorDefault)
+end
+local safeTint = parseRGB(safeSetting)
+if not safeTint then
+  warnTsafeTintint = parseRGB(d.safeColorDefault)
+end
+
+local warnDimTint = table.deepcopy(warnTint)
+local alarmDimTint = table.deepcopy(alarmTint)
+
+-- Downsaturate tints for the hex effect to contrast against the general spotlight lighting
+for hue, value in pairs(warnDimTint) do
+  warnDimTint[hue] = value * 0.65
+end
+for hue, value in pairs(alarmDimTint) do
+  alarmDimTint[hue] = value * 0.65
+end
+
 ------------------------------------------------------------
 -- Misc
 
@@ -27,7 +84,7 @@ export.layerTransparentPixel =
 export.layerTransparentAnimation = table.deepcopy(export.layerTransparentPixel)
 export.layerTransparentAnimation.direction_count = 1
 
--- Builder for the searchlight framesequence
+-- Build the searchlight framesequence
 local slFrameCount = 60
 local slStaticFrameSeq = {}
 
@@ -189,9 +246,9 @@ end
 
 export.searchlightHeadAnimation = make_searchlight{filename="sl-head"}
 export.searchlightGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
-                                                   drawAsGlow=true, tint={255/255, 200/255, 0/255}}
+                                                   drawAsGlow=true, tint=warnTint}
 export.searchlightAlarmGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
-                                                        drawAsGlow=true, tint={200/255, 0/255, 0/255}}
+                                                        drawAsGlow=true, tint=alarmTint}
 export.searchlightMaskAnimation = make_searchlight{filename="sl-mask", flags=maskFlags, runtimeTint=true}
 
 
@@ -206,7 +263,7 @@ end
 
 
 export.searchlightSafeGlowAnimation = make_searchlight{filename="sl-glow-grey", flags={"light"}, 
-                                                       drawAsGlow=true, tint={20/255, 230/255, 10/255}}
+                                                       drawAsGlow=true, tint=safeTint}
 make_slow_spin(export.searchlightSafeGlowAnimation)
 export.searchlightSafeHeadAnimated = table.deepcopy(export.searchlightHeadAnimation)
 make_slow_spin(export.searchlightSafeHeadAnimated)
@@ -288,12 +345,12 @@ local Light_Layer_Searchlight_DayHaze =
   height = 200,
   blend_mode = "additive",
   draw_as_glow = true,
-  tint = {r=230/255, g=150/255, b=0, a=0.1},
+  tint = warnDimTint,
   scale = settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius,
 }
 
 local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight_DayHaze)
-Light_Layer_Searchlight_AlarmHaze.tint = {r=150/255, g=0, b=0, a=1}
+Light_Layer_Searchlight_AlarmHaze.tint = alarmDimTint
 
 
 local Light_Layer_Searchlight_NormLight =
@@ -305,11 +362,9 @@ local Light_Layer_Searchlight_NormLight =
   frame_sequence = slStaticFrameSeq,
   flags = { "light" },
   scale = 2.2 * (settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius),
+  tint = warnTint,
 }
 
-
-local redTint = {r=0.9, g=0.1, b=0.1, a=1}
-local greenTint = {r=0.1, g=0.9, b=0.1, a=1}
 
 local Light_Layer_Searchlight_StartLight = table.deepcopy(Light_Layer_Searchlight_NormLight)
 Light_Layer_Searchlight_StartLight.scale = 0.6
@@ -318,11 +373,11 @@ local Light_Layer_Searchlight_DimLight = table.deepcopy(Light_Layer_Searchlight_
 Light_Layer_Searchlight_DimLight.filename = "__SearchlightAssault__/graphics/searchlight-r-less-dim.png"
 
 local Light_Layer_Searchlight_NormLight_Red = table.deepcopy(Light_Layer_Searchlight_NormLight)
-Light_Layer_Searchlight_NormLight_Red.tint = redTint
+Light_Layer_Searchlight_NormLight_Red.tint = alarmTint
 
 local Light_Layer_Searchlight_StartLight_Red = table.deepcopy(Light_Layer_Searchlight_NormLight)
 Light_Layer_Searchlight_StartLight_Red.scale = 0.6
-Light_Layer_Searchlight_StartLight_Red.tint = redTint
+Light_Layer_Searchlight_StartLight_Red.tint = alarmTint
 
 local Light_Layer_Searchlight_DimLight_Red = table.deepcopy(Light_Layer_Searchlight_DimLight)
 
@@ -332,7 +387,7 @@ local Light_Layer_Searchlight_RingLight =
   width = 95,
   height = 95,
   flags = { "light" },
-  tint = greenTint,
+  tint = safeTint,
   scale = 1.5,
 }
 

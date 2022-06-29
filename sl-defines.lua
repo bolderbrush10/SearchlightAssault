@@ -122,6 +122,9 @@ d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
 d.uninstallMod = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
 d.enableLightAnimation = "searchlight-assault-enable-light-animation"
+d.alarmColorDefault = "searchlight-assault-alarm-color"
+d.warnColorDefault  = "searchlight-assault-warn-color"
+d.safeColorDefault  = "searchlight-assault-safe-color"
 
 -- Shortcut/Custom Input/GUI keys
 d.openSearchlightGUI = "sla_gui_open_shortcut"
@@ -129,6 +132,12 @@ d.closeSearchlightGUI = "sla_gui_close_shortcut"
 d.closeSearchlightGUIalt = "sla_gui_close_shortcut_alt"
 d.guiName = "sla_sl_gui_main"
 d.guiClose = "sla_sl_gui_close"
+
+-- Default color settings
+d.warnColorDefault  = "250,190,0,230"
+d.alarmColorDefault = "230,25,25,230"
+d.safeColorDefault  = "20,230,20,230"
+
 
 -- The circuit network slots are used in the hidden-combinator entity 
 -- to express which signals map to which concepts.
