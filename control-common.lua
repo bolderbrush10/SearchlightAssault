@@ -1,9 +1,13 @@
 local r  = require "sl-relation"
+
+local cb = require "control-blocklist"
 local cf = require "control-forces"
 local cg = require "control-gestalt"
-local cgui = require "control-gui"
 local cu = require "control-tunion"
+
 local rd = require "sl-render"
+
+local cgui = require "control-gui"
 
 
 local export = {}
@@ -18,6 +22,7 @@ export.InitTables = function()
 
   cf.InitTables_Forces()
   cg.InitTables_Gestalt()
+  cb.InitTables_Blocklist()
   cu.InitTables_Turrets()
   rd.InitTables_Render()
   cgui.InitTables_GUI()

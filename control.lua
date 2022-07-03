@@ -1,6 +1,7 @@
 local d = require "sl-defines"
 local r = require "sl-relation"
 
+local cb = require "control-blocklist"
 local cc = require "control-common"
 local cf = require "control-forces"
 local cg = require "control-gestalt"
@@ -92,8 +93,8 @@ local function handleModSettingsChanges(event)
   end
 
   if not event or event.setting == d.ignoreEntriesList then
-    cu.UpdateBlockList()
-    cu.UnboostBlockedTurrets()
+    cb.UpdateBlockList()
+    cb.UnboostBlockedTurrets()
   end
 
   if event and event.setting == d.overrideAmmoRange then
@@ -103,7 +104,7 @@ local function handleModSettingsChanges(event)
   end
 
   handleUninstall()
-  cu.UpdateBlockList()
+  cb.UpdateBlockList()
 end
 
 local function handleConfigurationChanged(event)

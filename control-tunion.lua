@@ -6,11 +6,17 @@ local u = require "sl-util"
 local export = {}
 
 
--- boostInfo states
+-- boostInfo states (Shared with control-blocklist)
 local UNBOOSTED     = 0
 local BOOSTED       = 1
 local BLOCKED       = 2
 local NOT_BOOSTABLE = 3
+
+export.bInfo = {}
+export.bInfo.UNBOOSTED     = UNBOOSTED
+export.bInfo.BOOSTED       = BOOSTED
+export.bInfo.BLOCKED       = BLOCKED
+export.bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
 
 
 ------------------
@@ -38,14 +44,8 @@ export.InitTables_Turrets = function()
   -- Map: tuID -> TUnion
   global.boosted_to_tunion = {}
 
-  -- Map: turret name -> true
-  global.blockList = {}
-
   -- Map: turret name -> BOOSTED / UNBOOSTED / BLOCKED / NOT_BOOSTABLE
   global.boostInfo = {}
-
-  -- Initialize blockList & boostInfo
-  export.UpdateBlockList()
 end
 
 
@@ -541,7 +541,7 @@ end
 -- the range-boosted turret in CheckAmmoElectricNeeds()
 -- via onTick()
 export.Boost = function(tunion, foe)
-  if global.boosted_to_tunion[tunion.tuID] then
+  if global.boosted_to_tunion[tunion.tuID] or global.boostInfo[tunion.turret.name] == BLOCKED then
     return
   end
 
@@ -569,86 +569,6 @@ export.UnBoost = function(tunion)
 
   if tunion.boosted then
     DeamplifyRange(tunion)
-  end
-end
-
-
-------------------------
---    Mod Settings    --
-------------------------
-
-
-local function concatKeys(table)
-  local result = ""
-
-  -- factorio API guarantees deterministic iteration
-  for key, value in pairs(table) do
-    result = result .. key
-  end
-
-  return result
-end
-
-
--- Breaking out a seperate function like this allows us to easily
--- note changes to the block list and output them to game.print()
-local function UpdateBoostInfo(blockList)
-  local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
-
-  for _, turret in pairs(protos) do
-    if blockList[turret.name] then
-      global.boostInfo[turret.name] = BLOCKED
-
-      if not global.blockList[turret.name] then
-        game.print("Searchlight Assault: Now ignoring " .. turret.name)
-      end
-    elseif game.entity_prototypes[turret.name .. d.boostSuffix] then
-      global.boostInfo[turret.name] = UNBOOSTED
-    elseif u.EndsWith(turret.name, d.boostSuffix) then
-      global.boostInfo[turret.name] = BOOSTED
-    else
-      global.boostInfo[turret.name] = NOT_BOOSTABLE
-    end
-  end
-end
-
-
-export.UpdateBlockList = function()
-  local settingStr = settings.global[d.ignoreEntriesList].value
-  local newBlockList = {}
-
-  -- Tokenize semi-colon delimited strings
-  for token in string.gmatch(settingStr, "[^;]+") do
-    local trim = token:gsub("%s+", "")
-
-    if game.entity_prototypes[trim] then
-      newBlockList[trim] = true
-    else
-      local result = "Unable to add misspelled or nonexistent turret " ..
-                     "name to Searchlight Assault ignore list: " .. token
-
-      game.print(result)
-    end
-  end
-
-  -- Quick & dirty way to compare table equality for our use case
-  if next(global.blockList) and concatKeys(global.blockList) == concatKeys(newBlockList) then
-    game.print("Searchlight Assault: No turrets affected by settings change")
-
-    return
-  end
-
-  UpdateBoostInfo(newBlockList)
-
-  global.blockList = newBlockList
-end
-
-
-export.UnboostBlockedTurrets = function()
-  for tuID, tu in pairs(global.tunions) do
-    if tu.boosted and global.blockList[tu.turret.name:gsub(d.boostSuffix, "")] then
-      export.UnBoost(tu, true)
-    end
   end
 end
 

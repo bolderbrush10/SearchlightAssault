@@ -151,11 +151,12 @@ _sl-defines.lua_          - miscellaneous static definitions such as turret rang
 _control.lua_             - handles event registrations & filtering, calls behavior from the control-\*.lua files
 _control-gestalt.lua_     - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-\* files
 _control-searchlight.lua_ - behaviors for the searchlight itself when created / alarms are raised, etc
-_control-tunion.lua_      - behaviors for range-boosting turrets and filtering incompatible turrets per mod settings
+_control-tunion.lua_      - behaviors for range-boosting turrets
 _control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
 _control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
 _control-gui.lua_         - Graphical User Interface controls, for displaying windows allowing control of searchlights to players
 _control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
+_control-blocklist.lua_   - controls for filtering incompatible turrets per mod settings and remote interfaces
 _control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
 
 _sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights
