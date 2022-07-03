@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.2.0
+Date: 2022-07-02
+  Changes:
+    - Comptability fix for Portable-Turrets
+    - Add option to disable the animated hexagon searchlight effect
+    - Add support to change color of searchlights as a startup setting
+---------------------------------------------------------------------------------------------------
 Version: 2.1.3
 Date: 2022-05-21
   Changes:
