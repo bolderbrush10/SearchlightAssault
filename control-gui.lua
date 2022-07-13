@@ -647,15 +647,16 @@ end
 cgui.CloseSearchlightGUI = function(pIndex)
   local pGUI = global.pIndexToGUI[pIndex]
 
+  local player = game.players[pIndex]
+  if player and player.valid and pGUI then
+    player.play_sound{path="entity-close/constant-combinator"}
+  end
+
   if pGUI then
     pGUI[2].destroy()
     global.pIndexToGUI[pIndex] = nil
   end
 
-  local player = game.players[pIndex]
-  if player and player.valid then
-    player.play_sound{path="entity-close/constant-combinator"}
-  end
 end
 
 
