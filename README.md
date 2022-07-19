@@ -73,6 +73,20 @@ Some turrets may not be boostable to begin with, and are automatically ignored b
 
 - Workarounds: Add turrets from incompatible mods into the turret-boost block list. (See above section)
 
+- Remote Interface: Other mods may add or remove their own turrets from the blocklist using the remote interface. Results of these calls are noted in factorio-current.log. Example of use:
+```
+Your mod's control.lua:
+remote.call("sl_blocklist", "add", "laser-turret")
+remote.call("sl_blocklist", "remove", "laser-turret")
+remote.call("sl_blocklist", "add", "lazur_turett")
+
+  factorio-current.log:
+Script @__SearchlightAssault__/control-blocklist.lua:30: Searchlight Assault: Blocking laser-turret from searchlight interaction.
+Script @__SearchlightAssault__/control-blocklist.lua:40: Searchlight Assault: Unblocking laser-turret; interaction now allowed.
+Script @__SearchlightAssault__/control-blocklist.lua:26: Searchlight Assault: Turret prototype name specified by remote call not found: lazur_turett
+```
+For more information: https://lua-api.factorio.com/latest/LuaRemote.html
+
 
 ## Contact
 
@@ -146,52 +160,52 @@ but this codebase would be drastically smaller if these issues weren't in place:
 
 #### File Guide:
 
-_sl-defines.lua_          - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.
-
-_control.lua_             - handles event registrations & filtering, calls behavior from the control-\*.lua files
-_control-gestalt.lua_     - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-\* files
-_control-searchlight.lua_ - behaviors for the searchlight itself when created / alarms are raised, etc
-_control-tunion.lua_      - behaviors for range-boosting turrets
-_control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations
-_control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations
-_control-gui.lua_         - Graphical User Interface controls, for displaying windows allowing control of searchlights to players
-_control-items.lua_       - converts items in blueprints to the base versions of boosted turrets
-_control-blocklist.lua_   - controls for filtering incompatible turrets per mod settings and remote interfaces
-_control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them
-
-_sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights
-_sl-render.lua_           - displays the searchlight's search area
-_sl-util.lua_             - math functions, copying functions, and other miscellaneous functions
-
-_info.json_            - information to display in the mod portal webpage, plus version / mod dependency information
-_settings.lua_         - prototypes for the settings that can be configured for this mod
-_data.lua_             - lists which files the mod manager should read to build & modify prototypes
+_sl-defines.lua_          - miscellaneous static definitions such as turret range, colors, etc. Shared between most files.  
+  
+_control.lua_             - handles event registrations & filtering, calls behavior from the control-\*.lua files  
+_control-gestalt.lua_     - controls foe seeking behavior, range-boosting behavior, etc. Interacts with other control-\* files  
+_control-searchlight.lua_ - behaviors for the searchlight itself when created / alarms are raised, etc  
+_control-tunion.lua_      - behaviors for range-boosting turrets  
+_control-turtle.lua_      - behaviors for the dummy-entity that the searchlight "attacks" to render a light at surface locations  
+_control-forces.lua_      - sets up the forces assigned to hidden entities and handles force migrations  
+_control-gui.lua_         - Graphical User Interface controls, for displaying windows allowing control of searchlights to players  
+_control-items.lua_       - converts items in blueprints to the base versions of boosted turrets  
+_control-blocklist.lua_   - controls for filtering incompatible turrets per mod settings and remote interfaces  
+_control-common.lua_      - data structures to be shared across control-* files and functions for maintaining them  
+  
+_sl-relation.lua_         - a simple matrix to help track relations between turrets, foes, and searchlights  
+_sl-render.lua_           - displays the searchlight's search area  
+_sl-util.lua_             - math functions, copying functions, and other miscellaneous functions  
+  
+_info.json_            - information to display in the mod portal webpage, plus version / mod dependency information  
+_settings.lua_         - prototypes for the settings that can be configured for this mod  
+_data.lua_             - lists which files the mod manager should read to build & modify prototypes  
 _data-updates.lua_     - reads what turrets OTHER MODS have put into the game
                          and generates extended-range versions of their prototypes
                          (this allows a searchlight to "boost" any given turret's range).
                          If another mod creates its own turrets in its own data-updates.lua or data-final-fixes.lua files,
-                         then searchlights are probably not going to be able to boost that mod's turrets.
+                         then searchlights are probably not going to be able to boost that mod's turrets.  
 _data-final-fixes.lua_ - Double checks that any boosted turrets have the correct health,
                          since other mods have been discovered to change vanilla turrets in data-updates.
                          Generates extended-range versions of ammo prototypes, since other mods have
                          been observed modifying vanilla ammo in data-updates.
-                         Also declares our own entities here, so other mods will stop messing with them.
+                         Also declares our own entities here, so other mods will stop messing with them.  
+  
 
-
-Prototypes contain the definitions for a unit's graphics, animations, and stats (such as max health, range, and damage)
-
-_prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc
-_prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations
-_prototypes/sl-gui.lua_            - defines GUI styles for later use in control-gui.lua
-_prototypes/sl-shortcuts.lua_      - defines / modifies in game hotkeys (used to open the searchlight GUI)
-_prototypes/sl-signals.lua_        - virtual signals for refined control over searchlights
-_prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight
-
-_locale/*_ - Translations of the various in-game strings displayed to the player
-
-_menu-simulations/*_ - Contains small demos that run during the game's main menu, on a random rotation
-
-_scenarios/*_ - The latest revision of the Prison Break game mode. Of note are the files _sl_silobreak.py_ and _sl_prisonbreak.py_, which contain scenario-specific logic, events, and win conditions.
+Prototypes contain the definitions for a unit's graphics, animations, and stats (such as max health, range, and damage)  
+  
+_prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc  
+_prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations  
+_prototypes/sl-gui.lua_            - defines GUI styles for later use in control-gui.lua  
+_prototypes/sl-shortcuts.lua_      - defines / modifies in game hotkeys (used to open the searchlight GUI)  
+_prototypes/sl-signals.lua_        - virtual signals for refined control over searchlights  
+_prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight  
+  
+_locale/*_ - Translations of the various in-game strings displayed to the player  
+  
+_menu-simulations/*_ - Contains small demos that run during the game's main menu, on a random rotation  
+  
+_scenarios/*_ - The latest revision of the Prison Break game mode. Of note are the files _sl_silobreak.py_ and _sl_prisonbreak.py_, which contain scenario-specific logic, events, and win conditions.  
 
 
 #### Design Decisions & Discussion
