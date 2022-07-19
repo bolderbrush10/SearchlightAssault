@@ -637,6 +637,10 @@ function(event)
     unboostedName = event.prototype.name:gsub(d.boostSuffix, "")
   end
 
+  if unboostedName == event.prototype.name then
+    return
+  end
+
   if not game.entity_prototypes[unboostedName] then
     return
   end
