@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.2.2
+Date: 2022-07-18
+  Changes:
+    - Add remote interface for blocking turret boosting (see FAQ)
+    - Fix crash during save file migration
+---------------------------------------------------------------------------------------------------
 Version: 2.2.1
 Date: 2022-07-12
   Changes:
