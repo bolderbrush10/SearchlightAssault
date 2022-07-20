@@ -109,6 +109,7 @@ d.spottedEffectID = "searchlight-assault-spotted-effect"
 d.confirmedSpottedEffectID = "searchlight-assault-confirm-spotted-effect"
 d.hazeOneCellAnim = "searchlight-haze-onecell-animation"
 d.hazeOneHex = "searchlight-haze-onehex"
+d.boostHaze = "searchlight-boost-haze"
 
 -- Force name-suffix, to be appended to the name of the force that owns a searchlight
 d.turtleForceSuffix = "_SLATurtle"
@@ -119,9 +120,10 @@ d.boostSuffix = "-sla_boosted"
 -- Mod settings keys
 -- d.lightRadiusSetting = defined above
 d.ignoreEntriesList = "searchlight-assault-setting-ignore-entries-list"
-d.uninstallMod = "searchlight-assault-uninstall"
+d.uninstallMod      = "searchlight-assault-uninstall"
 d.overrideAmmoRange = "searchlight-assault-override-ammo-range"
 d.enableLightAnimation = "searchlight-assault-enable-light-animation"
+d.enableBoostGlow   = "searchlight-assault-enable-boost-glow"
 d.alarmColorDefault = "searchlight-assault-alarm-color"
 d.warnColorDefault  = "searchlight-assault-warn-color"
 d.safeColorDefault  = "searchlight-assault-safe-color"

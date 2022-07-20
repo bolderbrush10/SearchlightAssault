@@ -42,6 +42,8 @@ local function parseRGB(str)
   return table
 end
 
+local amber = {r = 235/255, g = 135/255, b = 0, a = 1}
+local boostBlue = {r = 30/255, g = 160/255, b = 180/255, a = 1}
 
 warnSetting  = settings.startup[d.warnColorDefault].value
 alarmSetting = settings.startup[d.alarmColorDefault].value
@@ -70,6 +72,7 @@ end
 for hue, value in pairs(alarmDimTint) do
   alarmDimTint[hue] = value * 0.65
 end
+
 
 ------------------------------------------------------------
 -- Misc
@@ -127,6 +130,32 @@ export.controlUnitLight =
   type = "basic",
   intensity = 0.8,
   size = 2,
+}
+
+
+------------------------------------------------------------
+-- Searchlight Radius Visualization
+
+local radSprite =
+{
+  filename = "__SearchlightAssault__/graphics/radius.png",
+  width = 194,
+  height = 198,
+  blend_mode = "normal",
+  premul_alpha = true,
+  apply_runtime_tint = false,
+  tint = amber,
+}
+
+export.radiusSprite =
+{
+  -- Stack layers to overcome forced transparency from the engine
+  layers =
+  {
+    radSprite,
+    radSprite,
+    radSprite,
+  }
 }
 
 
@@ -352,6 +381,45 @@ local Light_Layer_Searchlight_DayHaze =
 local Light_Layer_Searchlight_AlarmHaze = table.deepcopy(Light_Layer_Searchlight_DayHaze)
 Light_Layer_Searchlight_AlarmHaze.tint = alarmDimTint
 
+local BoostHazeBase =
+{  
+  filename = "__SearchlightAssault__/graphics/searchlight-haze-cell.png",
+  line_length = 0,
+  frame_count = 5,
+  frame_sequence = {
+                    4,4,4,4,4,4,4,4,4,
+                    4,4,4,4,4,4,4,4,4,
+                    4,4,4,4,4,4,4,4,4,
+                    3,3,3,3,3,3,3,3,3,
+                    2,2,2,2,2,2,2,2,2,
+                    1,1,1,1,1,1,1,1,1,
+                    1,1,1,1,1,1,1,1,1,
+                    1,1,1,1,1,1,1,1,1,
+                    1,1,1,1,1,1,1,1,1,
+                    2,2,2,2,2,2,2,2,2,
+                    3,3,3,3,3,3,3,3,3,
+                    },
+  width = 45,
+  height = 45,
+  blend_mode = "additive",
+  draw_as_glow = true,
+  tint = boostBlue,
+  scale = settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius,
+}
+
+local BoostHaze =
+{
+  name = d.boostHaze,
+  type = "animation",
+  layers = 
+  {
+    BoostHazeBase,
+    BoostHazeBase,
+    BoostHazeBase,
+  } 
+}
+
+
 
 local Light_Layer_Searchlight_NormLight =
 {
@@ -474,7 +542,8 @@ local SearchlightBeamSafe =
   },
 }
 
-data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, SearchlightBeamSafe}
+
+data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, SearchlightBeamSafe, BoostHaze}
 
 
 return export

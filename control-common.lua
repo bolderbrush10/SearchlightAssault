@@ -22,8 +22,8 @@ export.InitTables = function()
 
   cf.InitTables_Forces()
   cg.InitTables_Gestalt()
-  cb.InitTables_Blocklist()
   cu.InitTables_Turrets()
+  cb.InitTables_Blocklist()
   rd.InitTables_Render()
   cgui.InitTables_GUI()
 

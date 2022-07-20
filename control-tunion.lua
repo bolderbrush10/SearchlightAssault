@@ -30,6 +30,7 @@ export.bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
   turret  = base / boosted,
   boosted = true / false,
   control = entity / nil,
+  boostAnimation = renderID / nil,
 }
 ]]--
 
@@ -139,6 +140,13 @@ local function SpawnControl(turret)
   pos.x = pos.x - 0.2 - xRand
   pos.y = pos.y - 0.1 + math.random()/8
 
+  local scorchPos = {x,y}
+  scorchPos.x = pos.x
+  scorchPos.y = pos.y + 0.27
+
+  -- This scorchmark comes with a short time to live and will clean itself up
+  turret.surface.create_entity{name = "sl-tiny-scorchmark-tintable", position = scorchPos}
+
   local control = turret.surface.create_entity{name = d.searchlightControllerName,
                                                position = pos,
                                                force = turret.force,
@@ -151,6 +159,22 @@ local function SpawnControl(turret)
   control.destructible = false
 
   return control
+end
+
+
+local function SpawnBoostAnimation(turret)
+  local boostHazeSize = 200 / 32 -- 32 pixels per tile
+  local cBox = turret.prototype.collision_box
+  local tWidth = cBox.left_top.x - cBox.right_bottom.x
+  local tHeight = cBox.left_top.y - cBox.right_bottom.y
+  return rendering.draw_animation{animation=d.boostHaze, 
+                                  target=turret.position, 
+                                  surface=turret.surface,
+                                  x_scale=(tWidth+12)/boostHazeSize,
+                                  y_scale=(tHeight+12)/boostHazeSize,
+                                  render_layer="radius-visualization",
+                                  time_to_live=0
+                                 }
 end
 
 
@@ -298,11 +322,18 @@ function export.TurretRemoved(turret, tu)
       tu.control.destroy()
       tu.control = nil
     end
+    if tu.boostAnimation then
+      rendering.destroy(tu.boostAnimation)
+    end
 
     global.tun_to_tunion[turret.unit_number] = nil
     global.boosted_to_tunion[tu.tuID] = nil
     global.tunions[tu.tuID] = nil
   else
+    if not tu then
+      return
+    end
+
     -- Some workarounds are necessary here
     -- to deal with the map editor not firing events
     r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
@@ -310,6 +341,9 @@ function export.TurretRemoved(turret, tu)
     if tu.control then
       tu.control.destroy()
       tu.control = nil
+    end
+    if tu.boostAnimation then
+      rendering.destroy(tu.boostAnimation)
     end
 
     -- TODO I don't remember writing these 3 loops of garbage
@@ -427,6 +461,11 @@ export.Boost = function(tunion, foe)
 
   global.boosted_to_tunion[tunion.tuID] = tunion
   tunion.control = SpawnControl(tunion.turret)
+  
+  if settings.global[d.enableBoostGlow].value then
+    tunion.boostAnimation = SpawnBoostAnimation(tunion.turret)
+  end
+
   tunion.foe = foe
 end
 
@@ -446,6 +485,10 @@ export.UnBoost = function(tunion)
 
   tunion.control = nil
   tunion.foe = nil
+
+  if tunion.boostAnimation then
+    rendering.destroy(tunion.boostAnimation)
+  end
 
   if tunion.boosted then
     DeamplifyRange(tunion)

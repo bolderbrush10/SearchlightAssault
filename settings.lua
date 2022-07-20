@@ -1,6 +1,15 @@
 local d = require "sl-defines"
 
 data:extend({{
+  type = "bool-setting",
+  name = d.enableBoostGlow,
+  localised_name        = {"name.searchlight-assault-enable-boost-glow"},
+  localised_description = {"description.searchlight-assault-enable-boost-glow"},
+  setting_type = "runtime-global",
+  default_value = true,
+}})
+
+data:extend({{
   type = "string-setting",
   name = d.ignoreEntriesList,
   localised_name        = {"name.searchlight-assault-setting-ignore-entries-list"},
