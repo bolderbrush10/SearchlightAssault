@@ -1,6 +1,6 @@
 -- Since we added hero-turrets as a hidden optional dependency,
 -- force regeneration of the boostInfo table
 
-local cu = require "control-tunion"
+local cb = require "control-blocklist"
 
-cu.UpdateBlockList()
+cb.UpdateBlockList()
