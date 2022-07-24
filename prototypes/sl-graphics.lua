@@ -124,6 +124,16 @@ export.controlUnitSprite =
   scale = 0.2,
 }
 
+export.controlIntegration =
+{
+  filename = "__SearchlightAssault__/graphics/sl-control-int.png",
+  priority = "high",
+  axially_symmetrical = false,
+  frame_count = 1,
+  width = 90,
+  height = 120,
+  scale = 0.2,
+}
 
 export.controlUnitLight =
 {
@@ -190,6 +200,23 @@ export.searchlightBaseLayer =
     shift = util.by_pixel(0, 15),
   }
 }
+
+
+export.searchlightIntegration =
+{
+  filename = "__SearchlightAssault__/graphics/sl-integration.png",
+  priority = "high",
+  axially_symmetrical = false,
+  frame_count = 1,
+  width = 150,
+  height = 107,
+  scale = 0.33,
+  shift = util.by_pixel(0, 15),
+}
+
+
+export.searchlightReflection = table.deepcopy(data.raw["electric-turret"]["laser-turret"].water_reflection)
+export.searchlightReflection.pictures.shift = util.by_pixel(-3, 58)
 
 
 export.searchlightBaseAnimated = table.deepcopy(export.searchlightBaseLayer)

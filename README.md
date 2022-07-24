@@ -315,12 +315,9 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
 
 
 ### Art:
-- Make a dirt estucheon for where wires reach into the ground
 
 - Re-render everything with some kind of smudge / blur post-processing effect
   so it can blend in better with the base game
-
-- water_reflection
 
 - Shadow layer cleanup:
   I think I need to go into photoshop or blender and rig it so that any pixels from the base layer

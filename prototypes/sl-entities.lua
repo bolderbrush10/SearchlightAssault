@@ -76,6 +76,8 @@ sl_b.radius_visualisation_specification =
   sprite = g.radiusSprite,
 }
 sl_b.base_picture = g.searchlightBaseLayer
+sl_b.integration = g.searchlightIntegration
+sl_b.water_reflection = g.searchlightReflection
 sl_b.folded_animation      = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
 sl_b.prepared_animation    = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
 sl_b.energy_glow_animation = g.searchlightGlowAnimation
@@ -209,6 +211,7 @@ local sl_c = {}
 sl_c.name = d.searchlightControllerName
 sl_c.type = "electric-energy-interface"
 sl_c.animation = g.controlUnitSprite
+sl_c.integration_patch = g.controlIntegration
 sl_c.light   = g.controlUnitLight
 sl_c.icon = controlIcon
 sl_c.icon_size = 64
