@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.2.4
+Date: 2022-07-23
+  Changes:
+    - Add glow effect to base of boosted turrets
+    - Add setting to disable glow effect
+    - Add radius visualization to show range at which a searchlight can boost nearby turrets
+    - Minor graphic updates
+    - Fix GUI from opening while holding terrain tiles
+    - Fix save migration failing
+---------------------------------------------------------------------------------------------------
 Version: 2.2.3
 Date: 2022-07-20
   Changes:
