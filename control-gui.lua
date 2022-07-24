@@ -591,7 +591,8 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
         or iPrototype.has_flag("only-in-cursor") -- these flags are pretty good for
         or iPrototype.has_flag("spawnable")      -- spotting the blueprint-like tools
         or iPrototype.type == "repair-tool"
-        or iPrototype.type == "capsule" then
+        or iPrototype.type == "capsule" 
+        or iPrototype.place_as_tile_result then
       return
     end
   else
