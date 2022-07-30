@@ -69,6 +69,8 @@ Some turrets may not be boostable to begin with, and are automatically ignored b
 
 ## FAQ
 
+- Hero Turrets mod compatibility: Mod Settings -> Startup -> Hero Turrets -> Create in updates: True
+
 - Potential Mod Incompatibility: Any mod which uses highly scripted turrets that interact with their own hidden entities, or turrets that are populated into a global table.
 
 - Workarounds: Add turrets from incompatible mods into the turret-boost block list. (See above section)
