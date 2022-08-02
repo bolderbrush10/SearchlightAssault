@@ -139,6 +139,11 @@ local function RespawnTurtle(turtle, position)
   local g = global.unum_to_g[turtle.unit_number]
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
+  if not newT then
+    log("SearchlightAssault::RespawnTurtle - engine failed to create new turtle for gID: " .. g.gID)
+    return g
+  end
+
   g.turtle = newT
   global.unum_to_g[newT.unit_number] = g
   global.unum_to_g[turtle.unit_number] = nil
@@ -262,7 +267,9 @@ export.SpawnTurtle = function(sl, surface, location)
                                        fast_replace = false,
                                        create_build_effect_smoke = false}
 
-  turtle.destructible = false
+  if turtle then
+    turtle.destructible = false
+  end
   
   return turtle
 end
