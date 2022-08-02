@@ -1,4 +1,4 @@
-export PATH=$PATH:"C:\Program Files\7-Zip"
+export PATH=$PATH:"/c/Program Files/7-Zip"
 if ! command -v 7z &> /dev/null ; then
   echo "Could not find 7zip in path: "
   echo $PATH
