@@ -261,7 +261,6 @@ sl_s.collision_mask = {} -- enable noclip for pathfinding too
 sl_s.se_allow_in_space = true
 sl_s.selection_priority = 1 -- In control.lua we'll detect if the player is holding a wire and fix things there
 sl_s.item_slot_count = 20
-sl_s.placeable_by = {item = d.searchlightItemName, count = 0}
 sl_s.circuit_wire_max_distance = 9
 sl_s.sprites = util.empty_sprite()
 sl_s.activity_led_sprites = util.empty_sprite()
