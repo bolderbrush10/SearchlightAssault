@@ -148,7 +148,7 @@ local function RespawnTurtle(turtle, position)
   global.unum_to_g[newT.unit_number] = g
   global.unum_to_g[turtle.unit_number] = nil
 
-  if g.light.shooting_target == turtle then
+  if g.light.name ~= d.searchlightAlarmName then
     g.light.shooting_target = newT
   end
 
@@ -384,6 +384,11 @@ end
 
 
 export.TurtleChase = function(gestalt, entity)
+  if not entity.valid then
+    export.WanderTurtle(gestalt)
+    return
+  end
+
   if gestalt.tState == export.MOVE then
     gestalt.tOldState = export.MOVE
     gestalt.tOldCoord = {x=gestalt.tCoord.x, y=gestalt.tCoord.y}
