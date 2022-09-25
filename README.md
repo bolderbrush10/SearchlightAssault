@@ -196,7 +196,8 @@ _data-final-fixes.lua_ - Double checks that any boosted turrets have the correct
 
 Prototypes contain the definitions for a unit's graphics, animations, and stats (such as max health, range, and damage)  
   
-_prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc  
+_prototypes/sl-entities.lua_       - prototypes for the searchlight, hidden entities such as the turtle, etc
+_prototypes/sl-datastage-entities.lua_  - prototypes for entites that rely on basegame entity data
 _prototypes/sl-graphics.lua_       - pictures, lights, spirites, and animations  
 _prototypes/sl-gui.lua_            - defines GUI styles for later use in control-gui.lua  
 _prototypes/sl-shortcuts.lua_      - defines / modifies in game hotkeys (used to open the searchlight GUI)  
