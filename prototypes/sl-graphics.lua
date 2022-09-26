@@ -215,8 +215,21 @@ export.searchlightIntegration =
 }
 
 
-export.searchlightReflection = table.deepcopy(data.raw["electric-turret"]["laser-turret"].water_reflection)
-export.searchlightReflection.pictures.shift = util.by_pixel(-3, 58)
+export.searchlightReflection = 
+{
+  pictures =
+  {
+    filename = "__base__/graphics/entity/laser-turret/laser-turret-reflection.png",
+    priority = "extra-high",
+    width = 20,
+    height = 32,
+    shift = util.by_pixel(-3, 58),
+    variation_count = 1,
+    scale = 5
+  },
+  rotate = false,
+  orientation_to_variation = false
+}
 
 
 export.searchlightBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
