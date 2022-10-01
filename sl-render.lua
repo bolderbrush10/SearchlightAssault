@@ -262,7 +262,12 @@ export.Update = function(tick)
 
       if g and g.light and g.light.valid and g.turtle and g.turtle.valid
            and game.players[pIndex].selected == g.light then
-        rendering.set_target(gAndRID[2], g.turtle)
+        if rendering.is_valid(gAndRID[2]) then
+          rendering.set_target(gAndRID[2], g.turtle)
+        else
+          global.tposRenders[pIndex] = nil
+          export.DrawTurtlePos(game.players[pIndex], g)
+        end
       else
         rendering.destroy(gAndRID[2])
         global.tposRenders[pIndex] = nil
