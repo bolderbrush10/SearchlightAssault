@@ -297,8 +297,27 @@ end
 
 -- Wouldn't need this function if there was an event for when entities run out of power
 export.CheckElectricNeeds = function()
+  -- Not happy about having to add this loop,
+  -- but too many other mods have been blowing up our turtles somehow,
+  -- so we have to do this.
+  for _, g in pairs(global.gestalts) do
+    if not g.turtle.valid then
+
+      -- Something nuked our mod's turtle, gotta try to respawn it now
+      if not ct.RespawnBrokenTurtle(g) then
+        -- Somehow the respawn failed, so just blow up the whole searchlight
+
+        g.light.die() -- The on_death() event won't happen until long after this function,
+                      -- so clean it up now so we don't iterate over a dead light below
+
+        -- (It should be safe in lua to remove from a table while iterating)
+        export.SearchlightRemoved(nil, false, g)
+      end
+    end
+  end
+
   for _, g in pairs(global.check_power) do
-    if g.light.valid and g.turtle.valid and g.signal.valid then
+    if g.light.valid and g.signal.valid then
       g.turtle.active = g.light.energy > 0
     else
       -- Something nuked our mod's searchlight, gotta remove it now

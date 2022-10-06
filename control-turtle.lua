@@ -406,4 +406,40 @@ export.TurtleChase = function(gestalt, entity)
 end
 
 
+export.RespawnBrokenTurtle = function(g)
+  local newT = export.SpawnTurtle(g.light, g.light.surface, position)
+
+  if not newT then
+    log("SearchlightAssault::RespawnBrokenTurtle - engine failed to create new turtle for gID: " .. g.gID)
+    return false
+  end
+
+  g.turtle = newT
+  global.unum_to_g[newT.unit_number] = g
+  -- global.unum_to_g[turtle.unit_number] = nil -- TODO Minor memory leak...
+
+  if g.light.name == d.searchlightBaseName then
+    g.light.shooting_target = newT
+    return true
+  end
+
+  if g.light.name == d.searchlightSafeName then
+    g.turtle.active = false
+    g.light.shooting_target = g.spotter
+    return true
+  end
+
+  if g.tState == export.MOVE then
+    local translatedCoord = u.TranslateCoordinate(g, g.tCoord)
+    IssueMoveCommand(g.turtle, translatedCoord, false)
+  elseif g.tState == export.FOLLOW then
+    export.TurtleChase(g, g.tCoord)
+  else
+    export.WanderTurtle(g)
+  end
+
+  return true
+end
+
+
 return export
