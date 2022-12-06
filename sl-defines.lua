@@ -27,9 +27,11 @@ d.searchlightMaxNeighborDistance = d.defaultSearchlightMaxNeighborDistance
 
 
 -- This check is necessary for when this file gets referenced prior to prototype stage
-if settings then 
-  d.searchlightSpotRadius = settings.startup[d.lightRadiusSetting].value
-  d.searchlightMaxNeighborDistance = settings.startup[d.maxNeighborDistanceSetting].value
+if settings then
+  if settings.startup then
+    d.searchlightSpotRadius = settings.startup[d.lightRadiusSetting].value
+    d.searchlightMaxNeighborDistance = settings.startup[d.maxNeighborDistanceSetting].value
+  end
 end
 
 
