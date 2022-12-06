@@ -37,6 +37,12 @@ table.insert(hiddenEntityFlags, "not-selectable-in-game")
 local baseIcon = "__SearchlightAssault__/graphics/searchlight-icon.png"
 local controlIcon = "__SearchlightAssault__/graphics/control-icon.png"
 
+-- Searchlight Beam Ammo Category
+-- (So we can hides the searchlight beam from showing up in technology effects, etc)
+local sl_ammo = {}
+sl_ammo.name = "sla_beam_ammo"
+sl_ammo.type = "ammo-category"
+
 -- Searchlight Base Entity
 local sl_b = {}
 sl_b.name = d.searchlightBaseName
@@ -110,7 +116,7 @@ sl_b.attack_parameters =
   source_offset = {0, 1.2},
   ammo_type =
   {
-    category = "beam",
+    category = sl_ammo.name,
     energy_consumption = "1J", -- If zero, info panel won't show an electricy bar
     action =
     {
@@ -156,7 +162,7 @@ sl_f.attack_parameters =
   cooldown = attackCooldownDuration,
   ammo_type =
   {
-    category = "beam",
+    category = sl_ammo.name,
     energy_consumption = "1J", -- If zero, info panel won't show an electricy bar
     action =
     {
@@ -415,4 +421,4 @@ spotter.attack_parameters =
 
 
 -- Add new definitions to game data
-data:extend{sl_a, sl_b, sl_c, sl_f, sl_r, sl_s, spotter, t}
+data:extend{sl_ammo, sl_a, sl_b, sl_c, sl_f, sl_r, sl_s, spotter, t}
