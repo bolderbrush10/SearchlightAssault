@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.2.13
+Date: 2022-12-05
+  Changes:
+    - Turrets being affected by a Searchlight range-boost now receive technology bonuses (Tested against Rampant Arsenal).
+---------------------------------------------------------------------------------------------------
 Version: 2.2.12
 Date: 2022-10-05
   Changes:
