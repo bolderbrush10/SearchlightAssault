@@ -27,7 +27,16 @@ MatchHealth(data.raw["fluid-turret"])
 MatchHealth(data.raw["electric-turret"])
 
 
-local function GetBoostName(ammo, table)
+local function GetBaseName(name)
+  if not u.EndsWith(name, d.boostSuffix) then
+    return nil -- wasn't boosted
+  end
+
+  return name:gsub(d.boostSuffix, "")
+end
+
+
+local function GetBoostAmmoName(ammo, table)
   if not string.match(ammo.name, d.boostSuffix) then
 
     local boostedName =  ammo.name .. d.boostSuffix
@@ -110,7 +119,7 @@ end
 -- so we have to do this here instead of in data-updates.lua
 local function MakeAmmoBoost(currTable)
 	for index, ammo in pairs(currTable) do
-		local boostedName = GetBoostName(ammo, currTable)
+		local boostedName = GetBoostAmmoName(ammo, currTable)
 		if boostedName then
 			local boostCopy = table.deepcopy(currTable[ammo.name])
   		local range_modifier = boostCopy.range_modifier
@@ -145,4 +154,40 @@ local function MakeAmmoBoost(currTable)
   end
 end
 
+
+local function InjectIntoEffects(tech, base, boosted)
+  for index, e in pairs(tech.effects) do
+    if     e.type      and e.type == "turret-attack" 
+       and e.turret_id and e.turret_id == base then
+        boostE = table.deepcopy(e)
+        boostE.turret_id = boosted
+        table.insert(tech.effects, index+1, boostE)
+        data:extend{tech}
+        return
+     end
+  end
+end
+
+local function InjectIntoTechnologies(base, boosted)
+  local techs = data.raw["technology"]
+
+  for _, t in pairs(techs) do
+    if t.effects then
+      InjectIntoEffects(t, base, boosted)
+    end
+  end
+end
+
+
+local function MakeTechBoost(turrets)
+  for _, t in pairs(turrets) do
+    local boosted = t.name
+    local base = GetBaseName(boosted)
+    InjectIntoTechnologies(base, boosted)
+  end
+end
+
 MakeAmmoBoost(data.raw["ammo"])
+MakeTechBoost(data.raw["ammo-turret"])
+MakeTechBoost(data.raw["fluid-turret"])
+MakeTechBoost(data.raw["electric-turret"])

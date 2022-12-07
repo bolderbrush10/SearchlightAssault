@@ -35,30 +35,6 @@ local function LookupPlaceableItem(name)
   return nil
 end
 
-local function InjectIntoEffects(tech, base, boosted)
-  for index, e in pairs(tech.effects) do
-    if     e.type      and e.type == "turret-attack" 
-       and e.turret_id and e.turret_id == base then
-        boostE = table.deepcopy(e)
-        boostE.turret_id = boosted
-        table.insert(tech.effects, index+1, boostE)
-        data:extend{tech}
-        return
-     end
-  end
-end
-
-local function InjectIntoTechnologies(base, boosted)
-  local techs = data.raw["technology"]
-
-  for _, t in pairs(techs) do
-    if t.effects then
-      InjectIntoEffects(t, base, boosted)
-    end
-  end
-end
-
-
 -- Make boosted-range versions of non search light turrets
 -- (Factorio might run this entity-script multiple times, so be sure to avoid making dupes)
 local function MakeBoost(currTable, newRange)
@@ -129,7 +105,6 @@ local function MakeBoost(currTable, newRange)
 
       if boostSuccess then
         data:extend{boostCopy}
-        InjectIntoTechnologies(turret.name, boostedName)
       end
 
     end
