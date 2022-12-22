@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.2.16
+Date: 2022-12-22
+  Changes:
+    - Mod compatability for Picker Dollies
+    - Add runtime option to set speed of searchlight
+    - Bugfixes
+---------------------------------------------------------------------------------------------------
 Version: 2.2.15
 Date: 2022-12-06
   Changes:

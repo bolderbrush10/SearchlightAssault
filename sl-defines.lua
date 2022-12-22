@@ -27,7 +27,7 @@ d.searchlightMaxNeighborDistance = d.defaultSearchlightMaxNeighborDistance
 
 -- Factor controlling how fast the searchlight turtle moves
 d.sweepSpeedSetting = "searchlight-assault-sweep-speed-factor"
-d.defaultSweepSpeedFactor = 1
+d.defaultSweepSpeedFactor = 5
 
 
 -- This check is necessary for when this file gets referenced prior to prototype stage
