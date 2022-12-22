@@ -182,6 +182,11 @@ local function Turtleport(turtle, origin, position)
 end
 
 
+local function applySpeedFactor(base)
+  return base * (settings.global[d.sweepSpeedSetting].value / 5)
+end
+
+
 ------------------------
 --  Aperiodic Events  --
 ------------------------
@@ -307,7 +312,7 @@ export.WanderTurtle = function(gestalt, waypoint)
   if waypoint == nil then
     waypoint = MakeWanderWaypoint(gestalt)
   end
-  gestalt.turtle.speed = d.searchlightWanderSpeed
+  gestalt.turtle.speed = applySpeedFactor(d.searchlightWanderSpeed)
 
   IssueMoveCommand(gestalt.turtle, waypoint, false)
 end
@@ -378,7 +383,7 @@ export.ManualTurtleMove = function(gestalt, coord)
   gestalt.tState = export.MOVE
   gestalt.tCoord = coord
 
-  turtle.speed = d.searchlightRushSpeed
+  turtle.speed = applySpeedFactor(d.searchlightRushSpeed)
   IssueMoveCommand(turtle, translatedCoord, false)
 end
 
@@ -400,7 +405,7 @@ export.TurtleChase = function(gestalt, entity)
   gestalt.tState = export.FOLLOW
   gestalt.tCoord = entity
 
-  gestalt.turtle.speed = entity.speed or d.searchlightRushSpeed
+  gestalt.turtle.speed = applySpeedFactor(entity.speed or d.searchlightRushSpeed)
 
   IssueFollowCommand(gestalt.turtle, entity, true)
 end

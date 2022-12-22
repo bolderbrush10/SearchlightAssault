@@ -3,6 +3,7 @@ local d = require "sl-defines"
 data:extend({{
   type = "bool-setting",
   name = d.enableBoostGlow,
+  order="aa",
   localised_name        = {"name.searchlight-assault-enable-boost-glow"},
   localised_description = {"description.searchlight-assault-enable-boost-glow"},
   setting_type = "runtime-global",
@@ -12,6 +13,7 @@ data:extend({{
 data:extend({{
   type = "string-setting",
   name = d.ignoreEntriesList,
+  order="ai",
   localised_name        = {"name.searchlight-assault-setting-ignore-entries-list"},
   localised_description = {"description.searchlight-assault-setting-ignore-entries-list"},
   setting_type = "runtime-global",
@@ -23,6 +25,7 @@ data:extend({{
 data:extend({{
   type = "bool-setting",
   name = d.uninstallMod,
+  order="az",
   localised_name        = {"name.searchlight-assault-uninstall"},
   localised_description = {"description.searchlight-assault-uninstall"},
   setting_type = "runtime-global",
@@ -32,6 +35,7 @@ data:extend({{
 data:extend({{
   type = "bool-setting",
   name = d.overrideAmmoRange,
+  order="ab",
   localised_name        = {"name.searchlight-assault-override-ammo-range"},
   localised_description = {"description.searchlight-assault-override-ammo-range"},
   setting_type = "runtime-global",
@@ -59,6 +63,18 @@ data:extend({{
   setting_type = "startup",
   default_value = d.defaultSearchlightMaxNeighborDistance,
   minimum_value = 0.0,
+  maximum_value = 200,
+}})
+
+data:extend({{
+  type = "double-setting",
+  name = d.sweepSpeedSetting,
+  order="ac",
+  localised_name        = {"name.searchlight-assault-sweep-speed"},
+  localised_description = {"description.searchlight-assault-sweep-speed"},
+  setting_type = "runtime-global",
+  default_value = d.defaultSweepSpeedFactor,
+  minimum_value = 0.5,
   maximum_value = 200,
 }})
 

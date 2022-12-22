@@ -206,7 +206,7 @@ _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a sea
   
 _compatability/*_ - Mod-specific compatability fixes & features  
 _compatability/sl-compatability.lua_ - Collates various mod-specific calls into a handful of functions  
-
+  
 _locale/*_ - Translations of the various in-game strings displayed to the player  
   
 _menu-simulations/*_ - Contains small demos that run during the game's main menu, on a random rotation  
