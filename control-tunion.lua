@@ -298,7 +298,7 @@ function export.TurretAdded(turret)
   end
 
   local friends = turret.surface.find_entities_filtered{area=u.GetBoostableAreaFromPosition(turret.position),
-                                                        name={d.searchlightBaseName, d.searchlightAlarmName},
+                                                        name={d.searchlightBaseName, d.searchlightAlarmName, d.searchlightSafeName},
                                                         force=turret.force}
 
   for _, f in pairs(friends) do
