@@ -292,7 +292,6 @@ end
 
 -- Turret placed
 function export.TurretAdded(turret)
-
   if not global.boostInfo[turret.name]
       or global.boostInfo[turret.name] == NOT_BOOSTABLE then
     return
@@ -389,19 +388,28 @@ function export.GestaltRemoved(tuID)
 end
 
 
--- Called when a searchlight or turret is created
-export.CreateRelationship = function(g, t)
+export.IsBoostableAndInRange = function(g, t)
   if global.boostInfo[t.name] == NOT_BOOSTABLE then
-    return
+    return false
 
   -- Fine-tune checking that a turret is in a good range to be neighbors
   elseif u.RectangeDistSquared(u.UnpackRectangles(t.selection_box, g.light.selection_box))
    < u.square(d.searchlightMaxNeighborDistance) then
-
-    local tuID = getTuID(t)
-    r.setRelation(global.GestaltTunionRelations, g.gID, tuID)
-
+    return true
   end
+
+  return false
+end
+
+
+-- Called when a searchlight or turret is created
+export.CreateRelationship = function(g, t)
+  if not export.IsBoostableAndInRange(g, t) then
+    return
+  end
+
+  local tuID = getTuID(t)
+  r.setRelation(global.GestaltTunionRelations, g.gID, tuID)
 end
 
 

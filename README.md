@@ -204,6 +204,9 @@ _prototypes/sl-shortcuts.lua_      - defines / modifies in game hotkeys (used to
 _prototypes/sl-signals.lua_        - virtual signals for refined control over searchlights  
 _prototypes/sl-techItemRecipe.lua_ - details for how to research and craft a searchlight  
   
+_compatability/*_ - Mod-specific compatability fixes & features  
+_compatability/sl-compatability.lua_ - Collates various mod-specific calls into a handful of functions  
+
 _locale/*_ - Translations of the various in-game strings displayed to the player  
   
 _menu-simulations/*_ - Contains small demos that run during the game's main menu, on a random rotation  
