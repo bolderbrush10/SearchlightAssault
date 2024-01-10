@@ -11,3 +11,6 @@ function(event)
     end
   end
 end)
+
+local public = {}
+return public

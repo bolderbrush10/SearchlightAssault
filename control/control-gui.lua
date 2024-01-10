@@ -3,11 +3,84 @@
 -- Second, we update the GUI for real and fill out dynamic details
 -- After that, we can change the dynamic details using various updateFunctions as relevant
 
-local mod_gui = require("mod-gui")
-
 local d = require "sl-defines"
 
-local cgui = {}
+-- forward declarations
+local updateForRotation
+local updateForTextFieldInGUI
+local updateEntitiesInGUI
+local readSignals
+local updateModeStatus
+local checkStatus
+local updateCamera
+local updateSigTables
+local updateSignal
+local fixFlowType
+local fixFrameType
+local create
+local addContentRight
+local addModeLabel
+local addContentLeft
+local addSigTable
+local addSignal
+local CloseSearchlightGUI
+local OpenSearchlightGUI
+local Rotated
+local updateOnTextInput
+local updateOnEntity
+local updateOnTick
+local validatePlayerAndLight
+local validateGUI
+local InitTables_GUI
+
+
+script.on_event(d.openSearchlightGUI, function(event)
+  if event.selected_prototype 
+    and (event.selected_prototype.name == d.searchlightBaseName 
+      or event.selected_prototype.name == d.searchlightSafeName
+      or event.selected_prototype.name == d.searchlightAlarmName
+      or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
+    cgui.OpenSearchlightGUI(event.player_index, event.cursor_position)
+  end
+end)
+
+
+script.on_event(d.closeSearchlightGUI, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(d.closeSearchlightGUIalt, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(defines.events.on_gui_click, function(event)
+  if event.element and event.element.name == d.guiClose then
+    cgui.CloseSearchlightGUI(event.player_index)
+  end
+end)
+
+
+-- Close our GUI if something else opens
+script.on_event(defines.events.on_gui_opened, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(defines.events.on_gui_text_changed, function(event)
+  local gAndGUI = global.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
+      or not cgui.validateGUI(gAndGUI[2]) then
+    cgui.CloseSearchlightGUI(event.player_index)
+    return
+  end
+
+  local g = global.gestalts[gAndGUI[1]]
+  cgui.updateOnTextInput(g, gAndGUI[2])
+
+  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+end)
+
+
 
 local ENABLED = 1
 local DISABLED = 2
@@ -57,7 +130,7 @@ SlotToName[d.circuitSlots.foePositionXSlot] = "foe-x-position"
 SlotToName[d.circuitSlots.foePositionYSlot] = "foe-y-position"
 
 
-cgui.InitTables_GUI = function()
+InitTables_GUI = function()
   -- GUIs are persisted in many circumstances,
   -- so we must manage many aspects of them.
 
@@ -66,7 +139,7 @@ cgui.InitTables_GUI = function()
 end
 
 
-local function addSignal(t, g, sigIndex, control)
+addSignal = function(t, g, sigIndex, control)
   local count = control.get_signal(sigIndex).count
 
   local sigName = SlotToName[sigIndex]
@@ -93,7 +166,7 @@ local function addSignal(t, g, sigIndex, control)
 end
 
 
-local function addSigTable(flow, name, label)
+addSigTable = function(flow, name, label)
   local label = flow.add{type="label",
                          caption=label,
                          style="sla_bold_label"}
@@ -107,7 +180,7 @@ local function addSigTable(flow, name, label)
 end
 
 
-local function addContentLeft(contentFlow, g)
+addContentLeft = function(contentFlow, g)
   local leftFrame = contentFlow.add{type="frame",
                                     direction="vertical", 
                                     style="sla_signal_content_frame",}
@@ -137,7 +210,7 @@ local function addContentLeft(contentFlow, g)
 end
 
 
-local function addModeLabel(frame)
+addModeLabel = function(frame)
   local modeFrame = frame.add{type="frame", 
                               direction="vertical",}
 
@@ -145,7 +218,7 @@ local function addModeLabel(frame)
 end
 
 
-local function addContentRight(contentFlow, g)
+addContentRight = function(contentFlow, g)
   local frameRight = contentFlow.add{type="frame",
                                        direction="vertical", 
                                        style="sla_content_frame",}
@@ -169,7 +242,7 @@ local function addContentRight(contentFlow, g)
 end
 
 
-local function create(main_gui, g)
+create = function(main_gui, g)
   local main_frame = main_gui.add{type="frame", name=d.guiName, direction="vertical",}
   main_frame.force_auto_center()
 
@@ -197,7 +270,7 @@ local function create(main_gui, g)
 end
 
 
-local function fixFrameType(t, sigGUI, sigName, count)
+fixFrameType = function(t, sigGUI, sigName, count)
   if sigGUI.type ~= "frame" then 
     local index = sigGUI.get_index_in_parent()
     sigGUI.destroy()
@@ -219,7 +292,7 @@ local function fixFrameType(t, sigGUI, sigName, count)
 end
 
 
-local function fixFlowType(t, sigGUI, sigName)
+fixFlowType = function(t, sigGUI, sigName)
   if sigGUI.type ~= "textfield" then 
     local parentIndex = sigGUI.get_index_in_parent()
     local tags = {sigIndex = sigGUI.tags.sigIndex}
@@ -242,7 +315,7 @@ local function fixFlowType(t, sigGUI, sigName)
 end
 
 
-local function updateSignal(t, connected, control, gSig, sigIndex, inputState)
+updateSignal = function(t, connected, control, gSig, sigIndex, inputState)
   local signal = control.get_signal(sigIndex)
   local sigName = signal.signal.name
   local localCount = signal.count
@@ -285,7 +358,7 @@ local function updateSignal(t, connected, control, gSig, sigIndex, inputState)
 end
 
 
-local function updateSigTables(leftFlow, g)
+updateSigTables = function(leftFlow, g)
   local connected = (g.signal.get_circuit_network(defines.wire_type.red)
                   or g.signal.get_circuit_network(defines.wire_type.green))
 
@@ -319,13 +392,13 @@ local function updateSigTables(leftFlow, g)
 end
 
 
-local function updateCamera(cam, g)
+updateCamera = function(cam, g)
   local turtle = g.turtle
   cam.entity = turtle
 end
 
 
-local function checkStatus(g)
+checkStatus = function(g)
   local control = g.signal.get_control_behavior()
   local alarmSig = control.get_signal(d.circuitSlots.alarmSlot)
   local warnSig = control.get_signal(d.circuitSlots.warningSlot)
@@ -342,7 +415,7 @@ local function checkStatus(g)
 end
 
 
-local function updateModeStatus(rightContent, g)
+updateModeStatus = function(rightContent, g)
   local status = checkStatus(g)
 
   local rightFrame = rightContent.children[1]
@@ -414,7 +487,7 @@ local function updateModeStatus(rightContent, g)
 end
 
 
-local function readSignals(t, control)
+readSignals = function(t, control)
   for _, child in pairs(t.children) do
     if child.type == "textfield" then
       local signal = control.get_signal(child.tags.sigIndex)
@@ -425,7 +498,7 @@ local function readSignals(t, control)
 end
 
 
-local function updateEntitiesInGUI(g, GUI)
+updateEntitiesInGUI = function(g, GUI)
   local contentFlow = GUI.children[2]
   local rightFrame = contentFlow.children[2]
   local rightContent = rightFrame.children[1]
@@ -442,7 +515,7 @@ local function updateEntitiesInGUI(g, GUI)
 end
 
 
-local function updateForTextFieldInGUI(g, GUI)
+updateForTextFieldInGUI = function(g, GUI)
   local contentFlow = GUI.children[2]
   local leftFlow = contentFlow.children[1]
 
@@ -455,7 +528,7 @@ local function updateForTextFieldInGUI(g, GUI)
 end
 
 
-local function updateForRotation(g, GUI)
+updateForRotation = function(g, GUI)
   local contentFlow = GUI.children[2]
   local leftFlow = contentFlow.children[1]
 
@@ -475,7 +548,7 @@ local function updateForRotation(g, GUI)
 end
 
 
-cgui.validateGUI = function(GUI)
+validateGUI = function(GUI)
   if GUI and GUI.valid and GUI.name == d.guiName then
     return true
   else
@@ -484,13 +557,13 @@ cgui.validateGUI = function(GUI)
 end
 
 
-cgui.validatePlayerAndLight = function(pIndex, gID)
+validatePlayerAndLight = function(pIndex, gID)
   return game.players[pIndex] and game.players[pIndex].valid and global.gestalts[gID]
 end
 
 
 -- validity checked by caller
-cgui.updateOnTick = function(g, GUI)
+updateOnTick = function(g, GUI)
   local contentFlow = GUI.children[2]
   local leftContent = contentFlow.children[1]
   local rightContent = contentFlow.children[2]
@@ -501,7 +574,7 @@ end
 
 
 -- validity should be checked by caller when GUI specified
-cgui.updateOnEntity = function(g, GUI)
+updateOnEntity = function(g, GUI)
   if GUI then
     updateEntitiesInGUI(g, GUI)
     return
@@ -520,7 +593,7 @@ end
 
 
 -- validity checked by caller
-cgui.updateOnTextInput = function(g, GUI)
+updateOnTextInput = function(g, GUI)
   for _, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       updateForTextFieldInGUI(g, gAndGUI[2])
@@ -530,7 +603,7 @@ end
 
 
 -- validity checked here
-cgui.Rotated = function(g)
+Rotated = function(g)
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
@@ -547,7 +620,7 @@ end
 -- or if they're holding a wire (in which case, connect it to the signal interface),
 -- or if they're holding a repair pack / capsule / blueprint / etc
 -- (Basically, mirror the behavior of opening a gui for vanilla entities)
-cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
+OpenSearchlightGUI = function(pIndex, cursor_pos)
   local player = game.players[pIndex]
 
   -- Ignore players in map mode, etc
@@ -645,7 +718,7 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
 end
 
 
-cgui.CloseSearchlightGUI = function(pIndex)
+CloseSearchlightGUI = function(pIndex)
   local pGUI = global.pIndexToGUI[pIndex]
 
   local player = game.players[pIndex]
@@ -660,53 +733,31 @@ cgui.CloseSearchlightGUI = function(pIndex)
 
 end
 
-
-return cgui
-
-
-script.on_event(d.openSearchlightGUI, function(event)
-  if event.selected_prototype 
-    and (event.selected_prototype.name == d.searchlightBaseName 
-      or event.selected_prototype.name == d.searchlightSafeName
-      or event.selected_prototype.name == d.searchlightAlarmName
-      or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
-    cgui.OpenSearchlightGUI(event.player_index, event.cursor_position)
-  end
-end)
-
-
-script.on_event(d.closeSearchlightGUI, cgui.CloseSearchlightGUI(event.player_index))
-
-
-script.on_event(d.closeSearchlightGUIalt, cgui.CloseSearchlightGUI(event.player_index))
-
-
-script.on_event(defines.events.on_gui_click, function(event)
-  if event.element and event.element.name == d.guiClose then
-    cgui.CloseSearchlightGUI(event.player_index)
-  end
-end)
-
-
--- Close our GUI if something else opens
-script.on_event(defines.events.on_gui_opened, cgui.CloseSearchlightGUI(event.player_index))
-
-
-script.on_event(defines.events.on_gui_text_changed, function(event)
-  local gAndGUI = global.pIndexToGUI[event.player_index]
-  if not gAndGUI then
-    return
-  end
-
-  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
-      or not cgui.validateGUI(gAndGUI[2]) then
-    cgui.CloseSearchlightGUI(event.player_index)
-    return
-  end
-
-  local g = global.gestalts[gAndGUI[1]]
-  cgui.updateOnTextInput(g, gAndGUI[2])
-
-  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
-end)
-
+local public = {}
+public.updateForRotation = updateForRotation
+public.updateForTextFieldInGUI = updateForTextFieldInGUI
+public.updateEntitiesInGUI = updateEntitiesInGUI
+public.readSignals = readSignals
+public.updateModeStatus = updateModeStatus
+public.checkStatus = checkStatus
+public.updateCamera = updateCamera
+public.updateSigTables = updateSigTables
+public.updateSignal = updateSignal
+public.fixFlowType = fixFlowType
+public.fixFrameType = fixFrameType
+public.create = create
+public.addContentRight = addContentRight
+public.addModeLabel = addModeLabel
+public.addContentLeft = addContentLeft
+public.addSigTable = addSigTable
+public.addSignal = addSignal
+public.CloseSearchlightGUI = CloseSearchlightGUI
+public.OpenSearchlightGUI = OpenSearchlightGUI
+public.Rotated = Rotated
+public.updateOnTextInput = updateOnTextInput
+public.updateOnEntity = updateOnEntity
+public.updateOnTick = updateOnTick
+public.validatePlayerAndLight = validatePlayerAndLight
+public.validateGUI = validateGUI
+public.InitTables_GUI = InitTables_GUI
+return public

@@ -1,6 +1,7 @@
 local d = require "sl-defines"
 local u = require "../sl-util"
 
+-- forward declarations
 local ScanBP_StacksAndSwapToBaseType
 local SeekBlueprints
 local CheckForSignalSearchlightParity
@@ -118,7 +119,7 @@ SeekBlueprints = function(inventory)
 end
 
 
-ScanBP_StacksAndSwapToBaseType = function()
+ScanBP_StacksAndSwapToBaseType = function(event)
   local player = game.players[event.player_index]
   local cstack = player.cursor_stack
   local pstack = player.blueprint_to_setup
@@ -134,3 +135,10 @@ ScanBP_StacksAndSwapToBaseType = function()
   end
 end
 
+
+local public = {}
+public.ScanBP_StacksAndSwapToBaseType = ScanBP_StacksAndSwapToBaseType
+public.SeekBlueprints = SeekBlueprints
+public.CheckForSignalSearchlightParity = CheckForSignalSearchlightParity
+public.SwapToBaseEntityType = SwapToBaseEntityType
+return public

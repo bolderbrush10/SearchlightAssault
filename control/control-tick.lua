@@ -1,6 +1,21 @@
-local e = {} -- export functions
 
-e.onTick = function(event)
+
+-- forward declarations
+local onTick
+
+
+-- On Tick
+script.on_event(defines.events.on_tick, ot.onTick)
+
+-- Run twice a second (at 60 updates per second)
+script.on_nth_tick(30, function(event)
+  cs.CheckCircuitConditions()
+end)
+
+
+onTick = function(event)
+  -- Tiny optimization, reduces calls to global table
+  local pairs = pairs
   local tick = event.tick
 
   -- Run seperate loops for gestalts vs turrets since they
@@ -41,19 +56,6 @@ e.onTick = function(event)
   rd.Update(event.tick)
 end
 
-return e
-
-
-
--- On Tick
-script.on_event(defines.events.on_tick, ot.onTick)
-
-
--- TODO Move into control-tick.lua
--- Run twice a second (at 60 updates per second)
-script.on_nth_tick(30,
-function(event)
-
-  cs.CheckCircuitConditions()
-
-end)
+local public = {}
+public.onTick = onTick
+return public

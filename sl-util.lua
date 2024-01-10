@@ -3,7 +3,7 @@ local d = require "sl-defines"
 
 local u = {} -- export functions
 
-
+-- Tiny optimization, reduces calls to global table
 local pairs = pairs
 
 

@@ -1,8 +1,16 @@
 local d = require "sl-defines"
 local u = require "sl-util"
 
-local export = {}
-
+-- forward declarations
+local TryBoostingAmmo
+local GetBoostableAmmoType
+local GetEntityInventoriesList
+local GetTurretInventory
+local GetSlotBoostedAmmoCount
+local SwapAmmo
+local AuditBoostedAmmo
+local InitTables_Ammo
+local UnBoostAmmo
 
 -- We'll try to skip some of the more questionable inventories
 -- for ammo to be in (eg, fuel, lab_input)
@@ -31,13 +39,13 @@ local lookupInventories = {}
 local lookupAmmoToBoosted = {}
 
 
-export.InitTables_Ammo = function()
+InitTables_Ammo = function()
   global.ammoAudit = {}
 end
 
 
 -- TODO Maybe make this more robust, take in a slot number
-local function SwapAmmo(inventory, stack, new)
+SwapAmmo = function(inventory, stack, new)
   local ammoCount = stack.count
   local roundCount = stack.ammo
   stack.clear()
@@ -52,7 +60,7 @@ local function SwapAmmo(inventory, stack, new)
 end
 
 
-local function GetSlotBoostedAmmoCount(invSlot)
+GetSlotBoostedAmmoCount = function(invSlot)
   if not (invSlot and invSlot.valid) then
     return false -- Something just messed with this stack, wait until next tick to audit
   end
@@ -66,7 +74,7 @@ local function GetSlotBoostedAmmoCount(invSlot)
 end
 
 
-local function GetTurretInventory(turret)
+GetTurretInventory = function(turret)
   if     not turret.valid
       or not turret.get_inventory
       or not turret.get_inventory(defines.inventory.turret_ammo)
@@ -78,7 +86,7 @@ local function GetTurretInventory(turret)
 end
 
 
-local function GetEntityInventoriesList(entity)
+GetEntityInventoriesList = function(entity)
   if lookupInventories[entity.name] then
     return lookupInventories[entity.name]
   end
@@ -103,7 +111,7 @@ local function GetEntityInventoriesList(entity)
 end
 
 
-local function GetBoostableAmmoType(ammoStack)
+GetBoostableAmmoType = function(ammoStack)
   if     not ammoStack.valid
       or not ammoStack.valid_for_read then
     return
@@ -127,7 +135,7 @@ local function GetBoostableAmmoType(ammoStack)
 end
 
 
-local function TryBoostingAmmo(turret)
+TryBoostingAmmo = function(turret)
   local inv = turret.get_inventory(defines.inventory.turret_ammo)
   if not inv then
     return
@@ -149,7 +157,7 @@ local function TryBoostingAmmo(turret)
 end
 
 
-export.UnBoostAmmo = function(entity)
+UnBoostAmmo = function(entity)
   -- If this was actually a different type of boosted turret, 
   -- we can let it keep whatever ammo it has
   -- (We'll just hope nobody tries to take advantage of this for now)
@@ -187,7 +195,7 @@ export.UnBoostAmmo = function(entity)
 end
 
 
-export.AuditBoostedAmmo = function(turret)
+AuditBoostedAmmo = function(turret)
   if global.ammoAudit[turret.unit_number] then
     local ammoCount = 0
     local inv = GetTurretInventory(turret)
@@ -237,4 +245,14 @@ export.AuditBoostedAmmo = function(turret)
 end
 
 
-return export
+local public = {}
+public.TryBoostingAmmo = TryBoostingAmmo
+public.GetBoostableAmmoType = GetBoostableAmmoType
+public.GetEntityInventoriesList = GetEntityInventoriesList
+public.GetTurretInventory = GetTurretInventory
+public.GetSlotBoostedAmmoCount = GetSlotBoostedAmmoCount
+public.SwapAmmo = SwapAmmo
+public.AuditBoostedAmmo = AuditBoostedAmmo
+public.InitTables_Ammo = InitTables_Ammo
+public.UnBoostAmmo = UnBoostAmmo
+return public

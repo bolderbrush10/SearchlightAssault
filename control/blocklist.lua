@@ -3,11 +3,22 @@ local u = require "sl-util"
 
 local ct = require "control-tunion"
 
+-- forward declarations
+local UpdateBoostInfo
+local concatKeys
+local remove_from_blocklist
+local add_to_blocklist
+local UnboostBlockedTurrets
+local UpdateBlockList
+local InitTables_Blocklist
 
-local export = {}
 
 
-export.InitTables_Blocklist = function()
+
+remote.add_interface("sl_blocklist", {add = add_to_blocklist, remove = remove_from_blocklist})
+
+
+InitTables_Blocklist = function()
   -- Map: turret name -> true
   global.remoteBlock = {}
 
@@ -19,7 +30,7 @@ export.InitTables_Blocklist = function()
 end
 
 
-local function add_to_blocklist(turretName)
+add_to_blocklist = function(turretName)
   local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
 
   if not protos[turretName] then
@@ -35,7 +46,7 @@ local function add_to_blocklist(turretName)
 end
 
 
-local function remove_from_blocklist(turretName)
+remove_from_blocklist = function(turretName)
   if global.remoteBlock[turretName] then
     log("Searchlight Assault: Unblocking " .. turretName .. "; interaction now allowed.")
   end
@@ -46,7 +57,7 @@ local function remove_from_blocklist(turretName)
 end
 
 
-local function concatKeys(table)
+concatKeys = function(table)
   local result = ""
 
   -- factorio API guarantees deterministic iteration
@@ -60,7 +71,7 @@ end
 
 -- Breaking out a seperate function like this allows us to easily
 -- note changes to the block list and output them to game.print()
-local function UpdateBoostInfo(blockList)
+UpdateBoostInfo = function(blockList)
   local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
 
   for _, turret in pairs(protos) do
@@ -83,7 +94,7 @@ local function UpdateBoostInfo(blockList)
 end
 
 
-export.UpdateBlockList = function(calledByRemote)
+UpdateBlockList = function(calledByRemote)
   if not calledByRemote then
     calledByRemote = false
   end
@@ -118,7 +129,7 @@ export.UpdateBlockList = function(calledByRemote)
 end
 
 
-export.UnboostBlockedTurrets = function()
+UnboostBlockedTurrets = function()
   for tuID, tu in pairs(global.tunions) do
     if tu.boosted and global.boostInfo[tu.turret.name:gsub(d.boostSuffix, "")] == ct.bInfo.BLOCKED then
       ct.UnBoost(tu)
@@ -126,6 +137,12 @@ export.UnboostBlockedTurrets = function()
   end
 end
 
-remote.add_interface("sl_blocklist", {add = add_to_blocklist, remove = remove_from_blocklist})
-
-return export
+local public = {}
+public.UpdateBoostInfo = UpdateBoostInfo
+public.concatKeys = concatKeys
+public.remove_from_blocklist = remove_from_blocklist
+public.add_to_blocklist = add_to_blocklist
+public.UnboostBlockedTurrets = UnboostBlockedTurrets
+public.UpdateBlockList = UpdateBlockList
+public.InitTables_Blocklist = InitTables_Blocklist
+return public

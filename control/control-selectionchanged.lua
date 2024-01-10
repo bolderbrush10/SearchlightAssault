@@ -1,6 +1,10 @@
-local e = {} -- export functions
+-- forward declarations
+local onChange
 
-e.onChange = function(event)
+script.on_event(defines.events.on_selected_entity_changed, sc.onChange)
+
+
+onChange = function(event)
   local p = game.players[event.player_index]
   local entity = p.selected
   if entity and entity.force == p.force then
@@ -34,7 +38,6 @@ e.onChange = function(event)
   end
 end
 
-return e
-
-
-script.on_event(defines.events.on_selected_entity_changed, sc.onChange)
+local public = {}
+public.onChange = onChange
+return public

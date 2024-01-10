@@ -1,7 +1,19 @@
-local export = {}
-
 local d = require("sl-defines")
 local u = require("sl-util")
+
+-- forward declarations
+local ClearGestaltRender
+local Unrender
+local Render
+local MakeLineParams
+local MakeEdgeParams
+local MakeArcParams
+local FinishParams
+local Update
+local DrawSearchArea
+local DrawTurtlePos
+local InitTables_Render
+
 
 local wireFrameTTL = 240
 
@@ -18,7 +30,7 @@ local EDGE_OUTER = 4
 
 
 -- The map helps limit UI redraws for a given searchlight
-export.InitTables_Render = function()
+InitTables_Render = function()
   -- Map: gID -> 0/playerIndex -> {epochTick, {render_id}}
   global.slFOVRenders = {}
 
@@ -27,7 +39,7 @@ export.InitTables_Render = function()
 end
 
 
-local function FinishParams(target, player, force, t)
+FinishParams = function(target, player, force, t)
   t.target = target.position
   t.surface = target.surface
   t.time_to_live = 0 -- live until destroyed
@@ -47,7 +59,7 @@ end
 
 -- angles: {min,   max,   start,   len}
 --          tiles, tiles, radians, radians
-local function MakeArcParams(sl, player, force, wParams)
+MakeArcParams = function(sl, player, force, wParams)
   local t =
   {
     color = colorDrab,
@@ -68,7 +80,7 @@ end
 
 -- angles: {min,   max,   start,   len}
 --          tiles, tiles, radians, radians
-local function MakeEdgeParams(sl, player, force, wParams, edgeType)
+MakeEdgeParams = function(sl, player, force, wParams, edgeType)
   local t =
   {
     color = colorVibr,
@@ -91,7 +103,7 @@ local function MakeEdgeParams(sl, player, force, wParams, edgeType)
 end
 
 
-local function MakeLineParams(sl, player, force, wParams, edgeType)
+MakeLineParams = function(sl, player, force, wParams, edgeType)
   local t =
   {
     color = colorVibr,
@@ -112,7 +124,7 @@ local function MakeLineParams(sl, player, force, wParams, edgeType)
 end
 
 
-local function Render(g, player, force, wParams)
+Render = function(g, player, force, wParams)
   local sl = g.light
   local ids = {}
 
@@ -129,7 +141,7 @@ local function Render(g, player, force, wParams)
 end
 
 
-local function Unrender(epochAndRender)
+Unrender = function(epochAndRender)
   if epochAndRender and epochAndRender[2] then
     for _, rID in pairs(epochAndRender[2]) do
       rendering.destroy(rID)
@@ -139,7 +151,7 @@ local function Unrender(epochAndRender)
 end
 
 
-local function ClearGestaltRender(gID)
+ClearGestaltRender = function(gID)
   local pIndexToEpochAndRenderMap = global.slFOVRenders[gID]
   for pIndex, epochAndRender in pairs(pIndexToEpochAndRenderMap) do
     Unrender(epochAndRender)
@@ -148,7 +160,7 @@ local function ClearGestaltRender(gID)
 end
 
 
-export.DrawTurtlePos = function(player, g)
+DrawTurtlePos = function(player, g)
   if not global.tposRenders[player.index] then
     local rID = rendering.draw_sprite{sprite  = "utility/shoot_cursor_green", 
                                       target  = g.turtle, 
@@ -162,7 +174,7 @@ export.DrawTurtlePos = function(player, g)
 end
 
 
-export.DrawSearchArea = function(sl, player, force, forceRedraw)
+DrawSearchArea = function(sl, player, force, forceRedraw)
   local g = global.unum_to_g[sl.unit_number]
   if not g or not g.tAdjParams then
     return
@@ -200,7 +212,7 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
 end
 
 
-export.Update = function(tick)
+Update = function(tick)
   local added = {}
 
   for gID, pIndexToEpochAndRenderMap in pairs(global.slFOVRenders) do
@@ -279,5 +291,16 @@ export.Update = function(tick)
   end
 end
 
-
-return export
+local public = {}
+public.ClearGestaltRender = ClearGestaltRender
+public.Unrender = Unrender
+public.Render = Render
+public.MakeLineParams = MakeLineParams
+public.MakeEdgeParams = MakeEdgeParams
+public.MakeArcParams = MakeArcParams
+public.FinishParams = FinishParams
+public.Update = Update
+public.DrawSearchArea = DrawSearchArea
+public.DrawTurtlePos = DrawTurtlePos
+public.InitTables_Render = InitTables_Render
+return public

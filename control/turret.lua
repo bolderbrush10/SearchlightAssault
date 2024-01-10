@@ -4,8 +4,26 @@ local d = require "sl-defines"
 local r = require "sl-relation"
 local u = require "sl-util"
 
-
-local export = {}
+-- forward declarations
+local DeamplifyRange
+local AmplifyRange
+local SpawnBoostAnimation
+local SpawnControl
+local ReassignTurret
+local getTuID
+local makeTUnionFromTurret
+local newTUID
+local UnBoost
+local Boost
+local RespectMaxAmmoRange
+local FoeGestaltRelationRemoved
+local CreateRelationship
+local IsBoostableAndInRange
+local GestaltRemoved
+local TurretRemoved
+local TurretAdded
+local CheckAmmoElectricNeeds
+local InitTables_Turrets
 
 
 -- boostInfo states (Shared with control-blocklist)
@@ -34,7 +52,7 @@ export.bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
 }
 ]]--
 
-export.InitTables_Turrets = function()
+InitTables_Turrets = function()
 
   global.tuID = 0
 
@@ -59,14 +77,14 @@ end
 ------------------------
 
 
-local function newTUID()
+newTUID = function()
   global.tuID = global.tuID + 1
   return global.tuID
 end
 
 
 -- May return nil if turret is not boostable / already has tunion
-local function makeTUnionFromTurret(turret)
+makeTUnionFromTurret = function(turret)
   if global.tun_to_tunion[turret.unit_number] then
     return nil
   end
@@ -88,7 +106,7 @@ local function makeTUnionFromTurret(turret)
 end
 
 
-local function getTuID(turret)
+getTuID = function(turret)
   if not global.tun_to_tunion[turret.unit_number] then
     return makeTUnionFromTurret(turret).tuID
   end
@@ -97,7 +115,7 @@ local function getTuID(turret)
 end
 
 
-local function ReassignTurret(turret, tuID)
+ReassignTurret = function(turret, tuID)
   local gtRelations = global.GestaltTunionRelations
   local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
 
@@ -123,7 +141,7 @@ local function ReassignTurret(turret, tuID)
 end
 
 
-local function SpawnControl(turret)
+SpawnControl = function(turret)
   local width = turret.bounding_box.right_bottom.x - turret.bounding_box.left_top.x
   local pos   = turret.bounding_box.right_bottom
 
@@ -162,7 +180,7 @@ local function SpawnControl(turret)
 end
 
 
-local function SpawnBoostAnimation(turret)
+SpawnBoostAnimation = function(turret)
   local boostHazeSize = 200 / 32 -- 32 pixels per tile
   local cBox = turret.prototype.collision_box
   local tWidth = cBox.left_top.x - cBox.right_bottom.x
@@ -178,7 +196,7 @@ local function SpawnBoostAnimation(turret)
 end
 
 
-local function AmplifyRange(tunion, foe)
+AmplifyRange = function(tunion, foe)
   if  tunion.boosted
      or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
      or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
@@ -222,7 +240,7 @@ local function AmplifyRange(tunion, foe)
 end
 
 
-local function DeamplifyRange(tunion)
+DeamplifyRange = function(tunion)
   local turret = tunion.turret
 
   if not turret.valid or not tunion.boosted then
@@ -257,7 +275,7 @@ end
 
 
 -- Wouldn't need most of this function if there was an event for when entities run out of power
-export.CheckAmmoElectricNeeds = function()
+CheckAmmoElectricNeeds = function()
   local overrideAmmoRange = settings.global[d.overrideAmmoRange].value
 
   for tuID, tu in pairs(global.boosted_to_tunion) do
@@ -291,7 +309,7 @@ end
 
 
 -- Turret placed
-function export.TurretAdded(turret)
+TurretAdded = function(turret)
   if not global.boostInfo[turret.name]
       or global.boostInfo[turret.name] == NOT_BOOSTABLE then
     return
@@ -308,7 +326,7 @@ end
 
 
 -- Turret removed
-function export.TurretRemoved(turret, tu)
+TurretRemoved = function(turret, tu)
   if turret then
     if not global.tun_to_tunion[turret.unit_number] then
       return -- We weren't tracking this turret, so nothing to do
@@ -369,7 +387,7 @@ end
 
 -- Gestalt removed
 -- (Unboosting would happen in FoeGestaltRelationRemoved)
-function export.GestaltRemoved(tuID)
+GestaltRemoved = function(tuID)
   -- Check if we still have a relationship with anything before removing this tunion
   if next(r.getRelationRHS(global.GestaltTunionRelations, tuID)) then
     return
@@ -388,7 +406,7 @@ function export.GestaltRemoved(tuID)
 end
 
 
-export.IsBoostableAndInRange = function(g, t)
+IsBoostableAndInRange = function(g, t)
   if global.boostInfo[t.name] == NOT_BOOSTABLE then
     return false
 
@@ -403,7 +421,7 @@ end
 
 
 -- Called when a searchlight or turret is created
-export.CreateRelationship = function(g, t)
+CreateRelationship = function(g, t)
   if not export.IsBoostableAndInRange(g, t) then
     return
   end
@@ -418,7 +436,7 @@ end
 -- Foe left range (checked in gestalt.CheckGestaltFoes),
 -- Foe died (checked in gestalt.FoeDied),
 -- Searchlight deconstructed / died while targeting a Foe (checked in gestalt.SearchlightRemoved)
-export.FoeGestaltRelationRemoved = function(g, tIDlist)
+FoeGestaltRelationRemoved = function(g, tIDlist)
 
   if tIDlist == nil then
     tIDlist = r.getRelationLHS(global.GestaltTunionRelations, g.gID)
@@ -436,7 +454,7 @@ end
 
 -- Called when the override max ammo range mod setting changes to false,
 -- which means we need to find and swap back any taboo'd ammo
-export.RespectMaxAmmoRange = function()
+RespectMaxAmmoRange = function()
   for _, tu in pairs(global.boosted_to_tunion) do
     local turret = tu.turret
     local entities = turret.surface.find_entities_filtered{position=turret.position,
@@ -462,7 +480,7 @@ end
 -- we'll check if it's time to actually swap to
 -- the range-boosted turret in CheckAmmoElectricNeeds()
 -- via onTick()
-export.Boost = function(tunion, foe)
+Boost = function(tunion, foe)
   if global.boosted_to_tunion[tunion.tuID] or global.boostInfo[tunion.turret.name] == BLOCKED then
     return
   end
@@ -478,7 +496,7 @@ export.Boost = function(tunion, foe)
 end
 
 
-export.UnBoost = function(tunion)
+UnBoost = function(tunion)
   if not global.boosted_to_tunion[tunion.tuID] then
     return
   end
@@ -503,5 +521,24 @@ export.UnBoost = function(tunion)
   end
 end
 
-
-return export
+local public = {}
+public.DeamplifyRange = DeamplifyRange
+public.AmplifyRange = AmplifyRange
+public.SpawnBoostAnimation = SpawnBoostAnimation
+public.SpawnControl = SpawnControl
+public.ReassignTurret = ReassignTurret
+public.getTuID = getTuID
+public.makeTUnionFromTurret = makeTUnionFromTurret
+public.newTUID = newTUID
+public.UnBoost = UnBoost
+public.Boost = Boost
+public.RespectMaxAmmoRange = RespectMaxAmmoRange
+public.FoeGestaltRelationRemoved = FoeGestaltRelationRemoved
+public.CreateRelationship = CreateRelationship
+public.IsBoostableAndInRange = IsBoostableAndInRange
+public.GestaltRemoved = GestaltRemoved
+public.TurretRemoved = TurretRemoved
+public.TurretAdded = TurretAdded
+public.CheckAmmoElectricNeeds = CheckAmmoElectricNeeds
+public.InitTables_Turrets = InitTables_Turrets
+return public

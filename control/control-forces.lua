@@ -1,11 +1,41 @@
 local d = require "sl-defines"
 local u = require "sl-util"
 
+-- forward declarations
+local MigrateTurtleForces
+local UpdateTForceRelationships
+local PrepareTurtleForce
+local InitTables_Forces
+
+
+-- On Force Relationship Changed
+for index, e in pairs
+({
+  defines.events.on_force_cease_fire_changed,
+  defines.events.on_force_friends_changed,
+}) do
+  script.on_event(e,
+  function(event)
+
+    cf.UpdateTForceRelationships(event.force)
+
+  end)
+end
+
+
+-- On Force About To Be Merged
+script.on_event(defines.events.on_forces_merging,
+function(event)
+
+  cf.MigrateTurtleForces(event.source, event.destination)
+
+end)
+
 
 local export = {}
 
 
-export.InitTables_Forces = function()
+InitTables_Forces = function()
 
   -- Map: Turtle Force Name -> true
   global.sl_force_init = {}
@@ -24,7 +54,7 @@ end
 
 
 -- Called when a new searchlight is created
-export.PrepareTurtleForce = function(SearchlightForce)
+PrepareTurtleForce = function(SearchlightForce)
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] or game.forces[turtleForceName] then
@@ -45,7 +75,7 @@ end
 -- The turtle force should ignore the searchlight's friends and attack its enemies.
 -- Only the searchlight owner should have cease_fire = false with its turtle.
 -- Everyone else should ignore it.
-export.UpdateTForceRelationships = function(SearchlightForce)
+UpdateTForceRelationships = function(SearchlightForce)
 
   if u.EndsWith(SearchlightForce.name, d.turtleForceSuffix) then
     return -- Don't recurse
@@ -100,7 +130,7 @@ export.UpdateTForceRelationships = function(SearchlightForce)
 end
 
 
-export.MigrateTurtleForces = function(oldSLForce, newSLForce)
+MigrateTurtleForces = function(oldSLForce, newSLForce)
   -- Don't recurse when we migrate turtles
   if u.EndsWith(oldSLForce.name, d.turtleForceSuffix) then
     return
@@ -121,29 +151,9 @@ export.MigrateTurtleForces = function(oldSLForce, newSLForce)
   game.merge_forces(oldtForceName, newtForceName)
 end
 
-
-return export
-
-
--- On Force Relationship Changed
-for index, e in pairs
-({
-  defines.events.on_force_cease_fire_changed,
-  defines.events.on_force_friends_changed,
-}) do
-  script.on_event(e,
-  function(event)
-
-    cf.UpdateTForceRelationships(event.force)
-
-  end)
-end
-
-
--- On Force About To Be Merged
-script.on_event(defines.events.on_forces_merging,
-function(event)
-
-  cf.MigrateTurtleForces(event.source, event.destination)
-
-end)
+local public = {}
+public.MigrateTurtleForces = MigrateTurtleForces
+public.UpdateTForceRelationships = UpdateTForceRelationships
+public.PrepareTurtleForce = PrepareTurtleForce
+public.InitTables_Forces = InitTables_Forces
+return public

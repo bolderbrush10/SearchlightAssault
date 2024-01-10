@@ -1,3 +1,4 @@
+-- Tiny optimization, reduces calls to global table
 local pairs = pairs
 local next  = next
 

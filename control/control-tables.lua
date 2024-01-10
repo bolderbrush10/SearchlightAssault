@@ -10,13 +10,12 @@ local rd = require "sl-render"
 
 local cgui = require "control-gui"
 
-
-local e = {} -- export functions
-
+-- forward declarations
+local InitTables
 
 -- In this init function, we'll declare some variables in the global table -
 -- this lets the game engine track them for us across save/load cycles.
-e.InitTables = function()
+InitTables = function()
   ----------------
   -- Sub-Tables --
   ----------------
@@ -42,5 +41,6 @@ e.InitTables = function()
   global.GestaltTunionRelations = r.newRelation()
 end
 
-
-return e
+local public = {}
+public.InitTables = InitTables
+return public

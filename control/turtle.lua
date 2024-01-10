@@ -4,8 +4,28 @@ local u = require "sl-util"
 local cf = require "control-forces"
 local rd = require "sl-render"
 
+-- forward declares
+local applySpeedFactor
+local Turtleport
+local RespawnTurtle
+local MakeWanderWaypoint
+local ValidateAndSetParams
+local IssueMoveCommand
+local IssueFollowCommand
+local makeMoveOrders
+local RespawnBrokenTurtle
+local TurtleChase
+local ManualTurtleMove
+local UpdateWanderParams
+local SetDefaultWanderParams
+local WanderTurtle
+local WindupTurtle
+local SpawnTurtle
+local ResumeTurtleDuty
+local TurtleFailed
+local TurtleWaypointReached
+local CheckForTurtleEscape
 
-local export = {}
 
 
 -- tState states
@@ -23,7 +43,7 @@ local bufferedRange = d.searchlightRange - (d.searchlightSpotRadius)
 ------------------------
 
 
-local function makeMoveOrders(target, followingEntity, ignoreFoes)
+makeMoveOrders = function(target, followingEntity, ignoreFoes)
   local distraction = defines.distraction.by_enemy
 
   if ignoreFoes then
@@ -49,19 +69,19 @@ local function makeMoveOrders(target, followingEntity, ignoreFoes)
 end
 
 
-local function IssueFollowCommand(turtle, entity, ignoreFoes)
+IssueFollowCommand = function(turtle, entity, ignoreFoes)
   turtle.set_command(makeMoveOrders(entity, true, ignoreFoes))
 end
 
 
-local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
+IssueMoveCommand = function(turtle, waypoint, ignoreFoes)
   turtle.set_command(makeMoveOrders(waypoint, false, ignoreFoes))
 end
 
 
 -- tWanderParams = .radius, .rotation, .min, .max
 -- tAdjParams = .angleStart, .len, .min, .max
-local function ValidateAndSetParams(g, forceRedraw)
+ValidateAndSetParams = function(g, forceRedraw)
   g.tAdjParams = {} -- init / reset
 
   -- Blueprints ignore orientation,
@@ -109,7 +129,7 @@ local function ValidateAndSetParams(g, forceRedraw)
 end
 
 
-local function MakeWanderWaypoint(g)
+MakeWanderWaypoint = function(g)
   if not g.tAdjParams then
     ValidateAndSetParams(g)
   end
@@ -136,7 +156,7 @@ local function MakeWanderWaypoint(g)
 end
 
 
-local function RespawnTurtle(turtle, position)
+RespawnTurtle = function(turtle, position)
   local g = global.unum_to_g[turtle.unit_number]
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
@@ -159,7 +179,7 @@ local function RespawnTurtle(turtle, position)
 end
 
 
-local function Turtleport(turtle, origin, position)
+Turtleport = function(turtle, origin, position)
   if not position then
     return
   end
@@ -183,7 +203,7 @@ local function Turtleport(turtle, origin, position)
 end
 
 
-local function applySpeedFactor(base)
+applySpeedFactor = function(base)
   return base * (settings.global[d.sweepSpeedSetting].value / 5)
 end
 
@@ -193,7 +213,7 @@ end
 ------------------------
 
 
-export.CheckForTurtleEscape = function(g)
+CheckForTurtleEscape = function(g)
   if not u.WithinRadius(g.turtle.position, g.light.position, d.searchlightRange - 0.2) then
     -- If the searchlight started attacking something else while the turtle was distracted and out of range,
     -- then we may as well sic the turtle on it, too
@@ -210,7 +230,7 @@ export.CheckForTurtleEscape = function(g)
 end
 
 
-export.TurtleWaypointReached = function(g)
+TurtleWaypointReached = function(g)
   if g.tState == export.WANDER then
     export.WanderTurtle(g)
     -- retarget turtle just in case something happened
@@ -232,7 +252,7 @@ end
 
 
 -- If a turtle fails a command, respawn it and reissue its current command
-export.TurtleFailed = function(turtle)
+TurtleFailed = function(turtle)
   local g = RespawnTurtle(turtle, turtle.position)
 
   if g.tState == export.MOVE then
@@ -246,7 +266,7 @@ export.TurtleFailed = function(turtle)
 end
 
 
-export.ResumeTurtleDuty = function(gestalt, turtlePositionToResume)
+ResumeTurtleDuty = function(gestalt, turtlePositionToResume)
   local turtle = gestalt.turtle
 
   Turtleport(turtle, gestalt.light.position, turtlePositionToResume)
@@ -261,7 +281,7 @@ end
 
 -- location is expected to be the searchlight's last shooting target,
 -- if it was targeting something.
-export.SpawnTurtle = function(sl, surface, location)
+SpawnTurtle = function(sl, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
     location = u.OrientationToPosition(sl.position, sl.orientation, 3)
@@ -288,7 +308,7 @@ end
 
 -- If we set our first waypoint in the same direction as the searchlight orientation,
 -- but further away, it makes the searchlight appear to "start up"
-export.WindupTurtle = function(gestalt, turtle)
+WindupTurtle = function(gestalt, turtle)
   local c = gestalt.signal.get_control_behavior()
   gestalt.tWanderParams.rotation = c.get_signal(d.circuitSlots.rotateSlot).count
   gestalt.tWanderParams.radius   = c.get_signal(d.circuitSlots.radiusSlot).count
@@ -306,7 +326,7 @@ export.WindupTurtle = function(gestalt, turtle)
 end
 
 
-export.WanderTurtle = function(gestalt, waypoint)
+WanderTurtle = function(gestalt, waypoint)
   gestalt.tState    = export.WANDER
   gestalt.tCoord    = export.WANDER
 
@@ -319,7 +339,7 @@ export.WanderTurtle = function(gestalt, waypoint)
 end
 
 
-export.SetDefaultWanderParams = function(g)
+SetDefaultWanderParams = function(g)
   g.tWanderParams =
   {
     radius = 0,
@@ -331,7 +351,7 @@ end
 
 
 -- These parameters will be read in MakeWanderWaypoint
-export.UpdateWanderParams = function(g, rad, rot, min, max)
+UpdateWanderParams = function(g, rad, rot, min, max)
   local change = false
   if not g.tWanderParams then
     export.SetDefaultWanderParams(g)
@@ -356,7 +376,7 @@ export.UpdateWanderParams = function(g, rad, rot, min, max)
 end
 
 
-export.ManualTurtleMove = function(gestalt, coord)
+ManualTurtleMove = function(gestalt, coord)
   if      gestalt.tState == export.MOVE
       and gestalt.tCoord.x == coord.x
       and gestalt.tCoord.y == coord.y then
@@ -389,7 +409,7 @@ export.ManualTurtleMove = function(gestalt, coord)
 end
 
 
-export.TurtleChase = function(gestalt, entity)
+TurtleChase = function(gestalt, entity)
   if not entity.valid then
     export.WanderTurtle(gestalt)
     return
@@ -412,7 +432,7 @@ export.TurtleChase = function(gestalt, entity)
 end
 
 
-export.RespawnBrokenTurtle = function(g)
+RespawnBrokenTurtle = function(g)
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
   if not newT then
@@ -447,5 +467,25 @@ export.RespawnBrokenTurtle = function(g)
   return true
 end
 
-
-return export
+local public = {}
+public.applySpeedFactor = applySpeedFactor
+public.Turtleport = Turtleport
+public.RespawnTurtle = RespawnTurtle
+public.MakeWanderWaypoint = MakeWanderWaypoint
+public.ValidateAndSetParams = ValidateAndSetParams
+public.IssueMoveCommand = IssueMoveCommand
+public.IssueFollowCommand = IssueFollowCommand
+public.makeMoveOrders = makeMoveOrders
+public.RespawnBrokenTurtle = RespawnBrokenTurtle
+public.TurtleChase = TurtleChase
+public.ManualTurtleMove = ManualTurtleMove
+public.UpdateWanderParams = UpdateWanderParams
+public.SetDefaultWanderParams = SetDefaultWanderParams
+public.WanderTurtle = WanderTurtle
+public.WindupTurtle = WindupTurtle
+public.SpawnTurtle = SpawnTurtle
+public.ResumeTurtleDuty = ResumeTurtleDuty
+public.TurtleFailed = TurtleFailed
+public.TurtleWaypointReached = TurtleWaypointReached
+public.CheckForTurtleEscape = CheckForTurtleEscape
+return public

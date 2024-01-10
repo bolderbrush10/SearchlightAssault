@@ -1,49 +1,12 @@
--- Reference: https://wiki.factorio.com/Military_units_and_structures
-local militaryFilter =
-{
-  {filter = "turret"},
-  {filter = "type", type = "character"},
-  {filter = "type", type = "combat-robot"},
-  {filter = "type", type = "construction-robot"},
-  {filter = "type", type = "logistic-robot"},
-  {filter = "type", type = "land-mine"},
-  {filter = "type", type = "unit"},
-  {filter = "type", type = "artillery-turret"},
-  {filter = "type", type = "radar"},
-  {filter = "type", type = "unit-spawner"},
-  {filter = "type", type = "player-port"},
-  {filter = "type", type = "simple-entity-with-force"},
-}
-
-local militaryAndGhostsFilter =
-{
-  {filter = "type", type = "entity-ghost"},
-  table.unpack(militaryFilter)
-}
+-- forward declarations
+local checkEditor
+local detectEditorChanges
+local ghostRemoved
+local entityRemoved
+local CheckSignalInterfaceHasSearchlight
 
 
-local function entityRemoved(event)
-  local entity = event.entity
 
-  if entity.type == "entity-ghost" and entity.ghost_name == d.searchlightBaseName then
-    ghostRemoved(entity)
-  elseif entity.name == d.searchlightBaseName 
-      or entity.name == d.searchlightAlarmName 
-      or entity.name == d.searchlightSafeName then
-    local onDeath = event.name == defines.events.on_entity_died 
-    -- or event.name == defines.events.script_raised_destroy
-    -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
-    
-    cg.SearchlightRemoved(entity.unit_number, onDeath)
-  elseif entity.type:match "-turret" and entity.type ~= "artillery-turret" then
-    cu.TurretRemoved(entity)
-  end
-
-  -- It's possible that one searchlight's friend is another's foe...
-  if entity.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, entity.unit_number)) then
-    cg.FoeDied(entity)
-  end
-end
 
 for index, e in pairs
 ({
@@ -104,24 +67,6 @@ for index, e in pairs
 end
 
 
--- It's possible for the player to right click to destroy a searchlight ghost,
--- but leave behind the signal interface ghost from a blueprint.
--- The best we can do is detect when such ghosts are built and destroy them
--- after the fact, since there doesn't seem to be an event to detect when
--- the player manually clears a ghost via right click.
-export.CheckSignalInterfaceHasSearchlight = function(i)
-  local sLight = i.surface.find_entities_filtered{name={d.searchlightBaseName,d.searchlightAlarmName},
-                                                  position = i.position}
-
-  local slGhost = i.surface.find_entities_filtered{ghost_name={d.searchlightBaseName},
-                                                   position = i.position}
-
-  if not ((sLight  and sLight[1])
-       or (slGhost and slGhost[1])) then
-    i.destroy()
-  end
-end
-
 -- Doesn't support filters, so it's on its own here
 script.on_event(defines.events.on_trigger_created_entity,
 function(event)
@@ -136,11 +81,6 @@ function(event)
 
 end)
 
-
---
--- DESTRUCTIONS
---
-
 -- Detect destructions registered through LuaBootstrap.register_on_entity_destroyed
 -- TODO Do I need to register ghost-entities for the searchlight & interface, too?
 script.on_event(defines.events.on_entity_destroyed, function(event)
@@ -148,24 +88,6 @@ script.on_event(defines.events.on_entity_destroyed, function(event)
     cg.SearchlightRemoved(event.unit_number)
   end
 end)
-
-
--- Make sure all destroyed searchlight ghosts and signal-interface ghosts have their counterparts destroyed too
-local function ghostRemoved(ghost)
-  local complements = nil
-  if ghost.ghost_name == d.searchlightBaseName then
-    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
-                                                      position   = ghost.position,}
-  else
-    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightBaseName,
-                                                       position   = ghost.position,}
-  end
-
-  for _, g in pairs(complements) do
-    g.destroy()
-  end
-end
-
 
 
 for index, e in pairs
@@ -270,7 +192,99 @@ end, {{filter = "type", type = "ammo-turret"},
       {filter = "type", type = "fluid-turret"},
       {filter = "type", type = "electric-turret"},})
 
-local function detectEditorChanges()
+
+script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
+
+
+-- Reference: https://wiki.factorio.com/Military_units_and_structures
+local militaryFilter =
+{
+  {filter = "turret"},
+  {filter = "type", type = "character"},
+  {filter = "type", type = "combat-robot"},
+  {filter = "type", type = "construction-robot"},
+  {filter = "type", type = "logistic-robot"},
+  {filter = "type", type = "land-mine"},
+  {filter = "type", type = "unit"},
+  {filter = "type", type = "artillery-turret"},
+  {filter = "type", type = "radar"},
+  {filter = "type", type = "unit-spawner"},
+  {filter = "type", type = "player-port"},
+  {filter = "type", type = "simple-entity-with-force"},
+}
+
+local militaryAndGhostsFilter =
+{
+  {filter = "type", type = "entity-ghost"},
+  table.unpack(militaryFilter)
+}
+
+
+entityRemoved = function(event)
+  local entity = event.entity
+
+  if entity.type == "entity-ghost" and entity.ghost_name == d.searchlightBaseName then
+    ghostRemoved(entity)
+  elseif entity.name == d.searchlightBaseName 
+      or entity.name == d.searchlightAlarmName 
+      or entity.name == d.searchlightSafeName then
+    local onDeath = event.name == defines.events.on_entity_died 
+    -- or event.name == defines.events.script_raised_destroy
+    -- Since destroy() doesn't leave a corpse / ghost, we probably don't want to manually create any
+    
+    cg.SearchlightRemoved(entity.unit_number, onDeath)
+  elseif entity.type:match "-turret" and entity.type ~= "artillery-turret" then
+    cu.TurretRemoved(entity)
+  end
+
+  -- It's possible that one searchlight's friend is another's foe...
+  if entity.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, entity.unit_number)) then
+    cg.FoeDied(entity)
+  end
+end
+
+-- It's possible for the player to right click to destroy a searchlight ghost,
+-- but leave behind the signal interface ghost from a blueprint.
+-- The best we can do is detect when such ghosts are built and destroy them
+-- after the fact, since there doesn't seem to be an event to detect when
+-- the player manually clears a ghost via right click.
+CheckSignalInterfaceHasSearchlight = function(i)
+  local sLight = i.surface.find_entities_filtered{name={d.searchlightBaseName,d.searchlightAlarmName},
+                                                  position = i.position}
+
+  local slGhost = i.surface.find_entities_filtered{ghost_name={d.searchlightBaseName},
+                                                   position = i.position}
+
+  if not ((sLight  and sLight[1])
+       or (slGhost and slGhost[1])) then
+    i.destroy()
+  end
+end
+
+--
+-- DESTRUCTIONS
+--
+
+
+-- Make sure all destroyed searchlight ghosts and signal-interface ghosts have their counterparts destroyed too
+ghostRemoved = function(ghost)
+  local complements = nil
+  if ghost.ghost_name == d.searchlightBaseName then
+    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
+                                                      position   = ghost.position,}
+  else
+    complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightBaseName,
+                                                       position   = ghost.position,}
+  end
+
+  for _, g in pairs(complements) do
+    g.destroy()
+  end
+end
+
+
+
+detectEditorChanges = function()
   local surfaces = global.editorSurfaces
   
   if not surfaces then
@@ -320,7 +334,7 @@ end
 -- This is the best we can do for detecting when
 -- a player is messing with stuff in the map editor
 -- (Since events don't fire in some editor tabs)
-local function checkEditor()
+checkEditor = function()
   global.editorSurfaces = nil
 
   for _, p in pairs(game.players) do
@@ -339,5 +353,10 @@ local function checkEditor()
   end
 end
 
-
-script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
+local public = {}
+public.checkEditor = checkEditor
+public.detectEditorChanges = detectEditorChanges
+public.ghostRemoved = ghostRemoved
+public.entityRemoved = entityRemoved
+public.CheckSignalInterfaceHasSearchlight = CheckSignalInterfaceHasSearchlight
+return public

@@ -1,3 +1,7 @@
+-- forward declarations
+local CopyCombinatorToSignalInterface
+
+
 local pastableSignals =
 {
   d.circuitSlots.radiusSlot,
@@ -7,24 +11,6 @@ local pastableSignals =
   d.circuitSlots.dirXSlot  ,
   d.circuitSlots.dirYSlot  ,
 }
-
-
-local function CopyCombinatorToSignalInterface(source, dest)
-  local sourceParams = source.parameters
-
-  for _, slotNum in pairs(pastableSignals) do
-    local currSig = dest.get_signal(slotNum)
-    currSig.count = 0
-    
-    for _, p in pairs(sourceParams) do
-      if p.signal.name == currSig.signal.name and p.count then
-        currSig.count = currSig.count + p.count
-      end
-    end
-
-    dest.set_signal(slotNum, currSig)
-  end
-end
 
 
 script.on_event(defines.events.on_entity_settings_pasted,
@@ -63,3 +49,26 @@ function(event)
     end      
   end
 end)
+
+
+CopyCombinatorToSignalInterface = function(source, dest)
+  local sourceParams = source.parameters
+
+  for _, slotNum in pairs(pastableSignals) do
+    local currSig = dest.get_signal(slotNum)
+    currSig.count = 0
+    
+    for _, p in pairs(sourceParams) do
+      if p.signal.name == currSig.signal.name and p.count then
+        currSig.count = currSig.count + p.count
+      end
+    end
+
+    dest.set_signal(slotNum, currSig)
+  end
+end
+
+
+local public = {}
+public.CopyCombinatorToSignalInterface = CopyCombinatorToSignalInterface
+return public
