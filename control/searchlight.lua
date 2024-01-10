@@ -318,5 +318,91 @@ export.Rotated = function(g, light, oldDir, pIndex)
   end
 end
 
+------------------------
+-- Spawner Functions  --
+------------------------
+
+
+local function SpawnAlarmLight(gestalt)
+  if gestalt.light.name == d.searchlightAlarmName then
+    return -- Alarm already raised
+  end
+
+  local base = gestalt.light
+  local raised = base.surface.create_entity{name = d.searchlightAlarmName,
+                                            position = base.position,
+                                            force = base.force,
+                                            fast_replace = false,
+                                            create_build_effect_smoke = false}
+
+  u.CopyTurret(base, raised)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[raised.unit_number] = gestalt
+  script.register_on_entity_destroyed(raised)
+
+  gestalt.light = raised
+  -- Note how many times we've spotted a foe, just for fun
+  raised.kills = raised.kills + 1 
+
+  base.destroy()
+end
+
+
+local function SpawnBaseLight(gestalt)
+  if gestalt.light.name == d.searchlightBaseName then
+    return -- Alarm already cleared
+  end
+
+  local base = gestalt.light
+  local cleared = base.surface.create_entity{name = d.searchlightBaseName,
+                                             position = base.position,
+                                             force = base.force,
+                                             fast_replace = false,
+                                             create_build_effect_smoke = false}
+
+  u.CopyTurret(base, cleared)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[cleared.unit_number] = gestalt
+  script.register_on_entity_destroyed(cleared)
+
+  gestalt.light = cleared
+
+  base.destroy()
+end
+
+
+local function SpawnSafeLight(gestalt)
+  if gestalt.light.name == d.searchlightSafeName then
+    return -- Already in safe mode
+  end
+
+  local base = gestalt.light
+  local safe = base.surface.create_entity{name = d.searchlightSafeName,
+                                          position = base.position,
+                                          force = base.force,
+                                          fast_replace = false,
+                                          create_build_effect_smoke = false}
+
+  u.CopyTurret(base, safe)
+  global.unum_to_g[base.unit_number] = nil
+  global.unum_to_g[safe.unit_number] = gestalt
+  script.register_on_entity_destroyed(safe)
+  
+  gestalt.light = safe
+
+  base.destroy()
+end
+
+
+export.SpawnSpotter = function(sl, turtleForce)
+  local spotter = sl.surface.create_entity{name = d.spotterName,
+                                           position = sl.position,
+                                           force = turtleForce,
+                                           create_build_effect_smoke = false}
+  spotter.destructible = false
+
+  return spotter
+end
+
 
 return export

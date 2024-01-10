@@ -88,6 +88,11 @@ d.spinFrames = 64
 d.spinFactor = (d.spinFrames/d.idleSpinRate)
 -- If spinFactor is set too low (less than 21), Safe Mode might fail to be entered
 
+-- Assume it'll take n ticks at worst for searchlight to spin to direction 0, orientation 0.25
+-- (the facing used when targeting something occupying the exact same-position, such as the spotter)
+-- Setting this too high can break entering safe mode (above d.spinFactor * 0.25, for instance)
+d.turnDelay = 10
+
 
 -------------------------------------------------
 -- Really boring stuff                         --

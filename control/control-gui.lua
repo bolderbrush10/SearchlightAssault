@@ -662,3 +662,51 @@ end
 
 
 return cgui
+
+
+script.on_event(d.openSearchlightGUI, function(event)
+  if event.selected_prototype 
+    and (event.selected_prototype.name == d.searchlightBaseName 
+      or event.selected_prototype.name == d.searchlightSafeName
+      or event.selected_prototype.name == d.searchlightAlarmName
+      or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
+    cgui.OpenSearchlightGUI(event.player_index, event.cursor_position)
+  end
+end)
+
+
+script.on_event(d.closeSearchlightGUI, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(d.closeSearchlightGUIalt, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(defines.events.on_gui_click, function(event)
+  if event.element and event.element.name == d.guiClose then
+    cgui.CloseSearchlightGUI(event.player_index)
+  end
+end)
+
+
+-- Close our GUI if something else opens
+script.on_event(defines.events.on_gui_opened, cgui.CloseSearchlightGUI(event.player_index))
+
+
+script.on_event(defines.events.on_gui_text_changed, function(event)
+  local gAndGUI = global.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
+      or not cgui.validateGUI(gAndGUI[2]) then
+    cgui.CloseSearchlightGUI(event.player_index)
+    return
+  end
+
+  local g = global.gestalts[gAndGUI[1]]
+  cgui.updateOnTextInput(g, gAndGUI[2])
+
+  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+end)
+

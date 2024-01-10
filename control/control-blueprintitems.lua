@@ -1,11 +1,18 @@
 local d = require "sl-defines"
-local u = require "sl-util"
+local u = require "../sl-util"
 
+local ScanBP_StacksAndSwapToBaseType
+local SeekBlueprints
+local CheckForSignalSearchlightParity
+local SwapToBaseEntityType
 
-local export = {}
+-- When the player sets up / configures a blueprint,
+-- convert any boosted / alarm-mode entities
+-- back to their base entity type
+script.on_event(defines.events.on_player_setup_blueprint,      ScanBP_StacksAndSwapToBaseType)
+script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndSwapToBaseType)
 
-
-local function SwapToBaseEntityType(itemStack)
+SwapToBaseEntityType = function(itemStack)
   -- Step 1: Swap the items
   local old = itemStack.get_blueprint_entities()
 
@@ -60,7 +67,7 @@ end
 -- corresponding interface also deleted
 -- (If someone somehow deletes just an interface from a blueprint,
 --  I guess it's okay if we still keep the light?)
-local function CheckForSignalSearchlightParity(itemStack)
+CheckForSignalSearchlightParity = function(itemStack)
   local old = itemStack.get_blueprint_entities()
 
   if not old then
@@ -97,7 +104,7 @@ end
 
 -- Since the on_player_setup_blueprint event doesn't point you to the actual blueprint
 -- which has been setup, we have to trawl all of the player's blueprints recursively.
-local function SeekBlueprints(inventory)
+SeekBlueprints = function(inventory)
   for index = 1, #inventory - inventory.count_empty_stacks() do
     local item = inventory[index]
     if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() then
@@ -111,7 +118,7 @@ local function SeekBlueprints(inventory)
 end
 
 
-export.ScanBP_StacksAndSwapToBaseType = function(event)
+ScanBP_StacksAndSwapToBaseType = function()
   local player = game.players[event.player_index]
   local cstack = player.cursor_stack
   local pstack = player.blueprint_to_setup
@@ -127,24 +134,3 @@ export.ScanBP_StacksAndSwapToBaseType = function(event)
   end
 end
 
-
--- It's possible for the player to right click to destroy a searchlight ghost,
--- but leave behind the signal interface ghost from a blueprint.
--- The best we can do is detect when such ghosts are built and destroy them
--- after the fact, since there doesn't seem to be an event to detect when
--- the player manually clears a ghost via right click.
-export.CheckSignalInterfaceHasSearchlight = function(i)
-  local sLight = i.surface.find_entities_filtered{name={d.searchlightBaseName,d.searchlightAlarmName},
-                                                  position = i.position}
-
-  local slGhost = i.surface.find_entities_filtered{ghost_name={d.searchlightBaseName},
-                                                   position = i.position}
-
-  if not ((sLight  and sLight[1])
-       or (slGhost and slGhost[1])) then
-    i.destroy()
-  end
-end
-
-
-return export

@@ -123,3 +123,27 @@ end
 
 
 return export
+
+
+-- On Force Relationship Changed
+for index, e in pairs
+({
+  defines.events.on_force_cease_fire_changed,
+  defines.events.on_force_friends_changed,
+}) do
+  script.on_event(e,
+  function(event)
+
+    cf.UpdateTForceRelationships(event.force)
+
+  end)
+end
+
+
+-- On Force About To Be Merged
+script.on_event(defines.events.on_forces_merging,
+function(event)
+
+  cf.MigrateTurtleForces(event.source, event.destination)
+
+end)

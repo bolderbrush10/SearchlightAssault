@@ -30,7 +30,7 @@ for gID, g in pairs(global.gestalts) do
 
   -- Changing the prototype type for the spotter will have invalidated all existing spotters,
   -- so spawn in a new one and let the engine handle cleaning up the invalid entities
-  g.spotter = cg.SpawnSpotter(g.light, g.turtle.force)
+  g.spotter = cg.SpawnSpotter(g.light, g.turtle.force) -- TODO !!!!! This function moved. Also check all the other compatability files, too
   
   local c = g.signal.get_control_behavior()
 

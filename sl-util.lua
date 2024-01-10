@@ -1,7 +1,7 @@
 local d = require "sl-defines"
 
 
-local u = {}
+local u = {} -- export functions
 
 
 local pairs = pairs

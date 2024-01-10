@@ -11,7 +11,8 @@ local export = {}
 -- tState states
 export.MOVE = 0
 export.WANDER = 1
-export.FOLLOW = 2 -- TODO Does this state still make sense? We don't chase things after spotting them so much, now...
+export.FOLLOW = 2 -- TODO Does this state still make sense? 
+                  -- We don't chase things after spotting them so much, now...
 
 -- Since the turtle has to 'chase' foes it spots, we don't want it to wander
 -- too close to the max range of the searchlight

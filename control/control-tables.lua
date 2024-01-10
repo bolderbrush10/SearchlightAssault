@@ -1,6 +1,7 @@
 local r  = require "sl-relation"
 
-local cb = require "control-blocklist"
+local bl = require "blocklist"
+
 local cf = require "control-forces"
 local cg = require "control-gestalt"
 local cu = require "control-tunion"
@@ -10,20 +11,20 @@ local rd = require "sl-render"
 local cgui = require "control-gui"
 
 
-local export = {}
+local e = {} -- export functions
 
 
 -- In this init function, we'll declare some variables in the global table -
 -- this lets the game engine track them for us across save/load cycles.
-export.InitTables = function()
+e.InitTables = function()
   ----------------
   -- Sub-Tables --
   ----------------
+  bl.InitTables_Blocklist()
 
   cf.InitTables_Forces()
   cg.InitTables_Gestalt()
   cu.InitTables_Turrets()
-  cb.InitTables_Blocklist()
   rd.InitTables_Render()
   cgui.InitTables_GUI()
 
@@ -42,4 +43,4 @@ export.InitTables = function()
 end
 
 
-return export
+return e
