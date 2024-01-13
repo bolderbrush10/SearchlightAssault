@@ -1,33 +1,33 @@
-local d = require "sl-defines"
-local u = require "sl-util"
+----------------------------------------------------------------
+  local d = require "sl-defines"
+  local u = require "sl-util"
 
-local cf = require "control-forces"
-local rd = require "sl-render"
+  local cf = require "control-forces"
+  local rd = require "sl-render"
 
--- forward declares
-local applySpeedFactor
-local Turtleport
-local RespawnTurtle
-local MakeWanderWaypoint
-local ValidateAndSetParams
-local IssueMoveCommand
-local IssueFollowCommand
-local makeMoveOrders
-local RespawnBrokenTurtle
-local TurtleChase
-local ManualTurtleMove
-local UpdateWanderParams
-local SetDefaultWanderParams
-local WanderTurtle
-local WindupTurtle
-local SpawnTurtle
-local ResumeTurtleDuty
-local TurtleFailed
-local TurtleWaypointReached
-local CheckForTurtleEscape
-
-
-
+  -- forward declarations
+  local applySpeedFactor
+  local Turtleport
+  local RespawnTurtle
+  local MakeWanderWaypoint
+  local ValidateAndSetParams
+  local IssueMoveCommand
+  local IssueFollowCommand
+  local makeMoveOrders
+  local RespawnBrokenTurtle
+  local TurtleChase
+  local ManualTurtleMove
+  local UpdateWanderParams
+  local SetDefaultWanderParams
+  local WanderTurtle
+  local WindupTurtle
+  local SpawnTurtle
+  local ResumeTurtleDuty
+  local TurtleFailed
+  local TurtleWaypointReached
+  local CheckForTurtleEscape
+----------------------------------------------------------------
+  
 -- tState states
 export.MOVE = 0
 export.WANDER = 1
@@ -38,12 +38,7 @@ export.FOLLOW = 2 -- TODO Does this state still make sense?
 -- too close to the max range of the searchlight
 local bufferedRange = d.searchlightRange - (d.searchlightSpotRadius)
 
-------------------------
---  Helper Functions  --
-------------------------
-
-
-makeMoveOrders = function(target, followingEntity, ignoreFoes)
+function makeMoveOrders(target, followingEntity, ignoreFoes)
   local distraction = defines.distraction.by_enemy
 
   if ignoreFoes then
@@ -69,19 +64,19 @@ makeMoveOrders = function(target, followingEntity, ignoreFoes)
 end
 
 
-IssueFollowCommand = function(turtle, entity, ignoreFoes)
+function IssueFollowCommand(turtle, entity, ignoreFoes)
   turtle.set_command(makeMoveOrders(entity, true, ignoreFoes))
 end
 
 
-IssueMoveCommand = function(turtle, waypoint, ignoreFoes)
+function IssueMoveCommand(turtle, waypoint, ignoreFoes)
   turtle.set_command(makeMoveOrders(waypoint, false, ignoreFoes))
 end
 
 
 -- tWanderParams = .radius, .rotation, .min, .max
 -- tAdjParams = .angleStart, .len, .min, .max
-ValidateAndSetParams = function(g, forceRedraw)
+function ValidateAndSetParams(g, forceRedraw)
   g.tAdjParams = {} -- init / reset
 
   -- Blueprints ignore orientation,
@@ -129,7 +124,7 @@ ValidateAndSetParams = function(g, forceRedraw)
 end
 
 
-MakeWanderWaypoint = function(g)
+function MakeWanderWaypoint(g)
   if not g.tAdjParams then
     ValidateAndSetParams(g)
   end
@@ -156,7 +151,7 @@ MakeWanderWaypoint = function(g)
 end
 
 
-RespawnTurtle = function(turtle, position)
+function RespawnTurtle(turtle, position)
   local g = global.unum_to_g[turtle.unit_number]
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
@@ -179,7 +174,7 @@ RespawnTurtle = function(turtle, position)
 end
 
 
-Turtleport = function(turtle, origin, position)
+function Turtleport(turtle, origin, position)
   if not position then
     return
   end
@@ -203,7 +198,7 @@ Turtleport = function(turtle, origin, position)
 end
 
 
-applySpeedFactor = function(base)
+function applySpeedFactor(base)
   return base * (settings.global[d.sweepSpeedSetting].value / 5)
 end
 
@@ -213,7 +208,7 @@ end
 ------------------------
 
 
-CheckForTurtleEscape = function(g)
+function CheckForTurtleEscape(g)
   if not u.WithinRadius(g.turtle.position, g.light.position, d.searchlightRange - 0.2) then
     -- If the searchlight started attacking something else while the turtle was distracted and out of range,
     -- then we may as well sic the turtle on it, too
@@ -230,7 +225,7 @@ CheckForTurtleEscape = function(g)
 end
 
 
-TurtleWaypointReached = function(g)
+function TurtleWaypointReached(g)
   if g.tState == export.WANDER then
     export.WanderTurtle(g)
     -- retarget turtle just in case something happened
@@ -252,7 +247,7 @@ end
 
 
 -- If a turtle fails a command, respawn it and reissue its current command
-TurtleFailed = function(turtle)
+function TurtleFailed(turtle)
   local g = RespawnTurtle(turtle, turtle.position)
 
   if g.tState == export.MOVE then
@@ -266,7 +261,7 @@ TurtleFailed = function(turtle)
 end
 
 
-ResumeTurtleDuty = function(gestalt, turtlePositionToResume)
+function ResumeTurtleDuty(gestalt, turtlePositionToResume)
   local turtle = gestalt.turtle
 
   Turtleport(turtle, gestalt.light.position, turtlePositionToResume)
@@ -281,7 +276,7 @@ end
 
 -- location is expected to be the searchlight's last shooting target,
 -- if it was targeting something.
-SpawnTurtle = function(sl, surface, location)
+function SpawnTurtle(sl, surface, location)
   if location == nil then
     -- Start in front of the turret's base, wrt orientation
     location = u.OrientationToPosition(sl.position, sl.orientation, 3)
@@ -308,7 +303,7 @@ end
 
 -- If we set our first waypoint in the same direction as the searchlight orientation,
 -- but further away, it makes the searchlight appear to "start up"
-WindupTurtle = function(gestalt, turtle)
+function WindupTurtle(gestalt, turtle)
   local c = gestalt.signal.get_control_behavior()
   gestalt.tWanderParams.rotation = c.get_signal(d.circuitSlots.rotateSlot).count
   gestalt.tWanderParams.radius   = c.get_signal(d.circuitSlots.radiusSlot).count
@@ -326,7 +321,7 @@ WindupTurtle = function(gestalt, turtle)
 end
 
 
-WanderTurtle = function(gestalt, waypoint)
+function WanderTurtle(gestalt, waypoint)
   gestalt.tState    = export.WANDER
   gestalt.tCoord    = export.WANDER
 
@@ -339,7 +334,7 @@ WanderTurtle = function(gestalt, waypoint)
 end
 
 
-SetDefaultWanderParams = function(g)
+function SetDefaultWanderParams(g)
   g.tWanderParams =
   {
     radius = 0,
@@ -351,7 +346,7 @@ end
 
 
 -- These parameters will be read in MakeWanderWaypoint
-UpdateWanderParams = function(g, rad, rot, min, max)
+function UpdateWanderParams(g, rad, rot, min, max)
   local change = false
   if not g.tWanderParams then
     export.SetDefaultWanderParams(g)
@@ -376,7 +371,7 @@ UpdateWanderParams = function(g, rad, rot, min, max)
 end
 
 
-ManualTurtleMove = function(gestalt, coord)
+function ManualTurtleMove(gestalt, coord)
   if      gestalt.tState == export.MOVE
       and gestalt.tCoord.x == coord.x
       and gestalt.tCoord.y == coord.y then
@@ -409,7 +404,7 @@ ManualTurtleMove = function(gestalt, coord)
 end
 
 
-TurtleChase = function(gestalt, entity)
+function TurtleChase(gestalt, entity)
   if not entity.valid then
     export.WanderTurtle(gestalt)
     return
@@ -432,7 +427,7 @@ TurtleChase = function(gestalt, entity)
 end
 
 
-RespawnBrokenTurtle = function(g)
+function RespawnBrokenTurtle(g)
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
   if not newT then
@@ -467,25 +462,27 @@ RespawnBrokenTurtle = function(g)
   return true
 end
 
-local public = {}
-public.applySpeedFactor = applySpeedFactor
-public.Turtleport = Turtleport
-public.RespawnTurtle = RespawnTurtle
-public.MakeWanderWaypoint = MakeWanderWaypoint
-public.ValidateAndSetParams = ValidateAndSetParams
-public.IssueMoveCommand = IssueMoveCommand
-public.IssueFollowCommand = IssueFollowCommand
-public.makeMoveOrders = makeMoveOrders
-public.RespawnBrokenTurtle = RespawnBrokenTurtle
-public.TurtleChase = TurtleChase
-public.ManualTurtleMove = ManualTurtleMove
-public.UpdateWanderParams = UpdateWanderParams
-public.SetDefaultWanderParams = SetDefaultWanderParams
-public.WanderTurtle = WanderTurtle
-public.WindupTurtle = WindupTurtle
-public.SpawnTurtle = SpawnTurtle
-public.ResumeTurtleDuty = ResumeTurtleDuty
-public.TurtleFailed = TurtleFailed
-public.TurtleWaypointReached = TurtleWaypointReached
-public.CheckForTurtleEscape = CheckForTurtleEscape
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.applySpeedFactor = applySpeedFactor
+  public.Turtleport = Turtleport
+  public.RespawnTurtle = RespawnTurtle
+  public.MakeWanderWaypoint = MakeWanderWaypoint
+  public.ValidateAndSetParams = ValidateAndSetParams
+  public.IssueMoveCommand = IssueMoveCommand
+  public.IssueFollowCommand = IssueFollowCommand
+  public.makeMoveOrders = makeMoveOrders
+  public.RespawnBrokenTurtle = RespawnBrokenTurtle
+  public.TurtleChase = TurtleChase
+  public.ManualTurtleMove = ManualTurtleMove
+  public.UpdateWanderParams = UpdateWanderParams
+  public.SetDefaultWanderParams = SetDefaultWanderParams
+  public.WanderTurtle = WanderTurtle
+  public.WindupTurtle = WindupTurtle
+  public.SpawnTurtle = SpawnTurtle
+  public.ResumeTurtleDuty = ResumeTurtleDuty
+  public.TurtleFailed = TurtleFailed
+  public.TurtleWaypointReached = TurtleWaypointReached
+  public.CheckForTurtleEscape = CheckForTurtleEscape
+  return public
+----------------------------------------------------------------

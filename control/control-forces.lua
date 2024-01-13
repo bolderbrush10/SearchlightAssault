@@ -1,11 +1,13 @@
-local d = require "sl-defines"
-local u = require "sl-util"
+----------------------------------------------------------------
+  local d = require "sl-defines"
+  local u = require "sl-util"
 
--- forward declarations
-local MigrateTurtleForces
-local UpdateTForceRelationships
-local PrepareTurtleForce
-local InitTables_Forces
+  -- forward declarations
+  local MigrateTurtleForces
+  local UpdateTForceRelationships
+  local PrepareTurtleForce
+  local InitTables_Forces
+----------------------------------------------------------------
 
 
 -- On Force Relationship Changed
@@ -35,7 +37,7 @@ end)
 local export = {}
 
 
-InitTables_Forces = function()
+function InitTables_Forces()
 
   -- Map: Turtle Force Name -> true
   global.sl_force_init = {}
@@ -54,7 +56,7 @@ end
 
 
 -- Called when a new searchlight is created
-PrepareTurtleForce = function(SearchlightForce)
+function PrepareTurtleForce(SearchlightForce)
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
   if global.sl_force_init[turtleForceName] or game.forces[turtleForceName] then
@@ -75,7 +77,7 @@ end
 -- The turtle force should ignore the searchlight's friends and attack its enemies.
 -- Only the searchlight owner should have cease_fire = false with its turtle.
 -- Everyone else should ignore it.
-UpdateTForceRelationships = function(SearchlightForce)
+function UpdateTForceRelationships(SearchlightForce)
 
   if u.EndsWith(SearchlightForce.name, d.turtleForceSuffix) then
     return -- Don't recurse
@@ -130,7 +132,7 @@ UpdateTForceRelationships = function(SearchlightForce)
 end
 
 
-MigrateTurtleForces = function(oldSLForce, newSLForce)
+function MigrateTurtleForces(oldSLForce, newSLForce)
   -- Don't recurse when we migrate turtles
   if u.EndsWith(oldSLForce.name, d.turtleForceSuffix) then
     return
@@ -151,9 +153,12 @@ MigrateTurtleForces = function(oldSLForce, newSLForce)
   game.merge_forces(oldtForceName, newtForceName)
 end
 
-local public = {}
-public.MigrateTurtleForces = MigrateTurtleForces
-public.UpdateTForceRelationships = UpdateTForceRelationships
-public.PrepareTurtleForce = PrepareTurtleForce
-public.InitTables_Forces = InitTables_Forces
-return public
+
+----------------------------------------------------------------
+  local public = {}
+  public.MigrateTurtleForces = MigrateTurtleForces
+  public.UpdateTForceRelationships = UpdateTForceRelationships
+  public.PrepareTurtleForce = PrepareTurtleForce
+  public.InitTables_Forces = InitTables_Forces
+  return public
+----------------------------------------------------------------

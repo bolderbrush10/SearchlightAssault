@@ -1,28 +1,30 @@
-local d = require "sl-defines"
-local u = require "sl-util"
+----------------------------------------------------------------
+  local d = require "sl-defines"
+  local u = require "sl-util"
 
-local ct = require "control-turtle"
-local rd = require "sl-render"
+  local ct = require "control-turtle"
+  local rd = require "sl-render"
 
-local cgui = require "control-gui"
+  local cgui = require "control-gui"
 
--- forward declarations
-local SpawnSafeLight
-local SpawnBaseLight
-local SpawnAlarmLight
-local RotateDirByOne
-local OutputCircuitSignals
-local FindSignalInterface
-local FindSignalInterfacePrebuilt
-local ReviveInterfaceGhosts
-local SpawnSpotter
-local Rotated
-local SpawnSignalInterface
-local ProcessSafeSignals
-local ProcessAlarmRaiseSignals
-local ProcessAlarmClearSignals
-local CheckCircuitConditions
-local ReadWanderParameters
+  -- forward declarations
+  local SpawnSafeLight
+  local SpawnBaseLight
+  local SpawnAlarmLight
+  local RotateDirByOne
+  local OutputCircuitSignals
+  local FindSignalInterface
+  local FindSignalInterfacePrebuilt
+  local ReviveInterfaceGhosts
+  local SpawnSpotter
+  local Rotated
+  local SpawnSignalInterface
+  local ProcessSafeSignals
+  local ProcessAlarmRaiseSignals
+  local ProcessAlarmClearSignals
+  local CheckCircuitConditions
+  local ReadWanderParameters
+----------------------------------------------------------------
 
 
 -- hardcoded name lookup below for an ever-so-slight speedup
@@ -45,7 +47,7 @@ local sigRotate  = {type="virtual", name="sl-rotation"}
 --------------------
 
 
-ReviveInterfaceGhosts = function(sl)
+function ReviveInterfaceGhosts(sl)
   local ghosts = sl.surface.find_entities_filtered{position = sl.position,
                                                    ghost_name = d.searchlightSignalInterfaceName,
                                                    force = sl.force,
@@ -58,7 +60,7 @@ ReviveInterfaceGhosts = function(sl)
 end
 
 
-FindSignalInterfacePrebuilt = function(sl)
+function FindSignalInterfacePrebuilt(sl)
   local prebs = sl.surface.find_entities_filtered{position = sl.position,
                                                   name = d.searchlightSignalInterfaceName,
                                                   force = sl.force,
@@ -72,7 +74,7 @@ FindSignalInterfacePrebuilt = function(sl)
 end
 
 
-FindSignalInterface = function(sl)
+function FindSignalInterface(sl)
 
   -- If there's already a ghost / ghost-built signal interface,
   -- just create / use it before trying to spawn a new one
@@ -89,7 +91,7 @@ FindSignalInterface = function(sl)
 end
 
 
-OutputCircuitSignals = function(g, tick)
+function OutputCircuitSignals(g, tick)
   if g.light.name == d.searchlightAlarmName then
     export.ProcessAlarmRaiseSignals(g)
   else
@@ -103,7 +105,7 @@ end
 -- so we'll roll that back by one unit to get 45 degree changes.
 -- We can compare oldDir to the current direction to figure out
 -- whether the player is rotating clockwise or counterclockwise.
-RotateDirByOne = function(g, light, oldDir)
+function RotateDirByOne(g, light, oldDir)
   local newDir = light.direction
 
   -- Detect clockwise looparound
@@ -136,7 +138,7 @@ end
 --     Events     --
 --------------------
 
-ReadWanderParameters = function(g, i, c)
+function ReadWanderParameters(g, i, c)
   local i = g.signal
   local c = i.get_control_behavior()
 
@@ -164,7 +166,7 @@ end
 
 
 -- Checked only a few times a second
-CheckCircuitConditions = function()
+function CheckCircuitConditions()
   local tick = game.tick
   for gID, g in pairs(global.check_power) do
     if g.light.valid and g.signal.valid then
@@ -179,7 +181,7 @@ end
 
 
 -- Called by CheckCircuitConditions, but also when an alarm is cleared
-ProcessAlarmClearSignals = function(g, tick)
+function ProcessAlarmClearSignals(g, tick)
   local i = g.signal
   local c = i.get_control_behavior()
 
@@ -220,7 +222,7 @@ end
 
 
 -- Called by CheckCircuitConditions, but also when an alarm is raised
-ProcessAlarmRaiseSignals = function(g)
+function ProcessAlarmRaiseSignals(g)
   local i = g.signal
   local c = i.get_control_behavior()
 
@@ -235,7 +237,7 @@ ProcessAlarmRaiseSignals = function(g)
 end
 
 
-ProcessSafeSignals = function(g)
+function ProcessSafeSignals(g)
   local i = g.signal
   local c = i.get_control_behavior()
 
@@ -245,7 +247,7 @@ end
 
 
 -- Called when a new searchlight is built
-SpawnSignalInterface = function(sl)
+function SpawnSignalInterface(sl)
   -- Attempts to find existing / ghost interfaces before spawning a new one
   local i, revived = FindSignalInterface(sl)
 
@@ -280,7 +282,7 @@ SpawnSignalInterface = function(sl)
 end
 
 
-Rotated = function(g, light, oldDir, pIndex)
+function Rotated(g, light, oldDir, pIndex)
   if not g.tWanderParams then
     g.tWanderParams = {}
   end
@@ -339,7 +341,7 @@ end
 ------------------------
 
 
-SpawnAlarmLight = function(gestalt)
+function SpawnAlarmLight(gestalt)
   if gestalt.light.name == d.searchlightAlarmName then
     return -- Alarm already raised
   end
@@ -364,7 +366,7 @@ SpawnAlarmLight = function(gestalt)
 end
 
 
-SpawnBaseLight = function(gestalt)
+function SpawnBaseLight(gestalt)
   if gestalt.light.name == d.searchlightBaseName then
     return -- Alarm already cleared
   end
@@ -387,7 +389,7 @@ SpawnBaseLight = function(gestalt)
 end
 
 
-SpawnSafeLight = function(gestalt)
+function SpawnSafeLight(gestalt)
   if gestalt.light.name == d.searchlightSafeName then
     return -- Already in safe mode
   end
@@ -410,7 +412,7 @@ SpawnSafeLight = function(gestalt)
 end
 
 
-SpawnSpotter = function(sl, turtleForce)
+function SpawnSpotter(sl, turtleForce)
   local spotter = sl.surface.create_entity{name = d.spotterName,
                                            position = sl.position,
                                            force = turtleForce,
@@ -420,21 +422,23 @@ SpawnSpotter = function(sl, turtleForce)
   return spotter
 end
 
-local public = {}
-public.SpawnSafeLight = SpawnSafeLight
-public.SpawnBaseLight = SpawnBaseLight
-public.SpawnAlarmLight = SpawnAlarmLight
-public.RotateDirByOne = RotateDirByOne
-public.OutputCircuitSignals = OutputCircuitSignals
-public.FindSignalInterface = FindSignalInterface
-public.FindSignalInterfacePrebuilt = FindSignalInterfacePrebuilt
-public.ReviveInterfaceGhosts = ReviveInterfaceGhosts
-public.SpawnSpotter = SpawnSpotter
-public.Rotated = Rotated
-public.SpawnSignalInterface = SpawnSignalInterface
-public.ProcessSafeSignals = ProcessSafeSignals
-public.ProcessAlarmRaiseSignals = ProcessAlarmRaiseSignals
-public.ProcessAlarmClearSignals = ProcessAlarmClearSignals
-public.CheckCircuitConditions = CheckCircuitConditions
-public.ReadWanderParameters = ReadWanderParameters
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.SpawnSafeLight = SpawnSafeLight
+  public.SpawnBaseLight = SpawnBaseLight
+  public.SpawnAlarmLight = SpawnAlarmLight
+  public.RotateDirByOne = RotateDirByOne
+  public.OutputCircuitSignals = OutputCircuitSignals
+  public.FindSignalInterface = FindSignalInterface
+  public.FindSignalInterfacePrebuilt = FindSignalInterfacePrebuilt
+  public.ReviveInterfaceGhosts = ReviveInterfaceGhosts
+  public.SpawnSpotter = SpawnSpotter
+  public.Rotated = Rotated
+  public.SpawnSignalInterface = SpawnSignalInterface
+  public.ProcessSafeSignals = ProcessSafeSignals
+  public.ProcessAlarmRaiseSignals = ProcessAlarmRaiseSignals
+  public.ProcessAlarmClearSignals = ProcessAlarmClearSignals
+  public.CheckCircuitConditions = CheckCircuitConditions
+  public.ReadWanderParameters = ReadWanderParameters
+  return public
+----------------------------------------------------------------

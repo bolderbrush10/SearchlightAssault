@@ -1,7 +1,7 @@
-
-
--- forward declarations
-local onTick
+----------------------------------------------------------------
+  -- forward declarations
+  local onTick
+----------------------------------------------------------------
 
 
 -- On Tick
@@ -13,7 +13,7 @@ script.on_nth_tick(30, function(event)
 end)
 
 
-onTick = function(event)
+function onTick(event)
   -- Tiny optimization, reduces calls to global table
   local pairs = pairs
   local tick = event.tick
@@ -56,6 +56,8 @@ onTick = function(event)
   rd.Update(event.tick)
 end
 
-local public = {}
-public.onTick = onTick
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.onTick = onTick
+  return public
+----------------------------------------------------------------

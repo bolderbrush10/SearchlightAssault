@@ -1,10 +1,12 @@
--- forward declarations
-local onChange
+----------------------------------------------------------------
+  -- forward declarations
+  local onChange
+----------------------------------------------------------------
 
 script.on_event(defines.events.on_selected_entity_changed, sc.onChange)
 
 
-onChange = function(event)
+function onChange(event)
   local p = game.players[event.player_index]
   local entity = p.selected
   if entity and entity.force == p.force then
@@ -38,6 +40,9 @@ onChange = function(event)
   end
 end
 
-local public = {}
-public.onChange = onChange
-return public
+
+----------------------------------------------------------------
+  local public = {}
+  public.onChange = onChange
+  return public
+----------------------------------------------------------------

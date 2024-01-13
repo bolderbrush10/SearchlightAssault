@@ -1,21 +1,23 @@
-local r  = require "sl-relation"
+----------------------------------------------------------------
+  local r  = require "sl-relation"
 
-local bl = require "blocklist"
+  local bl = require "blocklist"
 
-local cf = require "control-forces"
-local cg = require "control-gestalt"
-local cu = require "control-tunion"
+  local cf = require "control-forces"
+  local cg = require "control-gestalt"
+  local cu = require "control-tunion"
 
-local rd = require "sl-render"
+  local rd = require "sl-render"
 
-local cgui = require "control-gui"
+  local cgui = require "control-gui"
 
--- forward declarations
-local InitTables
+  -- forward declarations
+  local InitTables
+----------------------------------------------------------------
 
 -- In this init function, we'll declare some variables in the global table -
 -- this lets the game engine track them for us across save/load cycles.
-InitTables = function()
+function InitTables()
   ----------------
   -- Sub-Tables --
   ----------------
@@ -41,6 +43,8 @@ InitTables = function()
   global.GestaltTunionRelations = r.newRelation()
 end
 
-local public = {}
-public.InitTables = InitTables
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.InitTables = InitTables
+  return public
+----------------------------------------------------------------

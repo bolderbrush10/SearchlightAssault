@@ -1,18 +1,20 @@
-local d = require("sl-defines")
-local u = require("sl-util")
+----------------------------------------------------------------
+  local d = require("sl-defines")
+  local u = require("sl-util")
 
--- forward declarations
-local ClearGestaltRender
-local Unrender
-local Render
-local MakeLineParams
-local MakeEdgeParams
-local MakeArcParams
-local FinishParams
-local Update
-local DrawSearchArea
-local DrawTurtlePos
-local InitTables_Render
+  -- forward declarations
+  local ClearGestaltRender
+  local Unrender
+  local Render
+  local MakeLineParams
+  local MakeEdgeParams
+  local MakeArcParams
+  local FinishParams
+  local Update
+  local DrawSearchArea
+  local DrawTurtlePos
+  local InitTables_Render
+----------------------------------------------------------------
 
 
 local wireFrameTTL = 240
@@ -30,7 +32,7 @@ local EDGE_OUTER = 4
 
 
 -- The map helps limit UI redraws for a given searchlight
-InitTables_Render = function()
+function InitTables_Render()
   -- Map: gID -> 0/playerIndex -> {epochTick, {render_id}}
   global.slFOVRenders = {}
 
@@ -39,7 +41,7 @@ InitTables_Render = function()
 end
 
 
-FinishParams = function(target, player, force, t)
+function FinishParams(target, player, force, t)
   t.target = target.position
   t.surface = target.surface
   t.time_to_live = 0 -- live until destroyed
@@ -59,7 +61,7 @@ end
 
 -- angles: {min,   max,   start,   len}
 --          tiles, tiles, radians, radians
-MakeArcParams = function(sl, player, force, wParams)
+function MakeArcParams(sl, player, force, wParams)
   local t =
   {
     color = colorDrab,
@@ -80,7 +82,7 @@ end
 
 -- angles: {min,   max,   start,   len}
 --          tiles, tiles, radians, radians
-MakeEdgeParams = function(sl, player, force, wParams, edgeType)
+function MakeEdgeParams(sl, player, force, wParams, edgeType)
   local t =
   {
     color = colorVibr,
@@ -103,7 +105,7 @@ MakeEdgeParams = function(sl, player, force, wParams, edgeType)
 end
 
 
-MakeLineParams = function(sl, player, force, wParams, edgeType)
+function MakeLineParams(sl, player, force, wParams, edgeType)
   local t =
   {
     color = colorVibr,
@@ -124,7 +126,7 @@ MakeLineParams = function(sl, player, force, wParams, edgeType)
 end
 
 
-Render = function(g, player, force, wParams)
+function Render(g, player, force, wParams)
   local sl = g.light
   local ids = {}
 
@@ -141,7 +143,7 @@ Render = function(g, player, force, wParams)
 end
 
 
-Unrender = function(epochAndRender)
+function Unrender(epochAndRender)
   if epochAndRender and epochAndRender[2] then
     for _, rID in pairs(epochAndRender[2]) do
       rendering.destroy(rID)
@@ -151,7 +153,7 @@ Unrender = function(epochAndRender)
 end
 
 
-ClearGestaltRender = function(gID)
+function ClearGestaltRender(gID)
   local pIndexToEpochAndRenderMap = global.slFOVRenders[gID]
   for pIndex, epochAndRender in pairs(pIndexToEpochAndRenderMap) do
     Unrender(epochAndRender)
@@ -160,7 +162,7 @@ ClearGestaltRender = function(gID)
 end
 
 
-DrawTurtlePos = function(player, g)
+function DrawTurtlePos(player, g)
   if not global.tposRenders[player.index] then
     local rID = rendering.draw_sprite{sprite  = "utility/shoot_cursor_green", 
                                       target  = g.turtle, 
@@ -174,7 +176,7 @@ DrawTurtlePos = function(player, g)
 end
 
 
-DrawSearchArea = function(sl, player, force, forceRedraw)
+function DrawSearchArea(sl, player, force, forceRedraw)
   local g = global.unum_to_g[sl.unit_number]
   if not g or not g.tAdjParams then
     return
@@ -212,7 +214,7 @@ DrawSearchArea = function(sl, player, force, forceRedraw)
 end
 
 
-Update = function(tick)
+function Update(tick)
   local added = {}
 
   for gID, pIndexToEpochAndRenderMap in pairs(global.slFOVRenders) do
@@ -291,16 +293,18 @@ Update = function(tick)
   end
 end
 
-local public = {}
-public.ClearGestaltRender = ClearGestaltRender
-public.Unrender = Unrender
-public.Render = Render
-public.MakeLineParams = MakeLineParams
-public.MakeEdgeParams = MakeEdgeParams
-public.MakeArcParams = MakeArcParams
-public.FinishParams = FinishParams
-public.Update = Update
-public.DrawSearchArea = DrawSearchArea
-public.DrawTurtlePos = DrawTurtlePos
-public.InitTables_Render = InitTables_Render
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.ClearGestaltRender = ClearGestaltRender
+  public.Unrender = Unrender
+  public.Render = Render
+  public.MakeLineParams = MakeLineParams
+  public.MakeEdgeParams = MakeEdgeParams
+  public.MakeArcParams = MakeArcParams
+  public.FinishParams = FinishParams
+  public.Update = Update
+  public.DrawSearchArea = DrawSearchArea
+  public.DrawTurtlePos = DrawTurtlePos
+  public.InitTables_Render = InitTables_Render
+  return public
+----------------------------------------------------------------

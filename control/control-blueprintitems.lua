@@ -1,11 +1,13 @@
-local d = require "sl-defines"
-local u = require "../sl-util"
+----------------------------------------------------------------
+  local d = require "sl-defines"
+  local u = require "../sl-util"
 
--- forward declarations
-local ScanBP_StacksAndSwapToBaseType
-local SeekBlueprints
-local CheckForSignalSearchlightParity
-local SwapToBaseEntityType
+  -- forward declarations
+  local ScanBP_StacksAndSwapToBaseType
+  local SeekBlueprints
+  local CheckForSignalSearchlightParity
+  local SwapToBaseEntityType
+----------------------------------------------------------------
 
 -- When the player sets up / configures a blueprint,
 -- convert any boosted / alarm-mode entities
@@ -13,7 +15,7 @@ local SwapToBaseEntityType
 script.on_event(defines.events.on_player_setup_blueprint,      ScanBP_StacksAndSwapToBaseType)
 script.on_event(defines.events.on_player_configured_blueprint, ScanBP_StacksAndSwapToBaseType)
 
-SwapToBaseEntityType = function(itemStack)
+function SwapToBaseEntityType(itemStack)
   -- Step 1: Swap the items
   local old = itemStack.get_blueprint_entities()
 
@@ -68,7 +70,7 @@ end
 -- corresponding interface also deleted
 -- (If someone somehow deletes just an interface from a blueprint,
 --  I guess it's okay if we still keep the light?)
-CheckForSignalSearchlightParity = function(itemStack)
+function CheckForSignalSearchlightParity(itemStack)
   local old = itemStack.get_blueprint_entities()
 
   if not old then
@@ -105,7 +107,7 @@ end
 
 -- Since the on_player_setup_blueprint event doesn't point you to the actual blueprint
 -- which has been setup, we have to trawl all of the player's blueprints recursively.
-SeekBlueprints = function(inventory)
+function SeekBlueprints(inventory)
   for index = 1, #inventory - inventory.count_empty_stacks() do
     local item = inventory[index]
     if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() then
@@ -119,7 +121,7 @@ SeekBlueprints = function(inventory)
 end
 
 
-ScanBP_StacksAndSwapToBaseType = function(event)
+function ScanBP_StacksAndSwapToBaseType(event)
   local player = game.players[event.player_index]
   local cstack = player.cursor_stack
   local pstack = player.blueprint_to_setup
@@ -136,9 +138,11 @@ ScanBP_StacksAndSwapToBaseType = function(event)
 end
 
 
-local public = {}
-public.ScanBP_StacksAndSwapToBaseType = ScanBP_StacksAndSwapToBaseType
-public.SeekBlueprints = SeekBlueprints
-public.CheckForSignalSearchlightParity = CheckForSignalSearchlightParity
-public.SwapToBaseEntityType = SwapToBaseEntityType
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.ScanBP_StacksAndSwapToBaseType = ScanBP_StacksAndSwapToBaseType
+  public.SeekBlueprints = SeekBlueprints
+  public.CheckForSignalSearchlightParity = CheckForSignalSearchlightParity
+  public.SwapToBaseEntityType = SwapToBaseEntityType
+  return public
+----------------------------------------------------------------

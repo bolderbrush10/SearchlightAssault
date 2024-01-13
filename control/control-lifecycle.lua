@@ -1,11 +1,43 @@
--- forward declarations
-local checkEditor
-local detectEditorChanges
-local ghostRemoved
-local entityRemoved
-local CheckSignalInterfaceHasSearchlight
+----------------------------------------------------------------
+  -- forward declarations
+  local checkEditor
+  local detectEditorChanges
+  local ghostRemoved
+  local entityRemoved
+  local CheckSignalInterfaceHasSearchlight
+----------------------------------------------------------------
 
 
+-- Reference: https://wiki.factorio.com/Military_units_and_structures
+local militaryFilter =
+{
+  {filter = "turret"},
+  {filter = "type", type = "character"},
+  {filter = "type", type = "combat-robot"},
+  {filter = "type", type = "construction-robot"},
+  {filter = "type", type = "logistic-robot"},
+  {filter = "type", type = "land-mine"},
+  {filter = "type", type = "unit"},
+  {filter = "type", type = "artillery-turret"},
+  {filter = "type", type = "radar"},
+  {filter = "type", type = "unit-spawner"},
+  {filter = "type", type = "player-port"},
+  {filter = "type", type = "simple-entity-with-force"},
+}
+
+
+local militaryAndGhostsFilter =
+{
+  {filter = "type", type = "entity-ghost"},
+  table.unpack(militaryFilter)
+}
+
+
+
+-- Weird stuff happens in the editor.
+-- TODO Registering more entities may prevent that weird stuff.
+-- TODO Does registering handle all the cases where an entity is destroyed or mined?
+script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
 
 
 for index, e in pairs
@@ -28,61 +60,11 @@ for index, e in pairs
 end
 
 
---
--- CONSTRUCTIONS
---
-
-
--- Instead of doing this loop, you could pass in an array of events.
--- But you can't use filters with such an array, so loop we shall.
-for index, e in pairs
-({
-  defines.events.on_built_entity,
-  defines.events.on_robot_built_entity,
-  defines.events.script_raised_built,
-  defines.events.script_raised_revive,
-}) do
-  script.on_event(e,
-  function(event)
-
-    local entity = nil
-    if event.created_entity then
-      entity = event.created_entity
-    else
-      entity = event.entity
-    end
-
-    if entity.name == d.searchlightBaseName then
-      cg.SearchlightAdded(entity)
-    elseif entity.name == d.searchlightSignalInterfaceName then
-      ci.CheckSignalInterfaceHasSearchlight(entity)
-    else
-      cu.TurretAdded(entity)
-    end
-
-  end, {
-    {filter = "turret"},
-    {filter = "name", name = d.searchlightSignalInterfaceName}
-  })
-end
-
-
--- Doesn't support filters, so it's on its own here
-script.on_event(defines.events.on_trigger_created_entity,
-function(event)
-
-  if event.entity.name == d.searchlightBaseName then
-    cg.SearchlightAdded(event.entity)
-  elseif event.entity.name == d.searchlightSignalInterfaceName then
-    ci.CheckSignalInterfaceHasSearchlight(entity)
-  elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
-    cu.TurretAdded(event.entity)
-  end
-
-end)
-
 -- Detect destructions registered through LuaBootstrap.register_on_entity_destroyed
 -- TODO Do I need to register ghost-entities for the searchlight & interface, too?
+-- TODO So it looks like registering is king. Detects editor crap, mining, robot mining,
+--      clearing a surface, deleting a surface, deleting a chunk,
+--      everything I can think of in 2 minutes. Let's try doing it everywhere.
 script.on_event(defines.events.on_entity_destroyed, function(event)
   if event.unit_number then
     cg.SearchlightRemoved(event.unit_number)
@@ -139,6 +121,7 @@ function(event)
   end
 end)
 
+
 script.on_event(defines.events.on_pre_ghost_deconstructed,
 function(event)
   ghostRemoved(event.ghost)
@@ -193,34 +176,58 @@ end, {{filter = "type", type = "ammo-turret"},
       {filter = "type", type = "electric-turret"},})
 
 
-script.on_event(defines.events.on_player_toggled_map_editor, checkEditor)
+-- Instead of doing this loop, you could pass in an array of events.
+-- But you can't use filters with such an array, so loop we shall.
+for index, e in pairs
+({
+  defines.events.on_built_entity,
+  defines.events.on_robot_built_entity,
+  defines.events.script_raised_built,
+  defines.events.script_raised_revive,
+}) do
+  script.on_event(e,
+  function(event)
+
+    local entity = nil
+    if event.created_entity then
+      entity = event.created_entity
+    else
+      entity = event.entity
+    end
+
+    if entity.name == d.searchlightBaseName then
+      cg.SearchlightAdded(entity)
+    elseif entity.name == d.searchlightSignalInterfaceName then
+      ci.CheckSignalInterfaceHasSearchlight(entity)
+    else
+      cu.TurretAdded(entity)
+    end
+
+  end, {
+    {filter = "turret"},
+    {filter = "name", name = d.searchlightSignalInterfaceName}
+  })
+end
 
 
--- Reference: https://wiki.factorio.com/Military_units_and_structures
-local militaryFilter =
-{
-  {filter = "turret"},
-  {filter = "type", type = "character"},
-  {filter = "type", type = "combat-robot"},
-  {filter = "type", type = "construction-robot"},
-  {filter = "type", type = "logistic-robot"},
-  {filter = "type", type = "land-mine"},
-  {filter = "type", type = "unit"},
-  {filter = "type", type = "artillery-turret"},
-  {filter = "type", type = "radar"},
-  {filter = "type", type = "unit-spawner"},
-  {filter = "type", type = "player-port"},
-  {filter = "type", type = "simple-entity-with-force"},
-}
+-- Doesn't support filters, so it's on its own here
+script.on_event(defines.events.on_trigger_created_entity,
+function(event)
 
-local militaryAndGhostsFilter =
-{
-  {filter = "type", type = "entity-ghost"},
-  table.unpack(militaryFilter)
-}
+  if event.entity.name == d.searchlightBaseName then
+    cg.SearchlightAdded(event.entity)
+  elseif event.entity.name == d.searchlightSignalInterfaceName then
+    ci.CheckSignalInterfaceHasSearchlight(entity)
+  elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
+    cu.TurretAdded(event.entity)
+  end
+
+end)
 
 
-entityRemoved = function(event)
+
+
+function entityRemoved(event)
   local entity = event.entity
 
   if entity.type == "entity-ghost" and entity.ghost_name == d.searchlightBaseName then
@@ -243,12 +250,13 @@ entityRemoved = function(event)
   end
 end
 
+
 -- It's possible for the player to right click to destroy a searchlight ghost,
 -- but leave behind the signal interface ghost from a blueprint.
 -- The best we can do is detect when such ghosts are built and destroy them
 -- after the fact, since there doesn't seem to be an event to detect when
 -- the player manually clears a ghost via right click.
-CheckSignalInterfaceHasSearchlight = function(i)
+function CheckSignalInterfaceHasSearchlight(i)
   local sLight = i.surface.find_entities_filtered{name={d.searchlightBaseName,d.searchlightAlarmName},
                                                   position = i.position}
 
@@ -261,13 +269,9 @@ CheckSignalInterfaceHasSearchlight = function(i)
   end
 end
 
---
--- DESTRUCTIONS
---
-
 
 -- Make sure all destroyed searchlight ghosts and signal-interface ghosts have their counterparts destroyed too
-ghostRemoved = function(ghost)
+function ghostRemoved(ghost)
   local complements = nil
   if ghost.ghost_name == d.searchlightBaseName then
     complements = ghost.surface.find_entities_filtered{ghost_name = d.searchlightSignalInterfaceName,
@@ -283,8 +287,7 @@ ghostRemoved = function(ghost)
 end
 
 
-
-detectEditorChanges = function()
+function detectEditorChanges()
   local surfaces = global.editorSurfaces
   
   if not surfaces then
@@ -334,7 +337,7 @@ end
 -- This is the best we can do for detecting when
 -- a player is messing with stuff in the map editor
 -- (Since events don't fire in some editor tabs)
-checkEditor = function()
+function checkEditor()
   global.editorSurfaces = nil
 
   for _, p in pairs(game.players) do
@@ -353,10 +356,13 @@ checkEditor = function()
   end
 end
 
-local public = {}
-public.checkEditor = checkEditor
-public.detectEditorChanges = detectEditorChanges
-public.ghostRemoved = ghostRemoved
-public.entityRemoved = entityRemoved
-public.CheckSignalInterfaceHasSearchlight = CheckSignalInterfaceHasSearchlight
-return public
+
+----------------------------------------------------------------
+  local public = {}
+  public.checkEditor = checkEditor
+  public.detectEditorChanges = detectEditorChanges
+  public.ghostRemoved = ghostRemoved
+  public.entityRemoved = entityRemoved
+  public.CheckSignalInterfaceHasSearchlight = CheckSignalInterfaceHasSearchlight
+  return public
+----------------------------------------------------------------

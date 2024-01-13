@@ -1,32 +1,34 @@
-local d  = require "sl-defines"
-local r  = require "sl-relation"
-local u  = require "sl-util"
-local cs = require "control-searchlight"
-local ct = require "control-turtle"
-local cu = require "control-tunion"
-local cgui = require "control-gui"
+----------------------------------------------------------------
+  local d  = require "sl-defines"
+  local r  = require "sl-relation"
+  local u  = require "sl-util"
+  local cs = require "control-searchlight"
+  local ct = require "control-turtle"
+  local cu = require "control-tunion"
+  local cgui = require "control-gui"
 
--- forward declarations
-local EnterSafeModeSync
-local EnterSafeMode
-local EnterWarnMode
-local EnterAlarmMode
-local ResumeTargetingTurtle
-local BoostFriends
-local makeGestalt
-local newGID
-local CheckSync
-local SyncReady
-local CloseWatch
-local OpenWatch
-local FoeSuspected
-local FoeFound
-local SearchlightRemoved
-local SearchlightAdded
-local FoeDied
-local CheckGestaltFoes
-local CheckElectricNeeds
-local InitTables_Gestalt
+  -- forward declarations
+  local EnterSafeModeSync
+  local EnterSafeMode
+  local EnterWarnMode
+  local EnterAlarmMode
+  local ResumeTargetingTurtle
+  local BoostFriends
+  local makeGestalt
+  local newGID
+  local CheckSync
+  local SyncReady
+  local CloseWatch
+  local OpenWatch
+  local FoeSuspected
+  local FoeFound
+  local SearchlightRemoved
+  local SearchlightAdded
+  local FoeDied
+  local CheckGestaltFoes
+  local CheckElectricNeeds
+  local InitTables_Gestalt
+----------------------------------------------------------------
 
 
 -- Tiny optimization, reduces calls to global table
@@ -56,7 +58,7 @@ local next  = next
 ]]--
 
 
-InitTables_Gestalt = function()
+function InitTables_Gestalt()
   global.gID = 0
 
   -- Map: gID -> Gestalt
@@ -83,13 +85,13 @@ end
 ------------------------
 
 
-newGID = function()
+function newGID()
   global.gID = global.gID + 1
   return global.gID
 end
 
 
-makeGestalt = function(sl, sigInterface, turtle, spotter)
+function makeGestalt(sl, sigInterface, turtle, spotter)
   local g = {gID = newGID(),
              light = sl,
              signal = sigInterface,
@@ -110,7 +112,7 @@ makeGestalt = function(sl, sigInterface, turtle, spotter)
 end
 
 
-BoostFriends = function(gestalt, spottedFoe)
+function BoostFriends(gestalt, spottedFoe)
   local gtRelations = global.GestaltTunionRelations
 
   for tID, _ in pairs(r.getRelationLHS(gtRelations, gestalt.gID)) do
@@ -122,13 +124,13 @@ BoostFriends = function(gestalt, spottedFoe)
 end
 
 
-ResumeTargetingTurtle = function(g, turtlePositionToResume)
+function ResumeTargetingTurtle(g, turtlePositionToResume)
   ct.ResumeTurtleDuty(g, turtlePositionToResume)
   g.light.shooting_target = g.turtle
 end
 
 
-EnterAlarmMode = function(g, spottedFoe)
+function EnterAlarmMode(g, spottedFoe)
   SpawnAlarmLight(g)
 
   -- No need to keep firing the spotter while we're targeting a foe
@@ -148,7 +150,7 @@ EnterAlarmMode = function(g, spottedFoe)
 end
 
 
-EnterWarnMode = function(g, escapedFoe)
+function EnterWarnMode(g, escapedFoe)
   if g.light.name == d.searchlightBaseName then
     return -- Alarm already cleared
   end
@@ -187,7 +189,7 @@ EnterWarnMode = function(g, escapedFoe)
 end
 
 
-EnterSafeMode = function(g)
+function EnterSafeMode(g)
   if g.light.name == d.searchlightSafeName then
     return -- Already in safe mode
   end
@@ -205,7 +207,7 @@ EnterSafeMode = function(g)
 end
 
 
-EnterSafeModeSync = function(g)
+function EnterSafeModeSync(g)
   g.turtle.active = false
   local light = g.light
   light.shooting_target = g.spotter
@@ -225,7 +227,7 @@ end
 
 
 -- Wouldn't need this function if there was an event for when entities run out of power
-CheckElectricNeeds = function()
+function CheckElectricNeeds()
   -- Not happy about having to add this loop,
   -- but too many other mods have been blowing up our turtles somehow,
   -- so we have to do this.
@@ -261,7 +263,7 @@ end
 -- and check if any unboosted turrets have been freed up & try boosting them.
 -- (Heavy logic only runs while a foe is spotted, so not too performance-impacting)
 -- (Boosted turrets will seek new gestalt-targets on their own before unboosting)
-CheckGestaltFoes = function()
+function CheckGestaltFoes()
   if r.empty(global.FoeGestaltRelations) then
     return
   end
@@ -302,7 +304,7 @@ end
 ------------------------
 
 
-FoeDied = function(foe)
+function FoeDied(foe)
   local fgRelations = global.FoeGestaltRelations
   local gestalts = global.gestalts
   local gIDs = r.popRelationLHS(fgRelations, foe.unit_number)
@@ -315,7 +317,7 @@ FoeDied = function(foe)
 end
 
 
-SearchlightAdded = function(sl)
+function SearchlightAdded(sl)
   -- Don't allow building searchlights while uninstallation desired
   if settings.global[d.uninstallMod].value then
     sl.destroy()
@@ -347,7 +349,7 @@ SearchlightAdded = function(sl)
 end
 
 
-SearchlightRemoved = function(sl_unit_number, killed, g)
+function SearchlightRemoved(sl_unit_number, killed, g)
   if not g then
     g = global.unum_to_g[sl_unit_number]
   end
@@ -426,7 +428,7 @@ SearchlightRemoved = function(sl_unit_number, killed, g)
 end
 
 
-FoeFound = function(turtle, foe)
+function FoeFound(turtle, foe)
   -- If something's in a vehicle, target the driver instead of the vehicle
   local foeOrDriver = u.CheckEntityOrDriver(foe)
   if not foeOrDriver then
@@ -439,7 +441,7 @@ FoeFound = function(turtle, foe)
 end
 
 
-FoeSuspected = function(spotter)
+function FoeSuspected(spotter)
   local g = global.unum_to_g[spotter.unit_number]
   if not g then
     return
@@ -455,7 +457,7 @@ FoeSuspected = function(spotter)
 end
 
 
-OpenWatch = function(gID)
+function OpenWatch(gID)
   local tickToClose = game.tick + d.searchlightSafeTime
   -- Align to base_picture rotation so we transition smoothly
   tickToClose = tickToClose + (d.spinFactor - (tickToClose % d.spinFactor))
@@ -470,7 +472,7 @@ end
 
 
 -- If our watch has expired with no foes in range, then go back to safe mode
-CloseWatch = function(gIDs)
+function CloseWatch(gIDs)
   local tick = game.tick
 
   for _, gID in pairs(gIDs) do
@@ -495,7 +497,7 @@ CloseWatch = function(gIDs)
 end
 
 
-SyncReady = function(gIDs)
+function SyncReady(gIDs)
   for _, gID in pairs(gIDs) do
     local g = global.gestalts[gID]
 
@@ -508,7 +510,7 @@ end
 
 -- If a searchlight has reached the desired orientation,
 -- disable the spotlight effect from rendering on the spotter, which looks ugly
-CheckSync = function(gIDs)
+function CheckSync(gIDs)
   for _, gID in pairs(gIDs) do
     local g = global.gestalts[gID]
 
@@ -522,25 +524,27 @@ CheckSync = function(gIDs)
   end
 end
 
-local public = {}
-public.EnterSafeModeSync = EnterSafeModeSync
-public.EnterSafeMode = EnterSafeMode
-public.EnterWarnMode = EnterWarnMode
-public.EnterAlarmMode = EnterAlarmMode
-public.ResumeTargetingTurtle = ResumeTargetingTurtle
-public.BoostFriends = BoostFriends
-public.makeGestalt = makeGestalt
-public.newGID = newGID
-public.CheckSync = CheckSync
-public.SyncReady = SyncReady
-public.CloseWatch = CloseWatch
-public.OpenWatch = OpenWatch
-public.FoeSuspected = FoeSuspected
-public.FoeFound = FoeFound
-public.SearchlightRemoved = SearchlightRemoved
-public.SearchlightAdded = SearchlightAdded
-public.FoeDied = FoeDied
-public.CheckGestaltFoes = CheckGestaltFoes
-public.CheckElectricNeeds = CheckElectricNeeds
-public.InitTables_Gestalt = InitTables_Gestalt
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.EnterSafeModeSync = EnterSafeModeSync
+  public.EnterSafeMode = EnterSafeMode
+  public.EnterWarnMode = EnterWarnMode
+  public.EnterAlarmMode = EnterAlarmMode
+  public.ResumeTargetingTurtle = ResumeTargetingTurtle
+  public.BoostFriends = BoostFriends
+  public.makeGestalt = makeGestalt
+  public.newGID = newGID
+  public.CheckSync = CheckSync
+  public.SyncReady = SyncReady
+  public.CloseWatch = CloseWatch
+  public.OpenWatch = OpenWatch
+  public.FoeSuspected = FoeSuspected
+  public.FoeFound = FoeFound
+  public.SearchlightRemoved = SearchlightRemoved
+  public.SearchlightAdded = SearchlightAdded
+  public.FoeDied = FoeDied
+  public.CheckGestaltFoes = CheckGestaltFoes
+  public.CheckElectricNeeds = CheckElectricNeeds
+  public.InitTables_Gestalt = InitTables_Gestalt
+  return public
+----------------------------------------------------------------

@@ -52,7 +52,7 @@ It is advised to add incompatible turrets to the blocklist before placing any se
 To add one or more turrets to the block list:
 - Look up the name of the incompatible turret
   - You can either check the mod's .lua files for the entity prototype, or try using this simple in-game command while hovering your mouse over the turret in question:
-  - /c game.print(game.player.selected.name)
+  - ```/c game.print(game.player.selected.name)```
 - Load your game
 - Pause the game, and enter the Settings menu
 - Enter the Mod Settings menu, then the Map tab
@@ -92,7 +92,7 @@ For more information: https://lua-api.factorio.com/latest/LuaRemote.html
 
 ## Contact
 
-You are welcome to contact me via email: bolderbrush10@gmail.com
+You are welcome to contact me via email: ```bolderbrush10@gmail.com```
 
 If you have any feedback or footage featuring my mod, please share with me! I would love to know what people think.
 
@@ -139,7 +139,7 @@ And in this mod, our turtle, instead of drawing a line, will help render a searc
 I enjoyed the challenge of making this mod with as few changes to the base game as possible,
 but this codebase would be drastically smaller if these issues weren't in place:
 
-0. Developers have stated that they won't allow modifying shooting range during runtime
+0. Developers have stated that they won't allow modifying shooting range during runtime  
    https://forums.factorio.com/viewtopic.php?f=221&t=101902
 0. No mechanism in the API to modify ammo max range during runtime
 0. API doesn't provide some info in on_player_setup_blueprint event for some blueprint use cases
@@ -153,8 +153,8 @@ but this codebase would be drastically smaller if these issues weren't in place:
 0. Command complete events don't fire right when a distraction occurs,
    you have to wait for the distraction to be over to know if your command was interrupted
 0. The mod editor doesn't fire events while creating / destroying from some tabs.
-0. Developers have repeatedly stated they won't do an OnCircuitConnected/Disconnected
-   https://forums.factorio.com/viewtopic.php?p=369587#p369587
+0. Developers have repeatedly stated they won't do an OnCircuitConnected/Disconnected  
+   https://forums.factorio.com/viewtopic.php?p=369587#p369587  
    https://forums.factorio.com/viewtopic.php?p=509912#p509912
 0. Wires also don't trigger OnEntityCreated/Destroyed.
    
@@ -248,10 +248,28 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
   radius_visualization to coexist.
 
 
+- Code Style: What's with the ```-- forward declaration``` and ```local public = {}``` blocks?
+
+  Wherever reasonable, functions should be local to reduce lookups to the global table 
+  (expensive, name collisions, etc).  
+  But sometimes, we want a function to be callable from outside the file which it lives in.  
+  And sometimes, for the sake of organizing functions within a file, 
+  we might want to declare one function above another, 
+  even though it may reference a function that is defined below it.  
+  Well, Lua doesn't really support forward declarations, 
+  and it doesn't really support public/private distinctions.  
+  So, those blocks are part of a style I've developed 
+  which satisifies all these desires, the lua way: by faking half the solution with tables.  
+  This style also has the upside of allowing same-file functions to reference each other without any 
+  "public.functionname" warts, regardless of them ever being made public or not.  
+    
+
+
+
 #### Mod Interface Features / Issues to Request / Report
 
 - [DONE] energy_glow_animation on turrets flickers badly
-         Dev responded and agreed to solve:
+         Dev responded and agreed to solve:  
          https://forums.factorio.com/viewtopic.php?f=7&t=100260&p=554307#p554307
 
 - OnPowerLost/Restored event mod interface request (So we don't have to check power manually in onTick)
@@ -271,5 +289,5 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
   Where it does show up is in the blueprint from the player's inventory,
   which means you have to iterate through the whole inventory
   and hope you can find the right blueprint,
-  AND also deal with the problem of the blueprint being nested in a book...
+  AND also deal with the problem of the blueprint being nested in a book...  
   Related? https://forums.factorio.com/viewtopic.php?t=99845

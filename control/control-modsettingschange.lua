@@ -1,9 +1,11 @@
-local bl = require "blocklist.lua"
+----------------------------------------------------------------
+  local bl = require "blocklist.lua"
 
--- forward declarations
-local handleModSettingsChanges
-local handleUninstall
-local handleConfigurationChanged
+  -- forward declarations
+  local handleModSettingsChanges
+  local handleUninstall
+  local handleConfigurationChanged
+----------------------------------------------------------------
 
 
 
@@ -13,7 +15,7 @@ script.on_event(defines.events.on_runtime_mod_setting_changed, ms.handleModSetti
 script.on_configuration_changed(ms.handleConfigurationChanged)
 
 
-handleUninstall = function()
+function handleUninstall()
   if settings.global[d.uninstallMod].value then
     for _, g in pairs(global.gestalts) do
       local b = g.light;
@@ -33,7 +35,7 @@ handleUninstall = function()
 end
 
 
-handleModSettingsChanges = function(event)
+function handleModSettingsChanges(event)
   -- In case this mod was updated, close any open windows
   -- so we don't have to worry about obsolete GUI
   -- elements being available
@@ -57,7 +59,7 @@ handleModSettingsChanges = function(event)
 end
 
 
-handleConfigurationChanged = function(event)
+function handleConfigurationChanged(event)
   for _, force in pairs(game.forces) do
     cf.UpdateTForceRelationships(force)
   end
@@ -65,8 +67,11 @@ handleConfigurationChanged = function(event)
   handleModSettingsChanges(event)
 end
 
-local public = {}
-public.handleModSettingsChanges = handleModSettingsChanges
-public.handleUninstall = handleUninstall
-public.handleConfigurationChanged = handleConfigurationChanged
-return public
+
+----------------------------------------------------------------
+  local public = {}
+  public.handleModSettingsChanges = handleModSettingsChanges
+  public.handleUninstall = handleUninstall
+  public.handleConfigurationChanged = handleConfigurationChanged
+  return public
+----------------------------------------------------------------

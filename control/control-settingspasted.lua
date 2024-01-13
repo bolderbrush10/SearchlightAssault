@@ -1,5 +1,7 @@
--- forward declarations
-local CopyCombinatorToSignalInterface
+----------------------------------------------------------------
+  -- forward declarations
+  local CopyCombinatorToSignalInterface
+----------------------------------------------------------------
 
 
 local pastableSignals =
@@ -51,7 +53,7 @@ function(event)
 end)
 
 
-CopyCombinatorToSignalInterface = function(source, dest)
+function CopyCombinatorToSignalInterface(source, dest)
   local sourceParams = source.parameters
 
   for _, slotNum in pairs(pastableSignals) do
@@ -69,6 +71,8 @@ CopyCombinatorToSignalInterface = function(source, dest)
 end
 
 
-local public = {}
-public.CopyCombinatorToSignalInterface = CopyCombinatorToSignalInterface
-return public
+----------------------------------------------------------------
+  local public = {}
+  public.CopyCombinatorToSignalInterface = CopyCombinatorToSignalInterface
+  return public
+----------------------------------------------------------------
