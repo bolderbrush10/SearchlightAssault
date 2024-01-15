@@ -18,9 +18,6 @@
 -- In this init function, we'll declare some variables in the global table -
 -- this lets the game engine track them for us across save/load cycles.
 function InitTables()
-  ----------------
-  -- Sub-Tables --
-  ----------------
   bl.InitTables_Blocklist()
 
   cf.InitTables_Forces()
@@ -28,19 +25,6 @@ function InitTables()
   cu.InitTables_Turrets()
   rd.InitTables_Render()
   cgui.InitTables_GUI()
-
-  ----------------
-  --  Relation  --
-  --  Matrices  --
-  ----------------
-
-  -- Foe Unit Number <--> Gestalt ID
-  -- Moods: &entity
-  global.FoeGestaltRelations = r.newRelation()
-
-  -- Gestalt ID <--> Turret Union ID
-  -- Moods: true
-  global.GestaltTunionRelations = r.newRelation()
 end
 
 ----------------------------------------------------------------

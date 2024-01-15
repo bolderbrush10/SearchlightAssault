@@ -1,29 +1,20 @@
 ----------------------------------------------------------------
-  local d = require "sl-defines"
-  local u = require "sl-util"
+  local b = require "bidirmap"
 
-  local ct = require "control-turtle"
-  local rd = require "sl-render"
-
-  local cgui = require "control-gui"
+  local d = require "../sl-defines"
+  local u = require "../sl-util"
 
   -- forward declarations
-  local SpawnSafeLight
-  local SpawnBaseLight
-  local SpawnAlarmLight
-  local RotateDirByOne
-  local OutputCircuitSignals
-  local FindSignalInterface
-  local FindSignalInterfacePrebuilt
-  local ReviveInterfaceGhosts
-  local SpawnSpotter
-  local Rotated
-  local SpawnSignalInterface
-  local ProcessSafeSignals
-  local ProcessAlarmRaiseSignals
-  local ProcessAlarmClearSignals
-  local CheckCircuitConditions
-  local ReadWanderParameters
+  local spawnSpotter
+  local spawnSignalInterface
+  local findSignalInterface
+  local reviveInterfaceGhosts
+  local findSignalInterfacePrebuilt
+  local regLight
+  local deregLight
+  local spawnWarnLight
+  local spawnAlarmLight
+  local spawnSafeLight
 ----------------------------------------------------------------
 
 
@@ -42,222 +33,36 @@ local sigMax     = {type="virtual", name="sl-maximum"}
 local sigRotate  = {type="virtual", name="sl-rotation"}
 
 
---------------------
---  Helper Funcs  --
---------------------
+-- The spotter exists to keep an eye out for enemies in the general vicinity.
+-- If the spotter can't find anything, we can put our searchlight to 'sleep'
+-- and save a ton of CPU usage.
+function spawnSpotter(sl, turtleForce)
+  local spotter = sl.surface.create_entity{name = d.spotterName,
+                                           position = sl.position,
+                                           force = turtleForce,
+                                           create_build_effect_smoke = false}
+  spotter.destructible = false
+  regSupport(spotter)
 
-
-function ReviveInterfaceGhosts(sl)
-  local ghosts = sl.surface.find_entities_filtered{position = sl.position,
-                                                   ghost_name = d.searchlightSignalInterfaceName,
-                                                   force = sl.force,
-                                                   limit = 1}
-
-  if ghosts and ghosts[1] and ghosts[1].valid then
-    ghosts[1].silent_revive{raise_revive = false}
-    -- No point in returning anything, revive()'s return values never seem to work
-  end
+  return spotter
 end
 
 
-function FindSignalInterfacePrebuilt(sl)
-  local prebs = sl.surface.find_entities_filtered{position = sl.position,
-                                                  name = d.searchlightSignalInterfaceName,
-                                                  force = sl.force,
-                                                  limit = 1}
-
-  if prebs and prebs[1] and prebs[1].valid then
-    return prebs[1]
-  end
-
-  return nil
-end
-
-
-function FindSignalInterface(sl)
-
-  -- If there's already a ghost / ghost-built signal interface,
-  -- just create / use it before trying to spawn a new one
-  ReviveInterfaceGhosts(sl)
-  i = FindSignalInterfacePrebuilt(sl)
-  if i then
-    return i, true
-  end
-
-  return sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
-                                  position = sl.position,
-                                  force = sl.force,
-                                  create_build_effect_smoke = false}
-end
-
-
-function OutputCircuitSignals(g, tick)
-  if g.light.name == d.searchlightAlarmName then
-    export.ProcessAlarmRaiseSignals(g)
-  else
-    export.ProcessAlarmClearSignals(g, tick)
-  end  
-end
-
-
--- valid directions: 0 - 7
--- Normally, players rotate things in increments of 2 (90 degrees),
--- so we'll roll that back by one unit to get 45 degree changes.
--- We can compare oldDir to the current direction to figure out
--- whether the player is rotating clockwise or counterclockwise.
-function RotateDirByOne(g, light, oldDir)
-  local newDir = light.direction
-
-  -- Detect clockwise looparound
-  if oldDir == 6 and newDir == 0 then
-    return 45
-  end
-  if oldDir == 7 and newDir == 1 then
-    return 45
-  end
-
-  -- Detect counter-clockwise looparound
-  if oldDir == 0 and newDir == 6 then
-    return -45
-  end
-  if oldDir == 1 and newDir == 7 then
-    return -45
-  end
-
-  -- Detect clockwise procession
-  if oldDir < newDir then
-    return 45
-  end
-
-  -- counterclockwise is the only remaining case
-  return -45
-end
-
-
---------------------
---     Events     --
---------------------
-
-function ReadWanderParameters(g, i, c)
-  local i = g.signal
-  local c = i.get_control_behavior()
-
-  local connected = (i.get_circuit_network(defines.wire_type.red)
-                  or i.get_circuit_network(defines.wire_type.green))
-  local rad = 0
-  local rot = 0
-  local min = 0
-  local max = 0
-
-  if connected then
-    rad = i.get_merged_signal(sigRadius)
-    rot = i.get_merged_signal(sigRotate)
-    min = i.get_merged_signal(sigMin)
-    max = i.get_merged_signal(sigMax)
-  else
-    rad = c.get_signal(d.circuitSlots.radiusSlot).count
-    rot = c.get_signal(d.circuitSlots.rotateSlot).count
-    min = c.get_signal(d.circuitSlots.minSlot).count
-    max = c.get_signal(d.circuitSlots.maxSlot).count
-  end
-
-  ct.UpdateWanderParams(g, rad, rot, min, max)
-end
-
-
--- Checked only a few times a second
-function CheckCircuitConditions()
-  local tick = game.tick
-  for gID, g in pairs(global.check_power) do
-    if g.light.valid and g.signal.valid then
-      if g.light.energy > 0 then
-        OutputCircuitSignals(g, tick)
-      end
-    -- else
-      -- Something nuked our mod's searchlight, we'll clean up in the next on_tick()
-    end
-  end
-end
-
-
--- Called by CheckCircuitConditions, but also when an alarm is cleared
-function ProcessAlarmClearSignals(g, tick)
-  local i = g.signal
-  local c = i.get_control_behavior()
-
-  local warning = 0
-  -- Do I want to use d.searchlightSafeTime? A constant 2 seconds seems good...
-  if g.lastSpotted and (tick - g.lastSpotted) < 120 then
-    warning = 1
-  end
-
-  -- TODO It turns out that setting signals every nth tick is pretty expensive. (reads are fairly cheap)
-  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
-  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = warning})
-
-  local connected = (i.get_circuit_network(defines.wire_type.red)
-                  or i.get_circuit_network(defines.wire_type.green))
-  local x = 0
-  local y = 0
-
-  if connected then
-    x = i.get_merged_signal({type="virtual", name="sl-x"})
-    y = i.get_merged_signal({type="virtual", name="sl-y"})
-  else
-    x = c.get_signal(d.circuitSlots.dirXSlot).count
-    y = c.get_signal(d.circuitSlots.dirYSlot).count
-  end
-
-  if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
-    ct.ManualTurtleMove(g, {x=x, y=y})
-  elseif g.tState ~= ct.FOLLOW then
-    g.tState = ct.WANDER
-  end
-
-  -- TODO This is another expensive function
-  export.ReadWanderParameters(g, i, c)  
-end
-
-
--- Called by CheckCircuitConditions, but also when an alarm is raised
-function ProcessAlarmRaiseSignals(g)
-  local i = g.signal
-  local c = i.get_control_behavior()
-
-  if g.light.shooting_target and g.light.shooting_target.valid then
-    local pos = g.light.shooting_target.position
-    c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = pos.x})
-    c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = pos.y})
-  end
-
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 1})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})  
-end
-
-
-function ProcessSafeSignals(g)
-  local i = g.signal
-  local c = i.get_control_behavior()
-
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
-end
-
-
--- Called when a new searchlight is built
-function SpawnSignalInterface(sl)
+function spawnSignalInterface(sl)
   -- Attempts to find existing / ghost interfaces before spawning a new one
-  local i, revived = FindSignalInterface(sl)
+  local i, revived = findSignalInterface(sl)
 
   i.operable = false
   i.destructible = false
+  regSupport(i)
 
   local c = i.get_control_behavior()
 
   local slRotation = u.clampDeg(360 * sl.orientation, 0, true) -- orientation goes 0.0-1
   if not revived then
+    -- TODO Maybe don't reset these values?
+    --      If something blew up a searchlight, we'd probably want it to keep
+    --      its settings when a bot rebuilds it.
     c.set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
     c.set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = slRotation})
     c.set_signal(d.circuitSlots.minSlot,    {signal = sigMin,     count = 0})
@@ -282,163 +87,139 @@ function SpawnSignalInterface(sl)
 end
 
 
-function Rotated(g, light, oldDir, pIndex)
-  if not g.tWanderParams then
-    g.tWanderParams = {}
-  end
-  if not g.tWanderParams.rotation then
-    g.tWanderParams.rotation = 0
-  end
-
-  local newRot = RotateDirByOne(g, light, oldDir)
-
-  ct.UpdateWanderParams(g, g.tWanderParams.radius, g.tWanderParams.rotation + newRot, 
-                        g.tWanderParams.min, g.tWanderParams.max)
-  rd.DrawSearchArea(g.light, nil, g.light.force)
-
-  local control = g.signal.get_control_behavior()
-  local sig = control.get_signal(d.circuitSlots.rotateSlot)
-
-  -- We'll clamp the value down here so we don't try to factor in circuit signals
-  sig.count = u.clampDeg(sig.count + newRot, 0, true)
-  control.set_signal(d.circuitSlots.rotateSlot, sig)
-
-  -- If there's a direct waypoint set, go ahead and rotate that
-  if     g.tState == ct.MOVE 
-      or g.tWanderParams.radius == 360 
-      or g.tWanderParams.radius == 0 then
-    if g.tState == ct.MOVE then
-      local distSq = u.lensquared(u.TranslateCoordinate(g, g.tCoord), light.position)
-
-      local theta = math.atan2(g.tCoord.y, g.tCoord.x)
-      newCoord = u.ScreenOrientationToPosition(light.position, theta + newRot, math.sqrt(distSq))
-
-      local dirX = control.get_signal(d.circuitSlots.dirXSlot)
-      local dirY = control.get_signal(d.circuitSlots.dirYSlot)
-      dirX.count = newCoord.x - light.position.x
-      dirY.count = newCoord.y - light.position.y
-
-      control.set_signal(d.circuitSlots.dirXSlot, dirX)
-      control.set_signal(d.circuitSlots.dirYSlot, dirY)
-    else
-      local distSq = u.lensquared(g.turtle.position, light.position)
-      local theta = (g.tWanderParams.rotation*math.pi)/180
-
-      newCoord = u.ScreenOrientationToPosition(light.position, theta, math.sqrt(distSq))
-
-      ct.WanderTurtle(g, newCoord)
-    end
+function findSignalInterface(sl)
+  -- If there's already a ghost / ghost-built signal interface,
+  -- just create / use it before trying to spawn a new one
+  reviveInterfaceGhosts(sl)
+  i = findSignalInterfacePrebuilt(sl)
+  if i then
+    return i, true
   end
 
-  local player = game.players[pIndex]
-  if player and player.valid then
-    cgui.Rotated(g) -- Treat rotation like it was a text input
+  return sl.surface.create_entity{name = d.searchlightSignalInterfaceName,
+                                  position = sl.position,
+                                  force = sl.force,
+                                  create_build_effect_smoke = false}
+end
+
+
+function reviveInterfaceGhosts(sl)
+  local ghosts = sl.surface.find_entities_filtered{position = sl.position,
+                                                   ghost_name = d.searchlightSignalInterfaceName,
+                                                   force = sl.force,
+                                                   limit = 1}
+
+  if ghosts and ghosts[1] and ghosts[1].valid then
+    ghosts[1].silent_revive{raise_revive = false}
+    -- No point in returning anything, revive()'s return values never seem to work
   end
 end
 
-------------------------
--- Spawner Functions  --
-------------------------
+
+function findSignalInterfacePrebuilt(sl)
+  local prebs = sl.surface.find_entities_filtered{position = sl.position,
+                                                  name = d.searchlightSignalInterfaceName,
+                                                  force = sl.force,
+                                                  limit = 1}
+
+  if prebs and prebs[1] and prebs[1].valid then
+    return prebs[1]
+  end
+
+  return nil
+end
 
 
-function SpawnAlarmLight(gestalt)
-  if gestalt.light.name == d.searchlightAlarmName then
+function spawnWarnLight(g)
+  if g.light.name == d.searchlightBaseName then
+    return -- Alarm already at Warn
+  end
+
+  local old = g.light
+  local warn = old.surface.create_entity{name = d.searchlightBaseName,
+                                         position = old.position,
+                                         force = old.force,
+                                         create_build_effect_smoke = false}
+
+  u.CopyTurret(old, warn)
+
+  deregLight(g, old)
+  regLight(g, warn)
+
+  old.destroy()
+end
+
+
+function spawnAlarmLight(g)
+  if g.light.name == d.searchlightAlarmName then
     return -- Alarm already raised
   end
 
-  local base = gestalt.light
-  local raised = base.surface.create_entity{name = d.searchlightAlarmName,
-                                            position = base.position,
-                                            force = base.force,
-                                            fast_replace = false,
-                                            create_build_effect_smoke = false}
+  local old = g.light
+  local alarm = old.surface.create_entity{name = d.searchlightAlarmName,
+                                          position = old.position,
+                                          force = old.force,
+                                          create_build_effect_smoke = false}
 
-  u.CopyTurret(base, raised)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[raised.unit_number] = gestalt
-  script.register_on_entity_destroyed(raised)
+  u.CopyTurret(old, alarm)
 
-  gestalt.light = raised
+  deregLight(g, old)
+  regLight(g, warn)
+
+  old.destroy()
+
   -- Note how many times we've spotted a foe, just for fun
-  raised.kills = raised.kills + 1 
-
-  base.destroy()
+  alarm.kills = alarm.kills + 1
 end
 
 
-function SpawnBaseLight(gestalt)
-  if gestalt.light.name == d.searchlightBaseName then
-    return -- Alarm already cleared
-  end
-
-  local base = gestalt.light
-  local cleared = base.surface.create_entity{name = d.searchlightBaseName,
-                                             position = base.position,
-                                             force = base.force,
-                                             fast_replace = false,
-                                             create_build_effect_smoke = false}
-
-  u.CopyTurret(base, cleared)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[cleared.unit_number] = gestalt
-  script.register_on_entity_destroyed(cleared)
-
-  gestalt.light = cleared
-
-  base.destroy()
-end
-
-
-function SpawnSafeLight(gestalt)
-  if gestalt.light.name == d.searchlightSafeName then
+function spawnSafeLight(g)
+  if g.light.name == d.searchlightSafeName then
     return -- Already in safe mode
   end
 
-  local base = gestalt.light
-  local safe = base.surface.create_entity{name = d.searchlightSafeName,
-                                          position = base.position,
-                                          force = base.force,
-                                          fast_replace = false,
-                                          create_build_effect_smoke = false}
+  local old = g.light
+  local safe = old.surface.create_entity{name = d.searchlightSafeName,
+                                         position = old.position,
+                                         force = old.force,
+                                         create_build_effect_smoke = false}
 
-  u.CopyTurret(base, safe)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[safe.unit_number] = gestalt
-  script.register_on_entity_destroyed(safe)
-  
-  gestalt.light = safe
+  u.CopyTurret(old, safe)
 
-  base.destroy()
+  deregLight(g, old)
+  regLight(g, warn)
+
+  old.destroy()
 end
 
 
-function SpawnSpotter(sl, turtleForce)
-  local spotter = sl.surface.create_entity{name = d.spotterName,
-                                           position = sl.position,
-                                           force = turtleForce,
-                                           create_build_effect_smoke = false}
-  spotter.destructible = false
-
-  return spotter
+function regSupport(g, e)
+  global.unum_to_g[e.unit_number] = g
+  b.add(g.unum_x_reg, e.unit_number, script.register_on_entity_destroyed(e), g)
 end
+
+
+function regLight(g, sl)
+  global.unum_to_g[sl.unit_number] = g
+  b.add(g.unum_x_reg, sl.unit_number, script.register_on_entity_destroyed(sl), g)
+
+  g.light = sl
+end
+
+
+function deregLight(g, sl)
+  global.unum_to_g[sl.unit_number] = nil
+  b.removeLHS(g.unum_x_reg, sl.unit_number)
+end
+
 
 ----------------------------------------------------------------
   local public = {}
-  public.SpawnSafeLight = SpawnSafeLight
-  public.SpawnBaseLight = SpawnBaseLight
-  public.SpawnAlarmLight = SpawnAlarmLight
-  public.RotateDirByOne = RotateDirByOne
-  public.OutputCircuitSignals = OutputCircuitSignals
-  public.FindSignalInterface = FindSignalInterface
-  public.FindSignalInterfacePrebuilt = FindSignalInterfacePrebuilt
-  public.ReviveInterfaceGhosts = ReviveInterfaceGhosts
-  public.SpawnSpotter = SpawnSpotter
-  public.Rotated = Rotated
-  public.SpawnSignalInterface = SpawnSignalInterface
-  public.ProcessSafeSignals = ProcessSafeSignals
-  public.ProcessAlarmRaiseSignals = ProcessAlarmRaiseSignals
-  public.ProcessAlarmClearSignals = ProcessAlarmClearSignals
-  public.CheckCircuitConditions = CheckCircuitConditions
-  public.ReadWanderParameters = ReadWanderParameters
+  public.spawnSpotter = spawnSpotter
+  public.spawnSignalInterface = spawnSignalInterface
+  public.regLight = regLight
+  public.spawnWarnLight = spawnWarnLight
+  public.spawnAlarmLight = spawnAlarmLight
+  public.spawnSafeLight = spawnSafeLight
   return public
 ----------------------------------------------------------------

@@ -3,6 +3,8 @@ local pairs = pairs
 local next  = next
 
 
+-- A Relation may model a many-to-many series of relationships.
+
 -- We'll represent the existence of a relationship using a 2D matrix.
 -- For now, to make up for inefficiencies with this implementation,
 -- we'll just try to construct these such that the LHS is more sparse.
@@ -15,8 +17,21 @@ local next  = next
 Relation = {}
 
 
-function Relation.empty(rel)
-  return next(rel.matrix) == nil
+function Relation.new()
+  local rel = {}
+  rel.matrix = {}
+  return rel
+end
+
+
+function Relation.print(rel)
+  game.print("Start-----")
+  for lhsInd, lhs in pairs(rel.matrix) do
+    for rhsInd, rhs in pairs(lhs) do
+      game.print(lhsInd .. ", " .. rhsInd .. ": " .. tostring(rhs))
+    end
+  end
+  game.print("------End\n")
 end
 
 
@@ -58,9 +73,9 @@ end
 
 function Relation.getRelationRHS(rel, rhs)
   local results = {}
-  for lhsInd, lhs in pairs(rel.matrix) do
+  for _, lhs in pairs(rel.matrix) do
     if lhs[rhs] then
-    results[lhsInd] = true
+      table.insert(results, lhs)
     end
   end
   return results
@@ -138,21 +153,8 @@ function Relation.popRelationRHS(rel, rhs)
 end
 
 
-function Relation.print(rel)
-  game.print("Start-----")
-  for lhsInd, lhs in pairs(rel.matrix) do
-    for rhsInd, rhs in pairs(lhs) do
-      game.print(lhsInd .. ", " .. rhsInd .. ": " .. tostring(rhs))
-    end
-  end
-  game.print("------End\n")
-end
-
-
-function Relation.newRelation()
-  local rel = {}
-  rel.matrix = {}
-  return rel
+function Relation.empty(rel)
+  return next(rel.matrix) == nil
 end
 
 

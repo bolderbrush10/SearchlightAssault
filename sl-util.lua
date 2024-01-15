@@ -413,8 +413,8 @@ end
 
 u.CheckEntityOrDriver =
 function(entity)
-  -- Checking for existence of energy_per_hit_point is the best way I can figure out to easily
-  -- check if we're looking at a vehicle
+  -- Checking for existence of energy_per_hit_point seems like the best
+  -- non-optional, non-shared member we can check to see we're looking at a vehicle
   if entity and entity.valid and entity.destructible and entity.prototype.energy_per_hit_point then
     local driver = entity.get_driver()
     if driver and driver.valid and driver.is_entity_with_owner and driver.destructible then
@@ -425,7 +425,6 @@ function(entity)
   else
     return nil
   end
-
 end
 
 u.GetNearestShootableEntFromList =
