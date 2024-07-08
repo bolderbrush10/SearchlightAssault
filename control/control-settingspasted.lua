@@ -1,4 +1,6 @@
 ----------------------------------------------------------------
+  local d = require "sl-defines"
+  
   -- forward declarations
   local CopyCombinatorToSignalInterface
 ----------------------------------------------------------------

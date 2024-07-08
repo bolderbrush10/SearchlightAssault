@@ -1,6 +1,6 @@
 ----------------------------------------------------------------
   local d = require "sl-defines"
-  local u = require "../sl-util"
+  local u = require "sl-util"
 
   -- forward declarations
   local ScanBP_StacksAndSwapToBaseType

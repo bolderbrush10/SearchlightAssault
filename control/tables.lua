@@ -1,15 +1,15 @@
 ----------------------------------------------------------------
-  local r  = require "sl-relation"
+  local r  = require "relation"
 
   local bl = require "blocklist"
 
-  local cf = require "control-forces"
-  local cg = require "control-gestalt"
-  local cu = require "control-tunion"
+  local cf = require "forces"
+  local cg = require "gestalt"
+  local cu = require "turret"
 
-  local rd = require "sl-render"
+  local rd = require "render"
 
-  local cgui = require "control-gui"
+  local cgui = require "gui"
 
   -- forward declarations
   local InitTables

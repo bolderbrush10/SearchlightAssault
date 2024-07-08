@@ -1,5 +1,5 @@
 ----------------------------------------------------------------
-  local bl = require "blocklist.lua"
+  local bl = require "blocklist"
 
   -- forward declarations
   local handleModSettingsChanges
@@ -10,9 +10,9 @@
 
 
 -- On Mod Settings Changed
-script.on_event(defines.events.on_runtime_mod_setting_changed, ms.handleModSettingsChanges)
+script.on_event(defines.events.on_runtime_mod_setting_changed, handleModSettingsChanges)
 -- (Doesn't handle runtime changes or changes from the main menu, unless another mod is enabled/diabled)
-script.on_configuration_changed(ms.handleConfigurationChanged)
+script.on_configuration_changed(handleConfigurationChanged)
 
 
 function handleUninstall()

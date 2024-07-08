@@ -1,8 +1,8 @@
 ----------------------------------------------------------------
-  local ca = require "control-ammo"
+  local ca = require "ammo"
 
+  local r = require "relation"
   local d = require "sl-defines"
-  local r = require "sl-relation"
   local u = require "sl-util"
 
   -- forward declarations
@@ -25,6 +25,9 @@
   local TurretAdded
   local CheckAmmoElectricNeeds
   local InitTables_Turrets
+
+  -- non-functions
+  local binfo
 ----------------------------------------------------------------
 
 
@@ -34,11 +37,11 @@ local BOOSTED       = 1
 local BLOCKED       = 2
 local NOT_BOOSTABLE = 3
 
-export.bInfo = {}
-export.bInfo.UNBOOSTED     = UNBOOSTED
-export.bInfo.BOOSTED       = BOOSTED
-export.bInfo.BLOCKED       = BLOCKED
-export.bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
+bInfo = {}
+bInfo.UNBOOSTED     = UNBOOSTED
+bInfo.BOOSTED       = BOOSTED
+bInfo.BLOCKED       = BLOCKED
+bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
 
 
 ------------------
@@ -544,5 +547,6 @@ end
   public.TurretAdded = TurretAdded
   public.CheckAmmoElectricNeeds = CheckAmmoElectricNeeds
   public.InitTables_Turrets = InitTables_Turrets
+  public.bInfo = bInfo
   return public
 ----------------------------------------------------------------

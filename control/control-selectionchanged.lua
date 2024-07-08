@@ -3,7 +3,7 @@
   local onChange
 ----------------------------------------------------------------
 
-script.on_event(defines.events.on_selected_entity_changed, sc.onChange)
+script.on_event(defines.events.on_selected_entity_changed, onChange)
 
 
 function onChange(event)

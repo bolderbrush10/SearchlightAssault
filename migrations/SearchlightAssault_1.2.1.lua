@@ -3,6 +3,6 @@
 
 global.remoteBlock = {}
 
-local cb = require "control-blocklist"
+local cb = require "control/blocklist"
 
 cb.UpdateBlockList()

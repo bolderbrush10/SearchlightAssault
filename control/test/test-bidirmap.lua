@@ -84,8 +84,6 @@ function BiDirMap.giveLeftMood(bip, lhs)
 end
 
 
-
-
 --print("removeRHS for right value 5555")
 b.removeRHS(bip, 5555)
 --b.print(bip)
@@ -108,7 +106,6 @@ b.removeLHS(bip, 8)
 
 assert(countLHS(bip) == 4, countLHS(bip))
 assert(countRHS(bip) == 4, countRHS(bip))
-
 
 
 --print("removeLHS for right value 8")

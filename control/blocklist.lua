@@ -2,7 +2,7 @@
   local d = require "sl-defines"
   local u = require "sl-util"
 
-  local ct = require "control-tunion"
+  local ct = require "turret"
 
   -- forward declarations
   local RecordChanges
@@ -15,6 +15,8 @@
 ----------------------------------------------------------------
 
 
+-- TODO This needs to live in... on_load or on_init or somewhere else
+remote.remove_interface("sl_blocklist")
 remote.add_interface("sl_blocklist", {add = add_to_blocklist, remove = remove_from_blocklist})
 
 

@@ -1,8 +1,8 @@
 ----------------------------------------------------------------
   local b = require "bidirmap"
 
-  local d = require "../sl-defines"
-  local u = require "../sl-util"
+  local d = require "sl-defines"
+  local u = require "sl-util"
 
   -- forward declarations
   local spawnSpotter
@@ -15,6 +15,7 @@
   local spawnWarnLight
   local spawnAlarmLight
   local spawnSafeLight
+  local CheckCircuitConditions
 ----------------------------------------------------------------
 
 
@@ -42,7 +43,6 @@ function spawnSpotter(sl, turtleForce)
                                            force = turtleForce,
                                            create_build_effect_smoke = false}
   spotter.destructible = false
-  regSupport(spotter)
 
   return spotter
 end
@@ -54,7 +54,6 @@ function spawnSignalInterface(sl)
 
   i.operable = false
   i.destructible = false
-  regSupport(i)
 
   local c = i.get_control_behavior()
 
@@ -193,24 +192,123 @@ function spawnSafeLight(g)
 end
 
 
-function regSupport(g, e)
-  global.unum_to_g[e.unit_number] = g
-  b.add(g.unum_x_reg, e.unit_number, script.register_on_entity_destroyed(e), g)
+-- Checked only a few times a second
+function CheckCircuitConditions()
+  local tick = game.tick
+  for gID, g in pairs(global.check_power) do
+    if g.light.valid and g.signal.valid then
+      if g.light.energy > 0 then
+        OutputCircuitSignals(g, tick)
+      end
+    -- else
+      -- Something nuked our mod's searchlight, we'll clean up in the next on_tick()
+    end
+  end
 end
 
 
-function regLight(g, sl)
-  global.unum_to_g[sl.unit_number] = g
-  b.add(g.unum_x_reg, sl.unit_number, script.register_on_entity_destroyed(sl), g)
-
-  g.light = sl
+function OutputCircuitSignals(g, tick)
+  if g.light.name == d.searchlightAlarmName then
+    ProcessAlarmRaiseSignals(g)
+  else
+    ProcessAlarmClearSignals(g, tick)
+  end  
 end
 
 
-function deregLight(g, sl)
-  global.unum_to_g[sl.unit_number] = nil
-  b.removeLHS(g.unum_x_reg, sl.unit_number)
+-- Called by CheckCircuitConditions, but also when an alarm is cleared
+function ProcessAlarmClearSignals(g, tick)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  local warning = 0
+  -- Do I want to use d.searchlightSafeTime? A constant 2 seconds seems good...
+  if g.lastSpotted and (tick - g.lastSpotted) < 120 then
+    warning = 1
+  end
+
+  -- TODO It turns out that setting signals every nth tick is pretty expensive. (reads are fairly cheap)
+  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
+  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = warning})
+
+  local connected = (i.get_circuit_network(defines.wire_type.red)
+                  or i.get_circuit_network(defines.wire_type.green))
+  local x = 0
+  local y = 0
+
+  if connected then
+    x = i.get_merged_signal({type="virtual", name="sl-x"})
+    y = i.get_merged_signal({type="virtual", name="sl-y"})
+  else
+    x = c.get_signal(d.circuitSlots.dirXSlot).count
+    y = c.get_signal(d.circuitSlots.dirYSlot).count
+  end
+
+  -- TODO
+  -- if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
+  --   ct.ManualTurtleMove(g, {x=x, y=y})
+  -- elseif g.tState ~= ct.FOLLOW then
+  --   g.tState = ct.WANDER
+  -- end
+
+  -- TODO This is another expensive function
+  ReadWanderParameters(g, i, c)  
 end
+
+function ReadWanderParameters(g, i, c)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  local connected = (i.get_circuit_network(defines.wire_type.red)
+                  or i.get_circuit_network(defines.wire_type.green))
+  local rad = 0
+  local rot = 0
+  local min = 0
+  local max = 0
+
+  if connected then
+    rad = i.get_merged_signal(sigRadius)
+    rot = i.get_merged_signal(sigRotate)
+    min = i.get_merged_signal(sigMin)
+    max = i.get_merged_signal(sigMax)
+  else
+    rad = c.get_signal(d.circuitSlots.radiusSlot).count
+    rot = c.get_signal(d.circuitSlots.rotateSlot).count
+    min = c.get_signal(d.circuitSlots.minSlot).count
+    max = c.get_signal(d.circuitSlots.maxSlot).count
+  end
+
+  -- TODO
+  -- ct.UpdateWanderParams(g, rad, rot, min, max)
+end
+
+
+-- Called by CheckCircuitConditions, but also when an alarm is raised
+function ProcessAlarmRaiseSignals(g)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  if g.light.shooting_target and g.light.shooting_target.valid then
+    local pos = g.light.shooting_target.position
+    c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = pos.x})
+    c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = pos.y})
+  end
+
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 1})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})  
+end
+
+
+function ProcessSafeSignals(g)
+  local i = g.signal
+  local c = i.get_control_behavior()
+
+  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
+  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
+end
+
 
 
 ----------------------------------------------------------------
@@ -221,5 +319,6 @@ end
   public.spawnWarnLight = spawnWarnLight
   public.spawnAlarmLight = spawnAlarmLight
   public.spawnSafeLight = spawnSafeLight
+  public.CheckCircuitConditions = CheckCircuitConditions  
   return public
 ----------------------------------------------------------------

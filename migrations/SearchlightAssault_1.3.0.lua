@@ -1,10 +1,10 @@
 local d = require "sl-defines"
 local u = require "sl-util"
 
-local cgui = require "control-gui"
+local cgui = require "control/gui"
 
-local cg = require "control-gestalt"
-local cs = require "control-searchlight"
+local cg = require "control/gestalt"
+local cs = require "control/searchlight"
 
 
 cgui.InitTables_GUI()
@@ -30,7 +30,7 @@ for gID, g in pairs(global.gestalts) do
 
   -- Changing the prototype type for the spotter will have invalidated all existing spotters,
   -- so spawn in a new one and let the engine handle cleaning up the invalid entities
-  g.spotter = cg.SpawnSpotter(g.light, g.turtle.force) -- TODO !!!!! This function moved. Also check all the other compatability files, too
+  g.spotter = cs.spawnSpotter(g.light, g.turtle.force) -- TODO !!!!! This function moved. Also check all the other compatability files, too
   
   local c = g.signal.get_control_behavior()
 
@@ -58,7 +58,7 @@ for gID, g in pairs(global.gestalts) do
   global.unum_to_g[g.turtle.unit_number]  = g
   global.unum_to_g[g.spotter.unit_number] = g
 
-  cg.OpenWatch(g.gID)
+  -- TODO cg.OpenWatch(g.gID)
 end
 
 -- Adjust existing rotation signals forward 90 degrees so that

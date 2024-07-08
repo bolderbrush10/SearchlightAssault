@@ -1,4 +1,4 @@
-----------------------------------------------------------------
+-----------------------------------------------------------------
   local d = require "sl-defines"
   local u = require "sl-util"
 
@@ -25,9 +25,6 @@ function SpawnTurtle(sl, turtleForce, location)
     return nil
   end
   
-  global.unum_to_g[turtle.unit_number] = g -- TODO
-  b.add(g.unum_x_reg, turtle.unit_number, script.register_on_entity_destroyed(turtle), g)
-
   turtle.destructible = false
   return turtle
 end

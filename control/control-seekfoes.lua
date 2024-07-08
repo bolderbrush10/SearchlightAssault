@@ -1,9 +1,18 @@
-
+----------------------------------------------------------------
+  local d = require "sl-defines"
+  local cg = require "gestalt"
+  local cu = require "turret"
+  local ct = require "turtle"
+  
+  -- forward declarations
+----------------------------------------------------------------
 
 -- On Command Completed
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
+  return -- TODO
+--[[
   local g = global.unum_to_g[event.unit_number]
   if not g then
     return
@@ -24,7 +33,7 @@ function(event)
   else
     ct.TurtleWaypointReached(g)
   end
-
+]]--
 end)
 
 

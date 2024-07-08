@@ -1,4 +1,8 @@
 ----------------------------------------------------------------
+  local d = require "sl-defines"
+  local cg = require "gestalt"
+  local cu = require "turret"
+  
   -- forward declarations
   local checkEditor
   local detectEditorChanges
@@ -198,7 +202,7 @@ for index, e in pairs
     if entity.name == d.searchlightBaseName then
       cg.SearchlightAdded(entity)
     elseif entity.name == d.searchlightSignalInterfaceName then
-      ci.CheckSignalInterfaceHasSearchlight(entity)
+      CheckSignalInterfaceHasSearchlight(entity)
     else
       cu.TurretAdded(entity)
     end
@@ -217,7 +221,7 @@ function(event)
   if event.entity.name == d.searchlightBaseName then
     cg.SearchlightAdded(event.entity)
   elseif event.entity.name == d.searchlightSignalInterfaceName then
-    ci.CheckSignalInterfaceHasSearchlight(entity)
+    CheckSignalInterfaceHasSearchlight(entity)
   elseif event.entity.type:match "-turret" and event.entity.type ~= "artillery-turret" then
     cu.TurretAdded(event.entity)
   end

@@ -291,3 +291,6 @@ _scenarios/*_ - The latest revision of the Prison Break game mode. Of note are t
   and hope you can find the right blueprint,
   AND also deal with the problem of the blueprint being nested in a book...  
   Related? https://forums.factorio.com/viewtopic.php?t=99845
+
+- Newly created migration files aren't applied to save files until after the game restarts.  
+  This doesn't seem to be documented anywhere, and makes it annoying to write migration files..

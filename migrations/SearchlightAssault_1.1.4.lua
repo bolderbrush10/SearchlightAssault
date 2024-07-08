@@ -1,4 +1,4 @@
-local ct = require "control-turtle"
+local ct = require "control/turtle"
 global.slFOVRenders = {}
 
 local OwnPositionXSlot = 5
@@ -15,3 +15,6 @@ for gID, g in pairs(global.gestalts) do
   c.set_signal(OwnPositionXSlot, {signal = sigOwnX, count = i.position.x})
   c.set_signal(OwnPositionYSlot, {signal = sigOwnY, count = i.position.y})
 end
+
+
+-- TODO TODO TODO All these migrations can be tested by trying to load the game "sl-playtest-2"/"sl-playtest-3"

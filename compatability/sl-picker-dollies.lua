@@ -1,7 +1,8 @@
 local d = require "sl-defines"
-local r = require "sl-relation"
-local u  = require "sl-util"
-local cu = require "control-tunion"
+local u = require "sl-util"
+
+local r = require "relation"
+local cu = require "turret"
 
 require "util" -- for table.deepcopy
 

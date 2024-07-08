@@ -1,4 +1,4 @@
-local ca = require "control-ammo"
+local ca = require "control/ammo"
 
 local d = require "sl-defines"
 local u = require "sl-util"

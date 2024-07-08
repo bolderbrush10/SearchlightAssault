@@ -43,26 +43,26 @@ script.on_event(d.openSearchlightGUI, function(event)
       or event.selected_prototype.name == d.searchlightSafeName
       or event.selected_prototype.name == d.searchlightAlarmName
       or event.selected_prototype.name == d.searchlightSignalInterfaceName) then
-    cgui.OpenSearchlightGUI(event.player_index, event.cursor_position)
+    OpenSearchlightGUI(event.player_index, event.cursor_position)
   end
 end)
 
 
-script.on_event(d.closeSearchlightGUI, cgui.CloseSearchlightGUI(event.player_index))
+script.on_event(d.closeSearchlightGUI, CloseSearchlightGUI)
 
 
-script.on_event(d.closeSearchlightGUIalt, cgui.CloseSearchlightGUI(event.player_index))
+script.on_event(d.closeSearchlightGUIalt, CloseSearchlightGUI)
 
 
 script.on_event(defines.events.on_gui_click, function(event)
   if event.element and event.element.name == d.guiClose then
-    cgui.CloseSearchlightGUI(event.player_index)
+    CloseSearchlightGUI(event.player_index)
   end
 end)
 
 
 -- Close our GUI if something else opens
-script.on_event(defines.events.on_gui_opened, cgui.CloseSearchlightGUI(event.player_index))
+script.on_event(defines.events.on_gui_opened, CloseSearchlightGUI)
 
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
@@ -71,14 +71,14 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
     return
   end
 
-  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
-      or not cgui.validateGUI(gAndGUI[2]) then
-    cgui.CloseSearchlightGUI(event.player_index)
+  if     not validatePlayerAndLight(event.player_index, gAndGUI[1])
+      or not validateGUI(gAndGUI[2]) then
+    CloseSearchlightGUI(event.player_index)
     return
   end
 
   local g = global.gestalts[gAndGUI[1]]
-  cgui.updateOnTextInput(g, gAndGUI[2])
+  updateOnTextInput(g, gAndGUI[2])
 
   cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
 end)
@@ -585,10 +585,10 @@ function updateOnEntity(g, GUI)
 
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
+      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
         updateEntitiesInGUI(g, gAndGUI[2])
       else
-        cgui.CloseSearchlightGUI(pIndex)
+        CloseSearchlightGUI(pIndex)
       end
     end
   end
@@ -609,10 +609,10 @@ end
 function Rotated(g)
   for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
-      if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
+      if validatePlayerAndLight(pIndex, g.gID) and validateGUI(gAndGUI[2]) then
         updateForRotation(g, gAndGUI[2])
       else
-        cgui.CloseSearchlightGUI(pIndex)
+        CloseSearchlightGUI(pIndex)
       end
     end
   end
@@ -707,15 +707,15 @@ function OpenSearchlightGUI(pIndex, cursor_pos)
   end
 
   -- Make sure we clear any guis for other searchlights we might have open
-  cgui.CloseSearchlightGUI(pIndex)
+  CloseSearchlightGUI(pIndex)
 
   local main_frame = create(main_gui, g)
 
   player.opened = main_frame
   global.pIndexToGUI[pIndex] = {g.gID, main_frame}
 
-  cgui.updateOnTick(g, main_frame)
-  cgui.updateOnEntity(g, main_frame)
+  updateOnTick(g, main_frame)
+  updateOnEntity(g, main_frame)
 
   player.play_sound{path="entity-open/constant-combinator"}
 end
