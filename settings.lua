@@ -95,7 +95,7 @@ data:extend({{
   localised_name        = {"name.searchlight-assault-warn-color"},
   localised_description = {"description.searchlight-assault-warn-color"},
   setting_type = "startup",
-  default_value = d.warnColorDefault,
+  default_value = d.warnColorDefaultValue,
   auto_trim = true,
   allow_blank = true,
 }})
@@ -107,7 +107,7 @@ data:extend({{
   localised_name        = {"name.searchlight-assault-alarm-color"},
   localised_description = {"description.searchlight-assault-alarm-color"},
   setting_type = "startup",
-  default_value = d.alarmColorDefault,
+  default_value = d.alarmColorDefaultValue,
   auto_trim = true,
   allow_blank = true,
 }})
@@ -119,7 +119,7 @@ data:extend({{
   localised_name        = {"name.searchlight-assault-safe-color"},
   localised_description = {"description.searchlight-assault-safe-color"},
   setting_type = "startup",
-  default_value = d.safeColorDefault,
+  default_value = d.safeColorDefaultValue,
   auto_trim = true,
   allow_blank = true,
 }})

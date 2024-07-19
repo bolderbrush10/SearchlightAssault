@@ -140,9 +140,9 @@ d.guiName = "sla_sl_gui_main"
 d.guiClose = "sla_sl_gui_close"
 
 -- Default color settings
-d.warnColorDefault  = "250,190,0,230"
-d.alarmColorDefault = "230,25,25,230"
-d.safeColorDefault  = "20,230,20,230"
+d.warnColorDefaultValue  = "250,190,0,230"
+d.alarmColorDefaultValue = "230,25,25,230"
+d.safeColorDefaultValue  = "20,230,20,230"
 
 
 -- The circuit network slots are used in the hidden-combinator entity 
