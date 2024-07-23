@@ -73,9 +73,9 @@ if [ "${approve,,}" == "y" ]; then #convert user input to lower case with ,,
     rm tempCL.txt
   fi
   cd ..
+  rm C:/Users/ben/AppData/Roaming/Factorio/mods/SearchlightAssault*
   7z a "SearchlightAssault_${newVersion}.zip" SearchlightAssault -r -xr@SearchlightAssault/exclude.txt
   7z rn "SearchlightAssault_${newVersion}.zip" SearchlightAssault SearchlightAssault_${newVersion}
-  rm C:/Users/ben/AppData/Roaming/Factorio/mods/SearchlightAssault*
   cp "SearchlightAssault_${newVersion}.zip" C:/Users/ben/AppData/Roaming/Factorio/mods
   cd SearchlightAssault
   echo "Done"

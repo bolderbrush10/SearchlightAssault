@@ -16,6 +16,7 @@ local function SwapToBaseEntityType(itemStack)
   local new = {}
 
   for index, e in pairs(old) do
+    -- Build the base searchlight instead of the alarm/safe mode versions
     if e.name == d.searchlightAlarmName  then
       e.name = d.searchlightBaseName
     elseif e.name == d.searchlightSafeName  then
@@ -24,35 +25,17 @@ local function SwapToBaseEntityType(itemStack)
       e.name = e.name:gsub(d.boostSuffix, "")
     end
 
-    -- Step 1-A: Resort the items so the signal interface ghost stops appearing on top
+    -- Resort the items so the signal interface ghost stops appearing on top
     if e.name == d.searchlightSignalInterfaceName then
       table.insert(new, 1, e)
     else
       table.insert(new, e)
     end
+
+    game.print(game.tick .. " updated entities")
   end
 
   itemStack.set_blueprint_entities(new)
-
-  -- Step 2: Swap the icons
-  local oldi = itemStack.blueprint_icons
-  local newi = {}
-  for _, icon in pairs(oldi) do
-    if icon.signal.type == "item" and icon.signal.name then
-      if icon.signal.name == d.searchlightAlarmName then
-        icon.signal.name = d.searchlightItemName
-      elseif icon.signal.name == d.searchlightSafeName then
-        icon.signal.name = d.searchlightItemName
-      elseif u.EndsWith(icon.signal.name, d.boostSuffix) then
-        icon.signal.name = icon.signal.name:gsub(d.boostSuffix, "")
-      end
-    end
-    table.insert(newi, icon)
-  end
-
-  if next(newi) then -- protect against deleted icons
-    itemStack.blueprint_icons = newi
-  end
 end
 
 
