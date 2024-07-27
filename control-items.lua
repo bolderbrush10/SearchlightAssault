@@ -31,8 +31,6 @@ local function SwapToBaseEntityType(itemStack)
     else
       table.insert(new, e)
     end
-
-    game.print(game.tick .. " updated entities")
   end
 
   itemStack.set_blueprint_entities(new)
