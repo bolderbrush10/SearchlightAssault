@@ -1,3 +1,5 @@
+local d = require "sl-defines"
+
 local export = {}
 
 
@@ -14,7 +16,7 @@ export.working =
 export.scan =
 {
   filename = "__SearchlightAssault__/audio/sl-scan.ogg",
-  volume = 1.0,
+  volume = (settings.startup[d.audioScanVolumeSetting].value)/100,
   audible_distance_modifier = 1.0,
   fade_in_ticks = 1,
   fade_out_ticks = 20,

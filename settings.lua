@@ -123,3 +123,15 @@ data:extend({{
   auto_trim = true,
   allow_blank = true,
 }})
+
+data:extend({{
+  type = "int-setting",
+  name = d.audioScanVolumeSetting,
+  order="av",
+  localised_name        = {"name.searchlight-assault-setting-audio-scan-volume"},
+  localised_description = {"description.searchlight-assault-setting-audio-scan-volume"},
+  setting_type = "startup",
+  default_value = d.defaultAudioScanVolume,
+  minimum_value = 0,
+  maximum_value = 100,
+}})

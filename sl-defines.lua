@@ -29,6 +29,9 @@ d.searchlightMaxNeighborDistance = d.defaultSearchlightMaxNeighborDistance
 d.sweepSpeedSetting = "searchlight-assault-sweep-speed-factor"
 d.defaultSweepSpeedFactor = 5
 
+d.audioScanVolumeSetting = "searchlight-audio-scan-volume"
+d.defaultAudioScanVolume = 100
+d.audioScanVolume = 100
 
 -- This check is necessary for when this file gets referenced prior to prototype stage
 if settings and settings.startup then
