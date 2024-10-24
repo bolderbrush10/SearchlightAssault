@@ -180,25 +180,14 @@ local baseFrameSeq = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
 
 export.searchlightBaseLayer =
 {
-  filename = "__SearchlightAssault__/graphics/sl-base.png",
+  filename = "__SearchlightAssault__/graphics/sl-base-hr.png",
   priority = "high",
   axially_symmetrical = false,
   frame_count = 1,
-  width = 75,
-  height = 53,
-  scale = 0.66,
+  width = 150,
+  height = 107,
+  scale = 0.33,
   shift = util.by_pixel(0, 15),
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/sl-base-hr.png",
-    priority = "high",
-    axially_symmetrical = false,
-    frame_count = 1,
-    width = 150,
-    height = 107,
-    scale = 0.33,
-    shift = util.by_pixel(0, 15),
-  }
 }
 
 
@@ -236,38 +225,22 @@ export.searchlightBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
 export.searchlightBaseAnimated.frame_count = 8
 export.searchlightBaseAnimated.frame_sequence = baseFrameSeq
 export.searchlightBaseAnimated.line_length = 4
-export.searchlightBaseAnimated.hr_version.frame_count = 8
-export.searchlightBaseAnimated.hr_version.frame_sequence = baseFrameSeq
-export.searchlightBaseAnimated.hr_version.line_length = 4
 
 
 export.searchlightShadowLayer =
 {
-  filename = "__SearchlightAssault__/graphics/sl-shadow.png",
+  filename = "__SearchlightAssault__/graphics/sl-shadow-hr.png",
   priority = "high",
   axially_symmetrical = false,
   draw_as_shadow = true,
   frame_count = 1,
   direction_count = 64,
   line_length = 8,
-  width = 142,
-  height = 53,
-  scale = 0.64,
+  width = 285,
+  height = 107,
+  scale = 0.32,
   shift = util.by_pixel(22, 28),
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/sl-shadow-hr.png",
-    priority = "high",
-    axially_symmetrical = false,
-    draw_as_shadow = true,
-    frame_count = 1,
-    direction_count = 64,
-    line_length = 8,
-    width = 285,
-    height = 107,
-    scale = 0.32,
-    shift = util.by_pixel(22, 28),
-  }
+  apply_projection = false,
 }
 
 
@@ -281,34 +254,19 @@ local maskFlags = { "mask", "low-object" }
 local function make_searchlight(inputs)
 return
 {
-  filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. ".png",
+  filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. "-hr.png",
   priority = "high",
   flags = (inputs.flags or {}),
   apply_runtime_tint = (inputs.runtimeTint or false),
   tint = inputs.tint or nil,
   line_length = 8,
-  width = modelW,
-  height = modelH,
+  width = modelW*2,
+  height = modelH*2,
   frame_count = 1,
   direction_count = 64,
   draw_as_glow = (inputs.drawAsGlow or false),
   shift = util.by_pixel(0, -20),
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/" .. inputs.filename .. "-hr.png",
-    priority = "high",
-    flags = (inputs.flags or {}),
-    apply_runtime_tint = (inputs.runtimeTint or false),
-    tint = inputs.tint or nil,
-    line_length = 8,
-    width = modelW*2,
-    height = modelH*2,
-    frame_count = 1,
-    direction_count = 64,
-    draw_as_glow = (inputs.drawAsGlow or false),
-    shift = util.by_pixel(0, -20),
-    scale = 0.5,
-  }
+  scale = 0.5,
 }
 end
 
@@ -323,11 +281,8 @@ export.searchlightMaskAnimation = make_searchlight{filename="sl-mask", flags=mas
 
 local function make_slow_spin(animation)
   animation.frame_count = d.spinFrames
-  animation.hr_version.frame_count = d.spinFrames
   animation.direction_count = 1
-  animation.hr_version.direction_count = 1
   animation.animation_speed = d.idleSpinRate
-  animation.hr_version.animation_speed = d.idleSpinRate
 end
 
 
@@ -343,55 +298,31 @@ make_slow_spin(export.searchlightSafeShadowAnimated)
 
 export.searchlightSafeBaseAnimated = table.deepcopy(export.searchlightBaseLayer)
 export.searchlightSafeBaseAnimated.repeat_count = d.spinFrames
-export.searchlightSafeBaseAnimated.hr_version.repeat_count = d.spinFrames
 
 ------------------------------------------------------------
 -- Searchlight Remants
 
 export.searchlightRemnants = {layers =
 {{
-  filename = "__SearchlightAssault__/graphics/sl-remnants.png",
+  filename = "__SearchlightAssault__/graphics/sl-remnants-hr.png",
   priority = "high",
   axially_symmetrical = false,
   direction_count = 1,
-  width = 85,
-  height = 112,
-  scale = 0.66,
+  width = 170,
+  height = 224,
+  scale = 0.33,
   shift = util.by_pixel(0, -5),
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/sl-remnants-hr.png",
-    priority = "high",
-    axially_symmetrical = false,
-    direction_count = 1,
-    width = 170,
-    height = 224,
-    scale = 0.33,
-    shift = util.by_pixel(0, -5),
-  }
 },
 {
-  filename = "__SearchlightAssault__/graphics/sl-remnants-shadow.png",
+  filename = "__SearchlightAssault__/graphics/sl-remnants-shadow-hr.png",
   priority = "high",
   draw_as_shadow = true,
   axially_symmetrical = false,
   direction_count = 1,
-  width = 137,
-  height = 52,
-  scale = 0.64,
+  width = 273,
+  height = 104,
+  scale = 0.32,
   shift = util.by_pixel(22, 25),
-  hr_version =
-  {
-    filename = "__SearchlightAssault__/graphics/sl-remnants-shadow-hr.png",
-    priority = "high",
-    draw_as_shadow = true,
-    axially_symmetrical = false,
-    direction_count = 1,
-    width = 273,
-    height = 104,
-    scale = 0.32,
-    shift = util.by_pixel(22, 25),
-  }
 }}}
 
 
@@ -469,6 +400,9 @@ local Light_Layer_Searchlight_NormLight =
   frame_count = slFrameCount,
   frame_sequence = slStaticFrameSeq,
   flags = { "light" },
+  rotate_shift = true,
+  draw_as_glow = true,
+  blend_mode = "multiplicative-with-alpha",
   scale = 2.2 * (settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius),
   tint = warnTint,
 }
@@ -511,49 +445,46 @@ local SearchlightBeamPassive =
   width = 1,
   damage_interval = 1,
   random_end_animation_rotation = false,
-  ground_light_animations =
+  graphics_set =
   {
-    start =
+    ground =
     {
-      layers =
+      render_layer = "light-effect",
+      start =
       {
-        Light_Layer_Searchlight_StartLight,
-      }
-    },
-    ending =
-    {
-      layers =
-      {
-        Light_Layer_Searchlight_NormLight,
-        Light_Layer_Searchlight_DimLight,
-      }
+        layers =
+        {
+          Light_Layer_Searchlight_StartLight,
+        }
+      },
+      ending = (enableHaze and Light_Layer_Searchlight_DayHaze or nil),
     }
   },
-  ending = (enableHaze and Light_Layer_Searchlight_DayHaze or nil),
-  tail = util.empty_sprite(60),
-  head = util.empty_sprite(60),
-  body = util.empty_sprite(60),
 }
 
 
 local SearchlightBeamAlarm = table.deepcopy(SearchlightBeamPassive)
 SearchlightBeamAlarm.name = "searchlight-beam-alarm"
 SearchlightBeamAlarm.ending = (enableHaze and Light_Layer_Searchlight_AlarmHaze or nil)
-SearchlightBeamAlarm.ground_light_animations =
+SearchlightBeamAlarm.graphics_set =
 {
-  start =
+  beam =
   {
-    layers =
+    render_layer = "light-effect",
+    start =
     {
-      Light_Layer_Searchlight_StartLight_Red,
-    }
-  },
-  ending =
-  {
-    layers =
+      layers =
+      {
+        Light_Layer_Searchlight_StartLight_Red,
+      }
+    },
+    ending =
     {
-      Light_Layer_Searchlight_NormLight_Red,
-      Light_Layer_Searchlight_DimLight_Red,
+      layers =
+      {
+        Light_Layer_Searchlight_NormLight_Red,
+        Light_Layer_Searchlight_DimLight_Red,
+      }
     }
   }
 }
@@ -567,23 +498,27 @@ local SearchlightBeamSafe =
   width = 1,
   damage_interval = 1,
   random_end_animation_rotation = false,
-  tail = util.empty_sprite(),
-  head = util.empty_sprite(),
-  body = util.empty_sprite(),
-  ground_light_animations =
+  graphics_set =
   {
-    ending =
+    ground =
     {
-      layers =
+      render_layer = "light-effect",
+      ending =
       {
-        Light_Layer_Searchlight_RingLight,
-      }
+        layers =
+        {
+          Light_Layer_Searchlight_RingLight,
+        }
+      },
     },
-  },
+  }
 }
 
+local sla_circuit_network_panel_black = table.deepcopy(data.raw["utility-sprites"]["default"]["circuit_network_panel"])
+sla_circuit_network_panel_black.invert_colors = true
+sla_circuit_network_panel_black.type = "sprite"
+sla_circuit_network_panel_black.name = "sla_circuit_network_panel_black"
 
-data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, SearchlightBeamSafe, BoostHaze}
-
+data:extend{SearchlightBeamPassive, SearchlightBeamAlarm, SearchlightBeamSafe, BoostHaze, sla_circuit_network_panel_black}
 
 return export

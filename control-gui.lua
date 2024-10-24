@@ -56,18 +56,20 @@ SlotToName[d.circuitSlots.alarmSlot] = "sl-alarm"
 SlotToName[d.circuitSlots.foePositionXSlot] = "foe-x-position"
 SlotToName[d.circuitSlots.foePositionYSlot] = "foe-y-position"
 
+local rwire = defines.wire_connector_id.circuit_red
+local gwire = defines.wire_connector_id.circuit_green
 
 cgui.InitTables_GUI = function()
   -- GUIs are persisted in many circumstances,
   -- so we must manage many aspects of them.
 
   -- Map: playerIndex -> {gestaltID, GUI}
-  global.pIndexToGUI = {}
+  storage.pIndexToGUI = {}
 end
 
 
 local function addSignal(t, g, sigIndex, control)
-  local count = control.get_signal(sigIndex).count
+  local count = control.get_slot(sigIndex).min
 
   local sigName = SlotToName[sigIndex]
 
@@ -112,7 +114,7 @@ local function addContentLeft(contentFlow, g)
                                     direction="vertical", 
                                     style="sla_signal_content_frame",}
 
-  local control = g.signal.get_control_behavior()
+  local control = g.signal.get_control_behavior().sections[1]
 
   local sigDirectTable = addSigTable(leftFrame, "sla-gui-table-guard", {"sla.sla-gui-direct"})
   for _, s in pairs(GuardSignals) do
@@ -180,7 +182,7 @@ local function create(main_gui, g)
                  name = d.guiClose,
                  tooltip = {"gui.close-instruction"},
                  style = "frame_action_button",
-                 sprite = "utility/close_white",
+                 sprite = "utility/close",
                  hovered_sprite = "utility/close_black",
                  clicked_sprite = "utility/close_black",}
 
@@ -243,10 +245,10 @@ end
 
 
 local function updateSignal(t, connected, control, gSig, sigIndex, inputState)
-  local signal = control.get_signal(sigIndex)
-  local sigName = signal.signal.name
-  local localCount = signal.count
-  local networkCount = gSig.get_merged_signal(signal.signal)
+  local signal = control.get_slot(sigIndex)
+  local sigName = signal.value.name
+  local localCount = signal.min
+  local networkCount = gSig.get_signal(signal.value, rwire, gwire)
   local totalCount = localCount
 
   local sigGUI = t["sla_gui_" .. sigName]
@@ -270,10 +272,10 @@ local function updateSignal(t, connected, control, gSig, sigIndex, inputState)
 
   if connected and networkCount ~= localCount then
     totalCount = networkCount
-    css.sprite = "utility/circuit_network_panel_white"
+    css.sprite = "utility/circuit_network_panel"
     css.tooltip = {"sla.sla-gui-sig-modified"}
   elseif connected then
-    css.sprite = "utility/circuit_network_panel_black"
+    css.sprite = "sla_circuit_network_panel_black"
     css.tooltip = {"sla.sla-gui-sig-not-altered"}
   else
     css.sprite = "utility/hand_black"
@@ -286,19 +288,19 @@ end
 
 
 local function updateSigTables(leftFlow, g)
-  local connected = (g.signal.get_circuit_network(defines.wire_type.red)
-                  or g.signal.get_circuit_network(defines.wire_type.green))
+  local connected = (g.signal.get_circuit_network(rwire)
+                  or g.signal.get_circuit_network(gwire))
 
   local gSig = g.signal
-  local control = gSig.get_control_behavior()
-  local xSignal = control.get_signal(d.circuitSlots.dirXSlot)
-  local ySignal = control.get_signal(d.circuitSlots.dirYSlot)
-  local xMerged = gSig.get_merged_signal(xSignal.signal)
-  local yMerged = gSig.get_merged_signal(ySignal.signal)
+  local control = gSig.get_control_behavior().sections[1]
+  local xSignal = control.get_slot(d.circuitSlots.dirXSlot)
+  local ySignal = control.get_slot(d.circuitSlots.dirYSlot)
+  local xMerged = gSig.get_signal(xSignal.value, rwire, gwire)
+  local yMerged = gSig.get_signal(ySignal.value, rwire, gwire)
 
   local disablePatrol = TEMPDISABLED
-  if      xSignal.count == 0 and xMerged == 0 
-      and ySignal.count == 0 and yMerged == 0 then
+  if      xSignal.min == 0 and xMerged == 0 
+      and ySignal.min == 0 and yMerged == 0 then
     disablePatrol = ENABLED
   end
 
@@ -326,15 +328,15 @@ end
 
 
 local function checkStatus(g)
-  local control = g.signal.get_control_behavior()
-  local alarmSig = control.get_signal(d.circuitSlots.alarmSlot)
-  local warnSig = control.get_signal(d.circuitSlots.warningSlot)
+  local control = g.signal.get_control_behavior().sections[1]
+  local alarmSig = control.get_slot(d.circuitSlots.alarmSlot)
+  local warnSig = control.get_slot(d.circuitSlots.warningSlot)
 
   if g.light.energy <= 0 then
     return STATUS_NOPOWER
-  elseif alarmSig.count > 0 then
+  elseif alarmSig.min > 0 then
     return STATUS_ALARM
-  elseif warnSig.count > 0 then
+  elseif warnSig.min > 0 then
     return STATUS_WARN
   else
     return STATUS_SAFE
@@ -417,9 +419,9 @@ end
 local function readSignals(t, control)
   for _, child in pairs(t.children) do
     if child.type == "textfield" then
-      local signal = control.get_signal(child.tags.sigIndex)
-      signal.count = tonumber(child.text) or 0
-      control.set_signal(child.tags.sigIndex, signal)
+      local signal = control.get_slot(child.tags.sigIndex)
+      signal.min = tonumber(child.text) or 0
+      control.set_slot(child.tags.sigIndex, signal)
     end
   end
 end
@@ -446,7 +448,7 @@ local function updateForTextFieldInGUI(g, GUI)
   local contentFlow = GUI.children[2]
   local leftFlow = contentFlow.children[1]
 
-  local control = g.signal.get_control_behavior()
+  local control = g.signal.get_control_behavior().sections[1]
 
   readSignals(leftFlow["sla-gui-table-guard"], control)
   readSignals(leftFlow["sla-gui-table-patrol"], control)
@@ -459,19 +461,19 @@ local function updateForRotation(g, GUI)
   local contentFlow = GUI.children[2]
   local leftFlow = contentFlow.children[1]
 
-  local control = g.signal.get_control_behavior()
-  local rotateSig = control.get_signal(d.circuitSlots.rotateSlot)
+  local control = g.signal.get_control_behavior().sections[1]
+  local rotateSig = control.get_slot(d.circuitSlots.rotateSlot)
 
   local rotateText = leftFlow["sla-gui-table-patrol"]["sla_gui_" .. rotateSig.signal.name]
-  rotateText.text = tostring(rotateSig.count)
+  rotateText.text = tostring(rotateSig.min)
 
-  local dirXSig = control.get_signal(d.circuitSlots.dirXSlot)
-  local dirYSig = control.get_signal(d.circuitSlots.dirYSlot)
+  local dirXSig = control.get_slot(d.circuitSlots.dirXSlot)
+  local dirYSig = control.get_slot(d.circuitSlots.dirYSlot)
 
   local dirXText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirXSig.signal.name]
-  dirXText.text = tostring(dirXSig.count)
+  dirXText.text = tostring(dirXSig.min)
   local dirYText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirYSig.signal.name]
-  dirYText.text = tostring(dirYSig.count)
+  dirYText.text = tostring(dirYSig.min)
 end
 
 
@@ -485,7 +487,7 @@ end
 
 
 cgui.validatePlayerAndLight = function(pIndex, gID)
-  return game.players[pIndex] and game.players[pIndex].valid and global.gestalts[gID]
+  return game.players[pIndex] and game.players[pIndex].valid and storage.gestalts[gID]
 end
 
 
@@ -507,7 +509,7 @@ cgui.updateOnEntity = function(g, GUI)
     return
   end
 
-  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(storage.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
         updateEntitiesInGUI(g, gAndGUI[2])
@@ -521,7 +523,7 @@ end
 
 -- validity checked by caller
 cgui.updateOnTextInput = function(g, GUI)
-  for _, gAndGUI in pairs(global.pIndexToGUI) do
+  for _, gAndGUI in pairs(storage.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       updateForTextFieldInGUI(g, gAndGUI[2])
     end
@@ -531,7 +533,7 @@ end
 
 -- validity checked here
 cgui.Rotated = function(g)
-  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(storage.pIndexToGUI) do
     if g.gID == gAndGUI[1] then
       if cgui.validatePlayerAndLight(pIndex, g.gID) and cgui.validateGUI(gAndGUI[2]) then
         updateForRotation(g, gAndGUI[2])
@@ -567,13 +569,13 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
     return
   end
 
-  local g = global.unum_to_g[sl.unit_number]
+  local g = storage.unum_to_g[sl.unit_number]
 
   if not g then
     return
   end
 
-  if global.pIndexToGUI[pIndex] and global.pIndexToGUI[pIndex][1] == g.gID then
+  if storage.pIndexToGUI[pIndex] and storage.pIndexToGUI[pIndex][1] == g.gID then
     return -- GUI for this searchlight was already open
   end
 
@@ -636,7 +638,7 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   local main_frame = create(main_gui, g)
 
   player.opened = main_frame
-  global.pIndexToGUI[pIndex] = {g.gID, main_frame}
+  storage.pIndexToGUI[pIndex] = {g.gID, main_frame}
 
   cgui.updateOnTick(g, main_frame)
   cgui.updateOnEntity(g, main_frame)
@@ -646,7 +648,7 @@ end
 
 
 cgui.CloseSearchlightGUI = function(pIndex)
-  local pGUI = global.pIndexToGUI[pIndex]
+  local pGUI = storage.pIndexToGUI[pIndex]
 
   local player = game.players[pIndex]
   if player and player.valid and pGUI then
@@ -655,7 +657,7 @@ cgui.CloseSearchlightGUI = function(pIndex)
 
   if pGUI then
     pGUI[2].destroy()
-    global.pIndexToGUI[pIndex] = nil
+    storage.pIndexToGUI[pIndex] = nil
   end
 
 end

@@ -11,9 +11,10 @@ require "util" -- for table.deepcopy and util.empty_sprite(animation_length)
 -- because other mods may have inadvertent access to functions at this step.
 
 
+local noClipMask = {layers={}}
+
 local baseHiddenEntityFlags =
 {
-  "hidden", -- Just hides from some GUIs. Use transparent sprites to bypass rendering
   "no-automated-item-insertion",
   "not-deconstructable",
   "not-flammable",
@@ -38,7 +39,7 @@ local baseIcon = "__SearchlightAssault__/graphics/searchlight-icon.png"
 local controlIcon = "__SearchlightAssault__/graphics/control-icon.png"
 
 -- Searchlight Beam Ammo Category
--- (So we can hides the searchlight beam from showing up in technology effects, etc)
+-- (So we can hide the searchlight beam from showing up in technology effects, etc)
 local sl_ammo = {}
 sl_ammo.name = "sla_beam_ammo"
 sl_ammo.type = "ammo-category"
@@ -62,7 +63,8 @@ sl_b.energy_source =
 }
 sl_b.collision_box = {{ -0.7, -0.7}, {0.7, 0.7}}
 sl_b.selection_box = {{ -1, -1}, {1, 1}}
-sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}} -- Controls drawing-bounds in the info-panel
+sl_b.drawing_box   = {{ -1, -1.3}, {1, 0.7}}
+sl_b.drawing_box_vertical_extension = 0.5  -- Controls drawing-bounds in the info-panel
 sl_b.allow_copy_paste = true
 sl_b.additional_pastable_entities = {d.searchlightAlarmName, d.searchlightSafeName, d.searchlightSignalInterfaceName}
 sl_b.flags = {"placeable-player", "player-creation"}
@@ -81,7 +83,7 @@ sl_b.radius_visualisation_specification =
   draw_on_selection = true,
   sprite = g.radiusSprite,
 }
-sl_b.base_picture = g.searchlightBaseLayer
+sl_b.graphics_set = {base_visualisation = {animation = g.searchlightBaseLayer}}
 sl_b.integration = g.searchlightIntegration
 sl_b.water_reflection = g.searchlightReflection
 sl_b.folded_animation      = {layers = {g.searchlightHeadAnimation, g.searchlightMaskAnimation, g.searchlightShadowLayer}}
@@ -114,6 +116,7 @@ sl_b.attack_parameters =
   -- Higher == smoother
   source_direction_count = 256,
   source_offset = {0, 1.2},
+  ammo_category = "melee",
   ammo_type =
   {
     category = sl_ammo.name,
@@ -137,20 +140,30 @@ sl_b.attack_parameters =
 local sl_f = table.deepcopy(sl_b)
 sl_f.name = d.searchlightSafeName
 sl_f.allow_copy_paste = true
+sl_f.hidden = true
 sl_f.additional_pastable_entities = {d.searchlightBaseName, d.searchlightAlarmName, d.searchlightSignalInterfaceName}
 -- Since folded/prepare/attack_animation don't animate, 
 -- only face toward foes, we'll use the base picture to simulate a radar spin
-sl_f.base_picture = {layers = {g.searchlightSafeHeadAnimated, 
-                               g.searchlightSafeMaskAnimated, 
-                               g.searchlightSafeShadowAnimated, 
-                               g.searchlightSafeBaseAnimated}}
 -- We need to tweak the render layers so the head and mask don't act like they're also on the ground
-sl_f.base_picture_render_layer = "object"
+sl_f.graphics_set = {base_visualisation =
+                      {
+                        {render_layer = "object",
+                         animation = g.searchlightSafeBaseAnimated},
+                        {render_layer = "object",
+                         animation = g.searchlightSafeShadowAnimated},
+                        {render_layer = "object",
+                         animation = g.searchlightSafeHeadAnimated},
+                        {render_layer = "object",
+                         animation = g.searchlightSafeMaskAnimated},
+                        {render_layer = "object",
+                         animation = g.searchlightSafeGlowAnimation},
+                      }
+                    }
 -- energy_glow_animation can actually spin if you let it know it has animation frames,
 -- which is great since it'll stop glowing when the power goes out
-sl_f.energy_glow_animation = g.searchlightSafeGlowAnimation
-sl_f.folded_animation = util.empty_sprite(1)
-sl_f.prepared_animation = util.empty_sprite(1)
+sl_f.energy_glow_animation = nil --g.searchlightSafeGlowAnimation TODO restore / file bug report
+sl_f.folded_animation   = util.empty_sprite(1)
+sl_f.prepared_animation = nil
 -- Little trick to let us blueprint / copy-paste as the base searchlight, instead
 sl_f.placeable_by = {item = d.searchlightItemName, count = 1}
 sl_f.shoot_in_prepare_state = true
@@ -160,6 +173,7 @@ sl_f.attack_parameters =
   type = "beam",
   range = 0.1, -- We don't care about actually hitting anything with this light
   cooldown = attackCooldownDuration,
+  ammo_category = "melee",
   ammo_type =
   {
     category = sl_ammo.name,
@@ -182,10 +196,11 @@ sl_f.attack_parameters =
 local sl_a = table.deepcopy(sl_b)
 sl_a.name = d.searchlightAlarmName
 sl_a.allow_copy_paste = true
+sl_a.hidden = true
 sl_a.additional_pastable_entities = {d.searchlightBaseName, d.searchlightSafeName, d.searchlightSignalInterfaceName}
 sl_a.alert_when_attacking = true
-sl_a.base_picture = g.searchlightBaseAnimated
 sl_a.energy_glow_animation = g.searchlightAlarmGlowAnimation
+sl_a.attack_parameters.ammo_category = "melee"
 sl_a.attack_parameters.ammo_type.action.action_delivery.beam = "searchlight-beam-alarm"
 sl_a.rotation_speed = 1 -- 1 is instant
 -- Little trick to let us blueprint / copy-paste as the base searchlight, instead
@@ -233,6 +248,7 @@ sl_c.energy_source =
 }
 sl_c.render_layer = "object"
 sl_c.flags = hiddenEntityFlags
+sl_c.hidden = true
 sl_c.selectable_in_game = false
 sl_c.is_military_target  = false
 sl_c.allow_run_time_change_of_is_military_target = false
@@ -242,7 +258,7 @@ sl_c.vision_distance = 0
 sl_c.selectable_in_game = false
 sl_c.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 sl_c.collision_box = {{-3, -3}, {3, 0}} -- expand bounding box so we can leech electricity reliably
-sl_c.collision_mask = {} -- enable noclip for pathfinding too
+sl_c.collision_mask = noClipMask -- enable noclip for pathfinding too
 -- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
 sl_c.se_allow_in_space = true
 
@@ -257,12 +273,13 @@ sl_s.icon = baseIcon
 sl_s.icon_size = 64
 sl_s.icon_mipmaps = 4
 sl_s.flags = circuitInterfaceFlags
+sl_s.hidden = true
 sl_s.allow_copy_paste = true
 sl_s.is_military_target  = false
 sl_s.allow_run_time_change_of_is_military_target = false
 sl_s.selection_box = sl_b.selection_box
 sl_s.collision_box = sl_b.collision_box -- Copy the base collision box so we'll be captured in blueprints / deconstruction
-sl_s.collision_mask = {} -- enable noclip for pathfinding too
+sl_s.collision_mask = noClipMask -- enable noclip for pathfinding too
 -- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
 sl_s.se_allow_in_space = true
 sl_s.selection_priority = 1 -- In control.lua we'll detect if the player is holding a wire and fix things there
@@ -314,15 +331,15 @@ t.rotation_speed = 1.0
 -- We don't intend to leave a corpse at all, but if the worst happens...
 t.corpse = "small-scorchmark"
 t.flags = hiddenEntityFlags
+t.hidden = true
 t.selectable_in_game = false
 t.is_military_target  = true
 t.allow_run_time_change_of_is_military_target = false
-t.pollution_to_join_attack = 0
 t.has_belt_immunity = true
 t.selectable_in_game = false
 t.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 t.collision_box = {{-0.1, -0.1}, {0.1, 0.1}}
-t.collision_mask = {}
+t.collision_mask = noClipMask
 -- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
 t.se_allow_in_space = true
 t.ai_settings =
@@ -346,6 +363,7 @@ t.attack_parameters =
   movement_slow_down_factor = 0,
   movement_slow_down_cooldown = 0,
   activation_type = "activate",
+  ammo_category = "melee",
   ammo_type =
   {
     category= "melee",
@@ -377,15 +395,16 @@ local spotter = {}
 spotter.name = d.spotterName
 spotter.type = "turret"
 spotter.flags = hiddenEntityFlags
+spotter.hidden = true
 spotter.selectable_in_game = false
 spotter.is_military_target  = false
 spotter.allow_run_time_change_of_is_military_target = false
 spotter.selection_box = {{-0.0, -0.0}, {0.0, 0.0}}
 spotter.collision_box = {{0, 0}, {0, 0}} -- enable noclip
-spotter.collision_mask = {} -- enable noclip for pathfinding too
+spotter.collision_mask = noClipMask -- enable noclip for pathfinding too
 -- prevent Space Exploration from enabling collision with almost every entity, regardless of being in space
 spotter.se_allow_in_space = true
-spotter.base_picture = util.empty_sprite()
+spotter.graphics_set = {}
 spotter.folded_animation = util.empty_sprite()
 spotter.call_for_help_radius = 1
 spotter.attack_parameters =
@@ -397,6 +416,7 @@ spotter.attack_parameters =
   range_mode = "center-to-center",
   movement_slow_down_factor = 0,
   movement_slow_down_cooldown = 0,
+  ammo_category = "melee",
   ammo_type =
   {
     category= "melee",

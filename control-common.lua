@@ -34,11 +34,11 @@ export.InitTables = function()
 
   -- Foe Unit Number <--> Gestalt ID
   -- Moods: &entity
-  global.FoeGestaltRelations = r.newRelation()
+  storage.FoeGestaltRelations = r.newRelation()
 
   -- Gestalt ID <--> Turret Union ID
   -- Moods: true
-  global.GestaltTunionRelations = r.newRelation()
+  storage.GestaltTunionRelations = r.newRelation()
 end
 
 

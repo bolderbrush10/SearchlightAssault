@@ -36,19 +36,19 @@ export.bInfo.NOT_BOOSTABLE = NOT_BOOSTABLE
 
 export.InitTables_Turrets = function()
 
-  global.tuID = 0
+  storage.tuID = 0
 
   -- Map: turret union ID -> TUnion
-  global.tunions = {}
+  storage.tunions = {}
 
   -- Map: turret unit_number -> TUnion
-  global.tun_to_tunion = {}
+  storage.tun_to_tunion = {}
 
   -- Map: tuID -> TUnion
-  global.boosted_to_tunion = {}
+  storage.boosted_to_tunion = {}
 
   -- Map: turret name -> BOOSTED / UNBOOSTED / BLOCKED / NOT_BOOSTABLE
-  global.boostInfo = {}
+  storage.boostInfo = {}
 
   ca.InitTables_Ammo()
 end
@@ -60,18 +60,18 @@ end
 
 
 local function newTUID()
-  global.tuID = global.tuID + 1
-  return global.tuID
+  storage.tuID = storage.tuID + 1
+  return storage.tuID
 end
 
 
 -- May return nil if turret is not boostable / already has tunion
 local function makeTUnionFromTurret(turret)
-  if global.tun_to_tunion[turret.unit_number] then
+  if storage.tun_to_tunion[turret.unit_number] then
     return nil
   end
 
-  local bInfo = global.boostInfo[turret.name]
+  local bInfo = storage.boostInfo[turret.name]
 
   if bInfo == NOT_BOOSTABLE then
     return nil
@@ -81,28 +81,28 @@ local function makeTUnionFromTurret(turret)
                   turret = turret,
                   boosted = (bInfo == BOOSTED)}
 
-  global.tunions[tunion.tuID] = tunion
-  global.tun_to_tunion[turret.unit_number] = tunion
+  storage.tunions[tunion.tuID] = tunion
+  storage.tun_to_tunion[turret.unit_number] = tunion
 
   return tunion
 end
 
 
 local function getTuID(turret)
-  if not global.tun_to_tunion[turret.unit_number] then
+  if not storage.tun_to_tunion[turret.unit_number] then
     return makeTUnionFromTurret(turret).tuID
   end
 
-  return global.tun_to_tunion[turret.unit_number].tuID
+  return storage.tun_to_tunion[turret.unit_number].tuID
 end
 
 
 local function ReassignTurret(turret, tuID)
-  local gtRelations = global.GestaltTunionRelations
+  local gtRelations = storage.GestaltTunionRelations
   local checkAmmoRange = not settings.global[d.overrideAmmoRange].value
 
   for gID, _ in pairs(r.getRelationRHS(gtRelations, tuID)) do
-    local g = global.gestalts[gID]
+    local g = storage.gestalts[gID]
     -- Check light.valid here because this could get called 
     -- while checking if the map editor failed to fire an event
     if g.light.valid then
@@ -180,9 +180,9 @@ end
 
 local function AmplifyRange(tunion, foe)
   if  tunion.boosted
-     or global.boostInfo[tunion.turret.name] ~= UNBOOSTED
-     or global.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
-     or global.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
+     or storage.boostInfo[tunion.turret.name] ~= UNBOOSTED
+     or storage.boostInfo[tunion.turret.name .. d.boostSuffix] == nil
+     or storage.boostInfo[tunion.turret.name .. d.boostSuffix] ~= BOOSTED then
 
     return
 
@@ -205,8 +205,8 @@ local function AmplifyRange(tunion, foe)
   u.CopyTurret(turret, newT)
   tunion.boosted = true
   tunion.turret  = newT
-  global.tun_to_tunion[newT.unit_number] = tunion
-  global.tun_to_tunion[turret.unit_number] = nil
+  storage.tun_to_tunion[newT.unit_number] = tunion
+  storage.tun_to_tunion[turret.unit_number] = nil
   turret.destroy()
   -- Don't raise script_raised_destroy since we're trying to do a swap-in-place,
   -- not actually "destroy" the entity (We'll put the original back soon
@@ -240,8 +240,8 @@ local function DeamplifyRange(tunion)
   tunion.boosted = false
 
   tunion.turret  = newT
-  global.tun_to_tunion[newT.unit_number] = tunion
-  global.tun_to_tunion[turret.unit_number] = nil
+  storage.tun_to_tunion[newT.unit_number] = tunion
+  storage.tun_to_tunion[turret.unit_number] = nil
   turret.destroy()
   -- As with AmplifyRange(), don't raise script_raised_destroy
 
@@ -260,7 +260,7 @@ end
 export.CheckAmmoElectricNeeds = function()
   local overrideAmmoRange = settings.global[d.overrideAmmoRange].value
 
-  for tuID, tu in pairs(global.boosted_to_tunion) do
+  for tuID, tu in pairs(storage.boosted_to_tunion) do
     local turret = tu.turret
     local foe = tu.foe
     
@@ -292,8 +292,8 @@ end
 
 -- Turret placed
 function export.TurretAdded(turret)
-  if not global.boostInfo[turret.name]
-      or global.boostInfo[turret.name] == NOT_BOOSTABLE then
+  if not storage.boostInfo[turret.name]
+      or storage.boostInfo[turret.name] == NOT_BOOSTABLE then
     return
   end
 
@@ -302,7 +302,7 @@ function export.TurretAdded(turret)
                                                         force=turret.force}
 
   for _, f in pairs(friends) do
-    export.CreateRelationship(global.unum_to_g[f.unit_number], turret)
+    export.CreateRelationship(storage.unum_to_g[f.unit_number], turret)
   end
 end
 
@@ -310,12 +310,12 @@ end
 -- Turret removed
 function export.TurretRemoved(turret, tu)
   if turret then
-    if not global.tun_to_tunion[turret.unit_number] then
+    if not storage.tun_to_tunion[turret.unit_number] then
       return -- We weren't tracking this turret, so nothing to do
     end
 
-    local tu = global.tun_to_tunion[turret.unit_number]
-    r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
+    local tu = storage.tun_to_tunion[turret.unit_number]
+    r.removeRelationRHS(storage.GestaltTunionRelations, tu.tuID)
 
     if tu.control then
       tu.control.destroy()
@@ -325,9 +325,9 @@ function export.TurretRemoved(turret, tu)
       rendering.destroy(tu.boostAnimation)
     end
 
-    global.tun_to_tunion[turret.unit_number] = nil
-    global.boosted_to_tunion[tu.tuID] = nil
-    global.tunions[tu.tuID] = nil
+    storage.tun_to_tunion[turret.unit_number] = nil
+    storage.boosted_to_tunion[tu.tuID] = nil
+    storage.tunions[tu.tuID] = nil
   else
     if not tu then
       return
@@ -335,7 +335,7 @@ function export.TurretRemoved(turret, tu)
 
     -- Some workarounds are necessary here
     -- to deal with the map editor not firing events
-    r.removeRelationRHS(global.GestaltTunionRelations, tu.tuID)
+    r.removeRelationRHS(storage.GestaltTunionRelations, tu.tuID)
 
     if tu.control then
       tu.control.destroy()
@@ -346,21 +346,21 @@ function export.TurretRemoved(turret, tu)
     end
 
     -- TODO I don't remember writing these 3 loops of garbage
-    for lhs, rhs in pairs(global.tun_to_tunion) do
+    for lhs, rhs in pairs(storage.tun_to_tunion) do
       if rhs.tuID == tu.tuID then
-        global.tun_to_tunion[lhs] = nil
+        storage.tun_to_tunion[lhs] = nil
       end
     end
 
-    for lhs, rhs in pairs(global.boosted_to_tunion) do
+    for lhs, rhs in pairs(storage.boosted_to_tunion) do
       if rhs.tuID == tu.tuID then
-        global.boosted_to_tunion[lhs] = nil
+        storage.boosted_to_tunion[lhs] = nil
       end
     end
 
-    for lhs, rhs in pairs(global.tunions) do
+    for lhs, rhs in pairs(storage.tunions) do
       if rhs.tuID == tu.tuID then
-        global.tunions[lhs] = nil
+        storage.tunions[lhs] = nil
       end
     end
   end
@@ -371,25 +371,25 @@ end
 -- (Unboosting would happen in FoeGestaltRelationRemoved)
 function export.GestaltRemoved(tuID)
   -- Check if we still have a relationship with anything before removing this tunion
-  if next(r.getRelationRHS(global.GestaltTunionRelations, tuID)) then
+  if next(r.getRelationRHS(storage.GestaltTunionRelations, tuID)) then
     return
   end
 
-  local tu = global.tunions[tuID]
+  local tu = storage.tunions[tuID]
 
   if tu.control then
     tu.control.destroy()
     tu.control = nil
   end
 
-  global.tun_to_tunion[tu.turret.unit_number] = nil
-  global.boosted_to_tunion[tu.tuID] = nil
-  global.tunions[tu.tuID] = nil
+  storage.tun_to_tunion[tu.turret.unit_number] = nil
+  storage.boosted_to_tunion[tu.tuID] = nil
+  storage.tunions[tu.tuID] = nil
 end
 
 
 export.IsBoostableAndInRange = function(g, t)
-  if global.boostInfo[t.name] == NOT_BOOSTABLE then
+  if storage.boostInfo[t.name] == NOT_BOOSTABLE then
     return false
 
   -- Fine-tune checking that a turret is in a good range to be neighbors
@@ -409,7 +409,7 @@ export.CreateRelationship = function(g, t)
   end
 
   local tuID = getTuID(t)
-  r.setRelation(global.GestaltTunionRelations, g.gID, tuID)
+  r.setRelation(storage.GestaltTunionRelations, g.gID, tuID)
 end
 
 
@@ -421,11 +421,11 @@ end
 export.FoeGestaltRelationRemoved = function(g, tIDlist)
 
   if tIDlist == nil then
-    tIDlist = r.getRelationLHS(global.GestaltTunionRelations, g.gID)
+    tIDlist = r.getRelationLHS(storage.GestaltTunionRelations, g.gID)
   end
 
   for tuID, _ in pairs(tIDlist) do
-    local tu = global.tunions[tuID]
+    local tu = storage.tunions[tuID]
     if not ReassignTurret(tu.turret, tuID) then
       export.UnBoost(tu)
     end
@@ -437,7 +437,7 @@ end
 -- Called when the override max ammo range mod setting changes to false,
 -- which means we need to find and swap back any taboo'd ammo
 export.RespectMaxAmmoRange = function()
-  for _, tu in pairs(global.boosted_to_tunion) do
+  for _, tu in pairs(storage.boosted_to_tunion) do
     local turret = tu.turret
     local entities = turret.surface.find_entities_filtered{position=turret.position,
                                                            radius=4
@@ -463,11 +463,11 @@ end
 -- the range-boosted turret in CheckAmmoElectricNeeds()
 -- via onTick()
 export.Boost = function(tunion, foe)
-  if global.boosted_to_tunion[tunion.tuID] or global.boostInfo[tunion.turret.name] == BLOCKED then
+  if storage.boosted_to_tunion[tunion.tuID] or storage.boostInfo[tunion.turret.name] == BLOCKED then
     return
   end
 
-  global.boosted_to_tunion[tunion.tuID] = tunion
+  storage.boosted_to_tunion[tunion.tuID] = tunion
   tunion.control = SpawnControl(tunion.turret)
   
   if settings.global[d.enableBoostGlow].value then
@@ -479,11 +479,11 @@ end
 
 
 export.UnBoost = function(tunion)
-  if not global.boosted_to_tunion[tunion.tuID] then
+  if not storage.boosted_to_tunion[tunion.tuID] then
     return
   end
 
-  global.boosted_to_tunion[tunion.tuID] = nil
+  storage.boosted_to_tunion[tunion.tuID] = nil
   local c = tunion.control
   if c then -- In some cases, other mods apparently can destroy our control entity...
     c.surface.create_entity{name = "spark-explosion", position = c.position}

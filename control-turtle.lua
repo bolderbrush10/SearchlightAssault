@@ -49,12 +49,12 @@ end
 
 
 local function IssueFollowCommand(turtle, entity, ignoreFoes)
-  turtle.set_command(makeMoveOrders(entity, true, ignoreFoes))
+  turtle.commandable.set_command(makeMoveOrders(entity, true, ignoreFoes))
 end
 
 
 local function IssueMoveCommand(turtle, waypoint, ignoreFoes)
-  turtle.set_command(makeMoveOrders(waypoint, false, ignoreFoes))
+  turtle.commandable.set_command(makeMoveOrders(waypoint, false, ignoreFoes))
 end
 
 
@@ -136,7 +136,7 @@ end
 
 
 local function RespawnTurtle(turtle, position)
-  local g = global.unum_to_g[turtle.unit_number]
+  local g = storage.unum_to_g[turtle.unit_number]
   local newT = export.SpawnTurtle(g.light, g.light.surface, position)
 
   if not newT then
@@ -145,8 +145,8 @@ local function RespawnTurtle(turtle, position)
   end
 
   g.turtle = newT
-  global.unum_to_g[newT.unit_number] = g
-  global.unum_to_g[turtle.unit_number] = nil
+  storage.unum_to_g[newT.unit_number] = g
+  storage.unum_to_g[turtle.unit_number] = nil
 
   if g.light.name ~= d.searchlightAlarmName then
     g.light.shooting_target = newT
@@ -219,11 +219,11 @@ export.TurtleWaypointReached = function(g)
     export.TurtleChase(g, g.tCoord)
   elseif g.tState == export.FOLLOW then
     -- (If the foe can't move, then we can probably stop ordering the turtle around)
-    g.turtle.set_command({type = defines.command.stop,
+    g.turtle.commandable.set_command({type = defines.command.stop,
                           distraction = defines.distraction.none,
                          })
   else
-    g.turtle.set_command({type = defines.command.stop,
+    g.turtle.commandable.set_command({type = defines.command.stop,
                           distraction = defines.distraction.by_enemy,
                          })
   end
@@ -288,11 +288,11 @@ end
 -- If we set our first waypoint in the same direction as the searchlight orientation,
 -- but further away, it makes the searchlight appear to "start up"
 export.WindupTurtle = function(gestalt, turtle)
-  local c = gestalt.signal.get_control_behavior()
-  gestalt.tWanderParams.rotation = c.get_signal(d.circuitSlots.rotateSlot).count
-  gestalt.tWanderParams.radius   = c.get_signal(d.circuitSlots.radiusSlot).count
-  gestalt.tWanderParams.min      = c.get_signal(d.circuitSlots.minSlot).count
-  gestalt.tWanderParams.max      = c.get_signal(d.circuitSlots.maxSlot).count
+  local c = gestalt.signal.get_control_behavior().sections[1]
+  gestalt.tWanderParams.rotation = c.get_slot(d.circuitSlots.rotateSlot).min
+  gestalt.tWanderParams.radius   = c.get_slot(d.circuitSlots.radiusSlot).min
+  gestalt.tWanderParams.min      = c.get_slot(d.circuitSlots.minSlot).min
+  gestalt.tWanderParams.max      = c.get_slot(d.circuitSlots.maxSlot).min
   ValidateAndSetParams(gestalt, false)
 
   local windupWaypoint = u.OrientationToPosition(gestalt.light.position,
@@ -365,7 +365,7 @@ export.ManualTurtleMove = function(gestalt, coord)
   local turtle = gestalt.turtle
 
   -- Don't interrupt a turtle that's trying to attack a foe
-  if turtle.distraction_command then
+  if turtle.commandable.distraction_command then
     return
   end
 
@@ -420,8 +420,8 @@ export.RespawnBrokenTurtle = function(g)
   end
 
   g.turtle = newT
-  global.unum_to_g[newT.unit_number] = g
-  -- global.unum_to_g[turtle.unit_number] = nil -- TODO Minor memory leak...
+  storage.unum_to_g[newT.unit_number] = g
+  -- storage.unum_to_g[turtle.unit_number] = nil -- TODO Minor memory leak...
 
   if g.light.name == d.searchlightBaseName then
     g.light.shooting_target = newT

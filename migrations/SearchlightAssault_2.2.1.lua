@@ -3,9 +3,9 @@ local ca = require "control-ammo"
 local d = require "sl-defines"
 local u = require "sl-util"
 
-global.ammoAudit = {}
+storage.ammoAudit = {}
 
-for tID, tu in pairs(global.boosted_to_tunion) do
+for tID, tu in pairs(storage.boosted_to_tunion) do
   local turret = tu.turret
 
   local ammoCount = 0
@@ -22,5 +22,5 @@ for tID, tu in pairs(global.boosted_to_tunion) do
     end
   end
 
-  global.ammoAudit[turret.unit_number] = ammoCount
+  storage.ammoAudit[turret.unit_number] = ammoCount
 end

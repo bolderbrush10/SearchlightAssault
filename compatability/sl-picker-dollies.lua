@@ -9,8 +9,8 @@ require "util" -- for table.deepcopy
 local export = {}
 
 
-local sigOwnX    = {type="virtual", name="sl-own-x"}
-local sigOwnY    = {type="virtual", name="sl-own-y"}
+local sigOwnX    = {type="virtual", quality="normal", name="sl-own-x"}
+local sigOwnY    = {type="virtual", quality="normal", name="sl-own-y"}
 
 
 local function WillWiresReach(entity)
@@ -52,9 +52,9 @@ local function SearchlightMoved(g, e, event)
     return
   end
 
-  local c = i.get_control_behavior()
-  c.set_signal(d.circuitSlots.ownPositionXSlot, {signal = sigOwnX,  count = i.position.x})
-  c.set_signal(d.circuitSlots.ownPositionYSlot, {signal = sigOwnY,  count = i.position.y})
+  local c = i.get_control_behavior().sections[1]
+  c.set_slot(d.circuitSlots.ownPositionXSlot, {value = sigOwnX,  count = i.position.x})
+  c.set_slot(d.circuitSlots.ownPositionYSlot, {value = sigOwnY,  count = i.position.y})
 
   g.spotter.teleport(e.position)
 
@@ -62,13 +62,13 @@ local function SearchlightMoved(g, e, event)
                                                    type={"fluid-turret", "electric-turret", "ammo-turret"},
                                                    force=e.force}
   
-  local displaced = table.deepcopy(r.getRelationLHS(global.GestaltTunionRelations, g.gID))
+  local displaced = table.deepcopy(r.getRelationLHS(storage.GestaltTunionRelations, g.gID))
   local newNeighbors = {}
   for _, f in pairs(friends) do
-    local tu = global.tun_to_tunion[f.unit_number]
+    local tu = storage.tun_to_tunion[f.unit_number]
 
     if cu.IsBoostableAndInRange(g, f) then
-      if r.hasRelation(global.GestaltTunionRelations, g.gID, tu.tuID) then
+      if r.hasRelation(storage.GestaltTunionRelations, g.gID, tu.tuID) then
         displaced[tu.tuID] = nil
       else
         table.insert(newNeighbors, f)
@@ -81,10 +81,10 @@ local function SearchlightMoved(g, e, event)
   end
 
   for d, _ in pairs(displaced) do
-    r.removeRelation(global.GestaltTunionRelations, g.gID, d)
+    r.removeRelation(storage.GestaltTunionRelations, g.gID, d)
 
-    if not next(r.getRelationRHS(global.GestaltTunionRelations, d)) then
-      cu.TurretRemoved(global.tunions[d])
+    if not next(r.getRelationRHS(storage.GestaltTunionRelations, d)) then
+      cu.TurretRemoved(storage.tunions[d])
     end
   end
 end
@@ -92,7 +92,7 @@ end
 
 -- TODO Recalculate neighbors (have to do this even if not allowing moving while boosted)
 local function TurretMoved(e, event)
-  local tu = global.tun_to_tunion[e.unit_number]
+  local tu = storage.tun_to_tunion[e.unit_number]
   -- Revert the turret's teleport if there is an active alarm boosting it
   if tu and tu.boosted then
     e.teleport(event.start_pos)
@@ -120,7 +120,7 @@ local function OnMoved_PickerDollies(event)
   local e = event.moved_entity
   if not e then return end
 
-  local g = global.unum_to_g[e.unit_number]
+  local g = storage.unum_to_g[e.unit_number]
 
   if g then
     SearchlightMoved(g, e, event)

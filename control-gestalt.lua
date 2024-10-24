@@ -42,23 +42,23 @@ local export = {}
 
 
 export.InitTables_Gestalt = function()
-  global.gID = 0
+  storage.gID = 0
 
   -- Map: gID -> Gestalt
-  global.gestalts = {}
+  storage.gestalts = {}
 
   -- Map: gID -> Gestalt
-  global.check_power = {}
+  storage.check_power = {}
 
   -- Map: unit_number -> Gestalt
   -- Currently tracking: baselight/alarmlight, spotter, turtle -> Gestalt
-  global.unum_to_g = {}
+  storage.unum_to_g = {}
 
   -- Map: game tick -> {gID}
-  global.spotter_timeouts = {}
+  storage.spotter_timeouts = {}
 
   -- Map: game tick -> {gID}
-  global.animation_sync = {}
+  storage.animation_sync = {}
 end
 
 
@@ -80,9 +80,9 @@ local function SpawnAlarmLight(gestalt)
                                             create_build_effect_smoke = false}
 
   u.CopyTurret(base, raised)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[raised.unit_number] = gestalt
-  script.register_on_entity_destroyed(raised)
+  storage.unum_to_g[base.unit_number] = nil
+  storage.unum_to_g[raised.unit_number] = gestalt
+  script.register_on_object_destroyed(raised)
 
   gestalt.light = raised
   -- Note how many times we've spotted a foe, just for fun
@@ -105,9 +105,9 @@ local function SpawnBaseLight(gestalt)
                                              create_build_effect_smoke = false}
 
   u.CopyTurret(base, cleared)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[cleared.unit_number] = gestalt
-  script.register_on_entity_destroyed(cleared)
+  storage.unum_to_g[base.unit_number] = nil
+  storage.unum_to_g[cleared.unit_number] = gestalt
+  script.register_on_object_destroyed(cleared)
 
   gestalt.light = cleared
 
@@ -128,9 +128,9 @@ local function SpawnSafeLight(gestalt)
                                           create_build_effect_smoke = false}
 
   u.CopyTurret(base, safe)
-  global.unum_to_g[base.unit_number] = nil
-  global.unum_to_g[safe.unit_number] = gestalt
-  script.register_on_entity_destroyed(safe)
+  storage.unum_to_g[base.unit_number] = nil
+  storage.unum_to_g[safe.unit_number] = gestalt
+  script.register_on_object_destroyed(safe)
   
   gestalt.light = safe
 
@@ -155,8 +155,8 @@ end
 
 
 local function newGID()
-  global.gID = global.gID + 1
-  return global.gID
+  storage.gID = storage.gID + 1
+  return storage.gID
 end
 
 
@@ -167,13 +167,13 @@ local function makeGestalt(sl, sigInterface, turtle, spotter)
              turtle = turtle,
              spotter = spotter,}
 
-  global.gestalts[g.gID] = g
-  global.unum_to_g[sl.unit_number] = g
-  global.unum_to_g[turtle.unit_number] = g
-  global.unum_to_g[sigInterface.unit_number] = g
-  global.unum_to_g[spotter.unit_number] = g
+  storage.gestalts[g.gID] = g
+  storage.unum_to_g[sl.unit_number] = g
+  storage.unum_to_g[turtle.unit_number] = g
+  storage.unum_to_g[sigInterface.unit_number] = g
+  storage.unum_to_g[spotter.unit_number] = g
 
-  global.check_power[g.gID] = g
+  storage.check_power[g.gID] = g
 
   ct.SetDefaultWanderParams(g)
 
@@ -182,10 +182,10 @@ end
 
 
 local function BoostFriends(gestalt, spottedFoe)
-  local gtRelations = global.GestaltTunionRelations
+  local gtRelations = storage.GestaltTunionRelations
 
   for tID, _ in pairs(r.getRelationLHS(gtRelations, gestalt.gID)) do
-    local tu = global.tunions[tID]
+    local tu = storage.tunions[tID]
     if not tu.boosted and tu.turret.shooting_target == nil then
       cu.Boost(tu, spottedFoe)
     end
@@ -206,7 +206,7 @@ local function EnterAlarmMode(g, spottedFoe)
   -- (in fact, we don't want it to fire and kick us back to warn mode)
   g.spotter.active = false
 
-  r.setRelation(global.FoeGestaltRelations, spottedFoe.unit_number, g.gID, spottedFoe)
+  r.setRelation(storage.FoeGestaltRelations, spottedFoe.unit_number, g.gID, spottedFoe)
 
   g.light.shooting_target = spottedFoe
   g.turtle.teleport(spottedFoe.position)
@@ -244,7 +244,7 @@ local function EnterWarnMode(g, escapedFoe)
   -- we'll go back to safe mode
   export.OpenWatch(g.gID)
 
-  global.check_power[g.gID] = g
+  storage.check_power[g.gID] = g
 
   if escapedFoe then
     ResumeTargetingTurtle(g, escapedFoe.position)
@@ -263,6 +263,7 @@ local function EnterSafeMode(g)
     return -- Already in safe mode
   end
 
+  g.light.direction = 3
   SpawnSafeLight(g)
 
   g.turtle.active = false
@@ -270,7 +271,7 @@ local function EnterSafeMode(g)
 
   cs.ProcessSafeSignals(g)
 
-  global.check_power[g.gID] = nil
+  storage.check_power[g.gID] = nil
 
   cgui.updateOnEntity(g)
 end
@@ -282,11 +283,11 @@ local function EnterSafeModeSync(g)
   light.shooting_target = g.spotter
 
   local tickTurnDelay = game.tick + turnDelay
-  if not global.animation_sync[tickTurnDelay] then
-    global.animation_sync[tickTurnDelay] = {}
+  if not storage.animation_sync[tickTurnDelay] then
+    storage.animation_sync[tickTurnDelay] = {}
   end
 
-  table.insert(global.animation_sync[tickTurnDelay], g.gID)
+  table.insert(storage.animation_sync[tickTurnDelay], g.gID)
 end
 
 
@@ -300,7 +301,7 @@ export.CheckElectricNeeds = function()
   -- Not happy about having to add this loop,
   -- but too many other mods have been blowing up our turtles somehow,
   -- so we have to do this.
-  for _, g in pairs(global.gestalts) do
+  for _, g in pairs(storage.gestalts) do
     if not g.turtle.valid then
 
       -- Something nuked our mod's turtle, gotta try to respawn it now
@@ -316,7 +317,7 @@ export.CheckElectricNeeds = function()
     end
   end
 
-  for _, g in pairs(global.check_power) do
+  for _, g in pairs(storage.check_power) do
     if g.light.valid and g.signal.valid then
       g.turtle.active = g.light.energy > 0
     else
@@ -333,14 +334,14 @@ end
 -- (Heavy logic only runs while a foe is spotted, so not too performance-impacting)
 -- (Boosted turrets will seek new gestalt-targets on their own before unboosting)
 export.CheckGestaltFoes = function()
-  if r.empty(global.FoeGestaltRelations) then
+  if r.empty(storage.FoeGestaltRelations) then
     return
   end
 
-  local fgRelations = global.FoeGestaltRelations
+  local fgRelations = storage.FoeGestaltRelations
   for fun, gIDs in pairs(r.getRelationMatrix(fgRelations)) do
     for gID, foe in pairs(gIDs) do
-      local g = global.gestalts[gID]
+      local g = storage.gestalts[gID]
 
       if     not foe.valid
           or g.light.shooting_target == nil
@@ -374,8 +375,8 @@ end
 
 
 export.FoeDied = function(foe)
-  local fgRelations = global.FoeGestaltRelations
-  local gestalts = global.gestalts
+  local fgRelations = storage.FoeGestaltRelations
+  local gestalts = storage.gestalts
   local gIDs = r.popRelationLHS(fgRelations, foe.unit_number)
 
   for gID, _ in pairs(gIDs) do
@@ -401,8 +402,9 @@ export.SearchlightAdded = function(sl)
 
   -- Register our searchlight so if it gets removed by the map editor or another mod,
   -- and thus no on_mined / on_died event is called, we can still destroy our gestalt
-  script.register_on_entity_destroyed(sl)
+  script.register_on_object_destroyed(sl)
 
+  sl.operable = false
   sl.shooting_target = turtle
   ct.WindupTurtle(g, turtle)
 
@@ -420,14 +422,14 @@ end
 
 export.SearchlightRemoved = function(sl_unit_number, killed, g)
   if not g then
-    g = global.unum_to_g[sl_unit_number]
+    g = storage.unum_to_g[sl_unit_number]
   end
 
   if not g then
     return
   end
 
-  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(storage.pIndexToGUI) do
     if gAndGUI[1] == g.gID then
       cgui.CloseSearchlightGUI(pIndex)
     end
@@ -436,24 +438,24 @@ export.SearchlightRemoved = function(sl_unit_number, killed, g)
   -- Stuff gets a little more complicated because we have to deal
   -- with the map editor / other mods not firing events
   if not sl_unit_number then
-    for lhs, rhs in pairs(global.unum_to_g) do
+    for lhs, rhs in pairs(storage.unum_to_g) do
       if rhs.gID == g.gID then
-        global.unum_to_g[lhs] = nil
+        storage.unum_to_g[lhs] = nil
       end
     end
   else
-    global.unum_to_g[sl_unit_number] = nil
+    storage.unum_to_g[sl_unit_number] = nil
   end
 
   -- Above for loop should have cleared out this unum,
   -- if the turtle was somehow invalidated
   if g.turtle.valid then
-    global.unum_to_g[g.turtle.unit_number] = nil
+    storage.unum_to_g[g.turtle.unit_number] = nil
   end
 
   -- Likewise for this valid check
   if g.spotter and g.spotter.valid then
-    global.unum_to_g[g.spotter.unit_number] = nil
+    storage.unum_to_g[g.spotter.unit_number] = nil
   end
 
   if g.spotter then
@@ -461,7 +463,7 @@ export.SearchlightRemoved = function(sl_unit_number, killed, g)
   end
 
   if g.signal and g.signal.valid then
-    global.unum_to_g[g.signal.unit_number] = nil
+    storage.unum_to_g[g.signal.unit_number] = nil
   end
 
   -- Preserve wire connections when killed by leaving a ghost
@@ -475,11 +477,11 @@ export.SearchlightRemoved = function(sl_unit_number, killed, g)
   g.turtle.destroy()
 
 
-  local tIDs = r.popRelationLHS(global.GestaltTunionRelations, g.gID)
+  local tIDs = r.popRelationLHS(storage.GestaltTunionRelations, g.gID)
 
   -- Turtle state should be locked into follow while we're tracking a foe
   if g.tState == ct.FOLLOW then
-    r.removeRelationRHS(global.FoeGestaltRelations, g.gID)
+    r.removeRelationRHS(storage.FoeGestaltRelations, g.gID)
     cu.FoeGestaltRelationRemoved(g, tIDs)
   end
 
@@ -487,10 +489,10 @@ export.SearchlightRemoved = function(sl_unit_number, killed, g)
     cu.GestaltRemoved(tID)
   end
 
-  global.gestalts[g.gID] = nil
-  global.check_power[g.gID] = nil
+  storage.gestalts[g.gID] = nil
+  storage.check_power[g.gID] = nil
 
-  -- global.spotter_timeouts/animation_sync:
+  -- storage.spotter_timeouts/animation_sync:
   -- Instead of iterating for a gID that might not even be in it
   -- so we can clean up any possible watch circle for this gestalt,
   -- we'll just check if our gestalt is still valid when that tick comes.
@@ -504,14 +506,14 @@ export.FoeFound = function(turtle, foe)
     return
   end
 
-  local g = global.unum_to_g[turtle.unit_number]
+  local g = storage.unum_to_g[turtle.unit_number]
 
   EnterAlarmMode(g, foe)
 end
 
 
 export.FoeSuspected = function(spotter)
-  local g = global.unum_to_g[spotter.unit_number]
+  local g = storage.unum_to_g[spotter.unit_number]
   if not g then
     return
   end
@@ -532,11 +534,11 @@ export.OpenWatch = function(gID)
   tickToClose = tickToClose + (d.spinFactor - (tickToClose % d.spinFactor))
   tickToClose = tickToClose + (d.spinFactor * 0.25) - turnDelay
 
-  if not global.spotter_timeouts[tickToClose] then
-    global.spotter_timeouts[tickToClose] = {}
+  if not storage.spotter_timeouts[tickToClose] then
+    storage.spotter_timeouts[tickToClose] = {}
   end
 
-  table.insert(global.spotter_timeouts[tickToClose], gID)
+  table.insert(storage.spotter_timeouts[tickToClose], gID)
 end
 
 
@@ -545,7 +547,7 @@ export.CloseWatch = function(gIDs)
   local tick = game.tick
 
   for _, gID in pairs(gIDs) do
-    local g = global.gestalts[gID]
+    local g = storage.gestalts[gID]
 
     -- Check if our searchlight was destroyed in the ticks since the watch was opened
     if g and g.light.name == d.searchlightBaseName then
@@ -568,7 +570,7 @@ end
 
 export.SyncReady = function(gIDs)
   for _, gID in pairs(gIDs) do
-    local g = global.gestalts[gID]
+    local g = storage.gestalts[gID]
 
     if g then
       EnterSafeMode(g)
@@ -581,7 +583,7 @@ end
 -- disable the spotlight effect from rendering on the spotter, which looks ugly
 export.CheckSync = function(gIDs)
   for _, gID in pairs(gIDs) do
-    local g = global.gestalts[gID]
+    local g = storage.gestalts[gID]
 
     if g then
       local light = g.light

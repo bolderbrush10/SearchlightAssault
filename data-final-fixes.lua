@@ -88,7 +88,7 @@ end
 
 
 local function ParseAmmoType(ammoType)
-  if not ammoType.action then
+  if not ammoType or not ammoType.action then
     return false
   end
 
@@ -127,11 +127,12 @@ local function MakeAmmoBoost(currTable)
 
   		-- ammo_type can either be a table of ammo_types,
   		-- or just the ammo_type entry directly...
-  		if boostCopy.ammo_type.category then
-  			boostNeeded = ParseAmmoType(boostCopy.ammo_type)
-  		else
-  			for _, ammoType in pairs(boostCopy.ammo_type) do
-					boostNeeded = boostNeeded or ParseAmmoType(ammoType)
+
+  		if boostCopy.ammoType and not type(boostCopy.ammoType) == "table" then
+  			boostNeeded = ParseAmmoType(boostCopy.ammoType)
+  		elseif boostCopy.ammoType then
+  			for _, ammoType in pairs(boostCopy.ammoType) do
+					boostNeeded = boostNeeded or ParseAmmoType(boostCopy.ammoType)
   			end
   		end
 
@@ -140,12 +141,9 @@ local function MakeAmmoBoost(currTable)
 	      if {"item-description." .. boostCopy.name} then
 	        boostCopy.localised_description = {"item-description." .. boostCopy.name}
 	      end
-
-        if boostCopy.flags == nil then
-          boostCopy.flags = {}
-        end
+        
         -- Just hides from some GUIs (logistics requests, etc)
-        table.insert(boostCopy.flags, "hidden")
+        boostCopy.hidden = true
 
 	      boostCopy.name = boostedName
   			data:extend{boostCopy}

@@ -9,10 +9,10 @@ local export = {}
 
 export.InitTables_Blocklist = function()
   -- Map: turret name -> true
-  global.remoteBlock = {}
+  storage.remoteBlock = {}
 
   -- Map: turret name -> true
-  global.blockList = {}
+  storage.blockList = {}
 
   -- Initialize blockList & boostInfo
   export.UpdateBlockList()
@@ -20,7 +20,7 @@ end
 
 
 local function add_to_blocklist(turretName)
-  local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
+  local protos = prototypes.get_entity_filtered{{filter = "turret"}}
 
   if not protos[turretName] then
     log("Searchlight Assault: Turret prototype name specified by remote call not found: " .. turretName)
@@ -29,18 +29,18 @@ local function add_to_blocklist(turretName)
 
   log("Searchlight Assault: Blocking " .. turretName .. " from searchlight interaction.")
 
-  global.remoteBlock[turretName] = true
+  storage.remoteBlock[turretName] = true
   export.UpdateBlockList(true)
   export.UnboostBlockedTurrets()
 end
 
 
 local function remove_from_blocklist(turretName)
-  if global.remoteBlock[turretName] then
+  if storage.remoteBlock[turretName] then
     log("Searchlight Assault: Unblocking " .. turretName .. "; interaction now allowed.")
   end
 
-  global.remoteBlock[turretName] = nil
+  storage.remoteBlock[turretName] = nil
   export.UpdateBlockList(true)
   export.UnboostBlockedTurrets()
 end
@@ -61,23 +61,23 @@ end
 -- Breaking out a seperate function like this allows us to easily
 -- note changes to the block list and output them to game.print()
 local function UpdateBoostInfo(blockList)
-  local protos = game.get_filtered_entity_prototypes{{filter = "turret"}}
+  local protos = prototypes.get_entity_filtered{{filter = "turret"}}
 
   for _, turret in pairs(protos) do
     if blockList[turret.name] then
-      global.boostInfo[turret.name] = ct.bInfo.BLOCKED
+      storage.boostInfo[turret.name] = ct.bInfo.BLOCKED
 
-      if not global.blockList[turret.name] then
+      if not storage.blockList[turret.name] then
         game.print("Searchlight Assault: Now ignoring " .. turret.name)
       end
-    elseif global.remoteBlock[turret.name] then
-      global.boostInfo[turret.name] = ct.bInfo.BLOCKED
-    elseif game.entity_prototypes[turret.name .. d.boostSuffix] then
-      global.boostInfo[turret.name] = ct.bInfo.UNBOOSTED
+    elseif storage.remoteBlock[turret.name] then
+      storage.boostInfo[turret.name] = ct.bInfo.BLOCKED
+    elseif prototypes.entity[turret.name .. d.boostSuffix] then
+      storage.boostInfo[turret.name] = ct.bInfo.UNBOOSTED
     elseif u.EndsWith(turret.name, d.boostSuffix) then
-      global.boostInfo[turret.name] = ct.bInfo.BOOSTED
+      storage.boostInfo[turret.name] = ct.bInfo.BOOSTED
     else
-      global.boostInfo[turret.name] = ct.bInfo.NOT_BOOSTABLE
+      storage.boostInfo[turret.name] = ct.bInfo.NOT_BOOSTABLE
     end
   end
 end
@@ -95,7 +95,7 @@ export.UpdateBlockList = function(calledByRemote)
   for token in string.gmatch(settingStr, "[^;]+") do
     local trim = token:gsub("%s+", "")
 
-    if game.entity_prototypes[trim] then
+    if prototypes.entity[trim] then
       newBlockList[trim] = true
     elseif not calledByRemote then
       local result = "Unable to add misspelled or nonexistent turret " ..
@@ -106,7 +106,7 @@ export.UpdateBlockList = function(calledByRemote)
   end
 
   -- Quick & dirty way to compare table equality for our use case
-  if not calledByRemote and next(global.blockList) and concatKeys(global.blockList) == concatKeys(newBlockList) then
+  if not calledByRemote and next(storage.blockList) and concatKeys(storage.blockList) == concatKeys(newBlockList) then
     game.print("Searchlight Assault: No turrets affected by settings change")
 
     return
@@ -114,13 +114,13 @@ export.UpdateBlockList = function(calledByRemote)
 
   UpdateBoostInfo(newBlockList)
 
-  global.blockList = newBlockList
+  storage.blockList = newBlockList
 end
 
 
 export.UnboostBlockedTurrets = function()
-  for tuID, tu in pairs(global.tunions) do
-    if tu.boosted and global.boostInfo[tu.turret.name:gsub(d.boostSuffix, "")] == ct.bInfo.BLOCKED then
+  for tuID, tu in pairs(storage.tunions) do
+    if tu.boosted and storage.boostInfo[tu.turret.name:gsub(d.boostSuffix, "")] == ct.bInfo.BLOCKED then
       ct.UnBoost(tu)
     end
   end

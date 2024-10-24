@@ -8,7 +8,7 @@ local export = {}
 export.InitTables_Forces = function()
 
   -- Map: Turtle Force Name -> true
-  global.sl_force_init = {}
+  storage.sl_force_init = {}
 
 end
 
@@ -27,12 +27,12 @@ end
 export.PrepareTurtleForce = function(SearchlightForce)
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
-  if global.sl_force_init[turtleForceName] or game.forces[turtleForceName] then
+  if storage.sl_force_init[turtleForceName] or game.forces[turtleForceName] then
     return turtleForceName -- We've already initialized this force, nothing to do
   end
 
   game.create_force(turtleForceName)
-  global.sl_force_init[turtleForceName] = true
+  storage.sl_force_init[turtleForceName] = true
 
   export.UpdateTForceRelationships(SearchlightForce)
 
@@ -53,7 +53,7 @@ export.UpdateTForceRelationships = function(SearchlightForce)
 
   local turtleForceName = SearchlightForce.name .. d.turtleForceSuffix
 
-  if global.sl_force_init[turtleForceName] == nil then
+  if storage.sl_force_init[turtleForceName] == nil then
     return -- Don't recurse
   end
 
@@ -109,11 +109,11 @@ export.MigrateTurtleForces = function(oldSLForce, newSLForce)
   local oldtForceName = oldSLForce.name .. d.turtleForceSuffix
 
   -- If there's no associated turtle force, nothing to do
-  if global.sl_force_init[oldtForceName] == nil then
+  if storage.sl_force_init[oldtForceName] == nil then
     return
   end
 
-  global.sl_force_init[oldtForceName] = nil
+  storage.sl_force_init[oldtForceName] = nil
   local newtForceName = export.PrepareTurtleForce(newSLForce)
 
   -- The API says nested merge_forces will happen next tick,

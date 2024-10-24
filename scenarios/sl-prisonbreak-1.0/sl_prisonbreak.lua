@@ -45,8 +45,8 @@ local on_player_created = function(event)
   local player = game.get_player(event.player_index)
   util.insert_safe(player, created_items())
   
-  if global.pbreakDifficulty == nil then
-    global.pbreakDifficulty = 0
+  if storage.pbreakDifficulty == nil then
+    storage.pbreakDifficulty = 0
     
     -- Create inital chart for Wardens
     local s = game.surfaces[1]
@@ -59,35 +59,35 @@ local on_player_created = function(event)
     f.chart(s, {left_top={x=-150, y=702}, right_bottom={x=-95, y=744}}) 
   end
   
-  if global.rocketSilos == nil then
+  if storage.rocketSilos == nil then
     -- Find the initial rocket silo we placed during map editing
     local silos = player.surface.find_entities_filtered{name="rocket-silo"}
-    global.rocketSilos = {}
-    global.rocketSilos[silos[1].unit_number] = silos[1]
+    storage.rocketSilos = {}
+    storage.rocketSilos[silos[1].unit_number] = silos[1]
   end
   
-  if global.labsay == nil then
-    global.labsay = {}
+  if storage.labsay == nil then
+    storage.labsay = {}
   end
   
   -- Disable the repair pack recipe so players feel tension about keeping vehicles, etc in shape
   game.forces["player"].recipes["repair-pack"].enabled = false
 
-  if not global.init_ran then
+  if not storage.init_ran then
     --This is so that other mods and scripts have a chance to do remote calls before we do things like creating the crash site, etc.
-    global.init_ran = true
+    storage.init_ran = true
 
-    if not global.disable_crashsite then
+    if not storage.disable_crashsite then
       local surface = player.surface
-      crash_site.create_crash_site(surface, {-5,-6}, util.copy(global.crashed_ship_items), util.copy(global.crashed_debris_items), util.copy(global.crashed_ship_parts))
-      util.remove_safe(player, global.crashed_ship_items)
-      util.remove_safe(player, global.crashed_debris_items)
+      crash_site.create_crash_site(surface, {-5,-6}, util.copy(storage.crashed_ship_items), util.copy(storage.crashed_debris_items), util.copy(storage.crashed_ship_parts))
+      util.remove_safe(player, storage.crashed_ship_items)
+      util.remove_safe(player, storage.crashed_debris_items)
       player.get_main_inventory().sort_and_merge()
       return
     end    
   end
 
-  if not global.skip_intro then
+  if not storage.skip_intro then
     player.print({"description"})
   end
 
@@ -145,13 +145,13 @@ end
 
 local initRandPositions = function()
   local flip = {-1, 1}
-  global.randBiterPositions = {}
+  storage.randBiterPositions = {}
   
   for i=1, 30 do
     local pos = {x=0,y=0}
     pos.x = (math.random(2,5) + math.random() + 0.1) * flip[math.random(1,2)]
     pos.y = (math.random(3,6) + math.random() + 0.1) * flip[math.random(1,2)]
-    global.randBiterPositions[i] = pos
+    storage.randBiterPositions[i] = pos
   end
 end
 
@@ -165,15 +165,15 @@ local spawnBiters = function(nest)
 
   local behemoth = math.random(1, 500)
   
-  for i, offset in pairs(global.randBiterPositions) do
+  for i, offset in pairs(storage.randBiterPositions) do
     local posX = nest.position.x + offset.x
     local posY = nest.position.y + offset.y
     
     if not s.get_tile({posX, posY}).collides_with("player-layer") then
       local e = nil
-      if global.pbreakDifficulty > 2 and i % 2 == 0 then
+      if storage.pbreakDifficulty > 2 and i % 2 == 0 then
         e = s.create_entity{name="small-spitter", position={posX, posY}}
-      elseif global.pbreakDifficulty > 3 and i % 3 == 0 then
+      elseif storage.pbreakDifficulty > 3 and i % 3 == 0 then
         if behemoth == 1 then        
           e = s.create_entity{name="behemoth-biter", position={posX, posY}}
           behemoth = 0
@@ -199,8 +199,8 @@ end
 
 local compareNests = function(leftArea, rightArea)
   local pos = {0,0}
-  if global.maxSilo then
-    pos = global.maxSilo.position
+  if storage.maxSilo then
+    pos = storage.maxSilo.position
   end
   
   return lensquared(leftArea.right_bottom, pos) < lensquared(rightArea.right_bottom, pos)
@@ -210,8 +210,8 @@ end
 local updateSuperNests = function()
   local s = game.surfaces[1]
   
-  if global.biterAreas == nil then
-    global.biterAreas = {s.get_script_area("central-biters").area,
+  if storage.biterAreas == nil then
+    storage.biterAreas = {s.get_script_area("central-biters").area,
                          s.get_script_area("northeast-biters").area,
                          s.get_script_area("north-biters").area,
                          s.get_script_area("west-biters").area,
@@ -221,7 +221,7 @@ local updateSuperNests = function()
                          s.get_script_area("rocket-biters").area,
                         }
                         
-    global.superSpawnNests = {}
+    storage.superSpawnNests = {}
   end
 
   -- Perodically cycle super-spawning through new nests so bunches of biters don't clump up too badly
@@ -229,33 +229,33 @@ local updateSuperNests = function()
   if tickmod == 0 then
 
     -- Prefer to attack the rocket with the most progress
-    global.maxSilo = nil
-    for unit_num, silo in pairs(global.rocketSilos) do
+    storage.maxSilo = nil
+    for unit_num, silo in pairs(storage.rocketSilos) do
       if not silo.valid then
-        global.rocketSilos[unit_num] = nil
+        storage.rocketSilos[unit_num] = nil
       elseif maxSilo == nil or silo.rocket_parts > maxSilo.rocket_parts then
-        global.maxSilo = silo
+        storage.maxSilo = silo
       end
     end
 
-    global.superSpawnNests = {}
-    table.sort(global.biterAreas, compareNests)
+    storage.superSpawnNests = {}
+    table.sort(storage.biterAreas, compareNests)
   end
     
-  local max = global.pbreakDifficulty + 1
+  local max = storage.pbreakDifficulty + 1
   if max == 1 then max = 2 end -- treat difficulty 0 as 1
-  if max == 5 then max = #global.biterAreas end
+  if max == 5 then max = #storage.biterAreas end
       
   -- We want to assign only one super-spawner nest per area, priortizing the ones closest to the rocket / center of the map
   -- (If a super spawner nest gets destroyed, there's a chance there'll be multiple super-spawner nests
   --  in an area until the perodic reset of all super spawn nests is done every minute, but that's fine)
-  for _, area in pairs(global.biterAreas) do
+  for _, area in pairs(storage.biterAreas) do
     for i = 1, max do     
     
-      if global.superSpawnNests[i] == nil or not global.superSpawnNests[i].valid then
+      if storage.superSpawnNests[i] == nil or not storage.superSpawnNests[i].valid then
         local nests = s.find_entities_filtered{area=area, type="unit-spawner", force="enemy", limit=10}
         if #nests > 0 then
-          global.superSpawnNests[i] = nests[math.random(1, #nests)]
+          storage.superSpawnNests[i] = nests[math.random(1, #nests)]
           break
         end
       end
@@ -264,23 +264,23 @@ local updateSuperNests = function()
   end
 
   for i = 1, max do
-    spawnBiters(global.superSpawnNests[i])
+    spawnBiters(storage.superSpawnNests[i])
   end  
 end
 
 
 local aggressiveBiterExpand = function()  
-  if global.randBiterPositions == nil then
+  if storage.randBiterPositions == nil then
     initRandPositions()
   end
 
   local f = game.forces["enemy"]
   if f.evolution_factor < 0.6 then
     f.evolution_factor = f.evolution_factor + 0.0006
-    if global.pbreakDifficulty > 2 then
+    if storage.pbreakDifficulty > 2 then
       f.evolution_factor = f.evolution_factor + 0.0002
     end
-    if global.pbreakDifficulty > 3 then
+    if storage.pbreakDifficulty > 3 then
       f.evolution_factor = f.evolution_factor + 0.004
     end
   end
@@ -288,7 +288,7 @@ local aggressiveBiterExpand = function()
   updateSuperNests()
     
   local count = 0
-  for i, area in pairs(global.biterAreas) do
+  for i, area in pairs(storage.biterAreas) do
     for tries=1, 3 do
       count = count + tryRandExpand(area)
     end
@@ -364,7 +364,7 @@ local dropPeriods =
 local dropBiterCapsules = function()  
   local t = game.tick
   
-  local difficulty = global.pbreakDifficulty
+  local difficulty = storage.pbreakDifficulty
   if difficulty == 0 then difficulty = 1 end
   
   if t < dropStarts[difficulty] or t % dropPeriods[difficulty] ~= 0 then
@@ -423,7 +423,7 @@ local checkForBuiltRocketSilo = function(event)
     return
   end
   
-  global.rocketSilos[entity.unit_number] = entity
+  storage.rocketSilos[entity.unit_number] = entity
 end
 
 
@@ -461,8 +461,8 @@ local checkAccessGranted = function(player)
   
   for i, area in pairs(labAccesses) do
     if inArea(player.position, area) then
-      if global.labsay[i .. player.name] == nil then
-        global.labsay[i .. player.name] = true
+      if storage.labsay[i .. player.name] == nil then
+        storage.labsay[i .. player.name] = true
         player.print("[Facility Emergency Access Granted]: " .. player.name)
       end
       
@@ -512,9 +512,9 @@ local on_entity_died = function(event)
     return
   end
   
-  global.pbreakDifficulty = global.pbreakDifficulty + 1
+  storage.pbreakDifficulty = storage.pbreakDifficulty + 1
   
-  if global.pbreakDifficulty == 1 then
+  if storage.pbreakDifficulty == 1 then
     game.print("Danger! Dead Compilatron units are unable to help calm biter aggression.\n" ..
                "Further destruction of Compilatron units will result in increased difficulty of escape!\n" ..
                "Level 1: Difficulty acceptable for 1-2 prisoners.\n"..
@@ -523,24 +523,24 @@ local on_entity_died = function(event)
                "Level 4: All Compilatron calming units destroyed. Survival unlikely.\n")
   end
   
-  if global.pbreakDifficulty == 4 then
+  if storage.pbreakDifficulty == 4 then
     game.print("Difficulty level: Brutal")
   else
-    game.print("Difficulty level: " .. global.pbreakDifficulty)
+    game.print("Difficulty level: " .. storage.pbreakDifficulty)
   end
   
   local wardenT = game.forces["Wardens"].technologies
-  if global.pbreakDifficulty == 2 then
+  if storage.pbreakDifficulty == 2 then
     wardenT["weapon-shooting-speed-3"].researched = true
     wardenT["physical-projectile-damage-3"].researched = true
     wardenT["laser-shooting-speed-3"].researched = true
     wardenT["energy-weapons-damage-3"].researched = true  
-  elseif global.pbreakDifficulty == 3 then
+  elseif storage.pbreakDifficulty == 3 then
     wardenT["weapon-shooting-speed-4"].researched = true
     wardenT["physical-projectile-damage-4"].researched = true
     wardenT["laser-shooting-speed-4"].researched = true
     wardenT["energy-weapons-damage-4"].researched = true  
-  elseif global.pbreakDifficulty == 4 then
+  elseif storage.pbreakDifficulty == 4 then
     wardenT["weapon-shooting-speed-5"].researched = true
     wardenT["weapon-shooting-speed-6"].researched = true
     wardenT["physical-projectile-damage-5"].researched = true
@@ -577,52 +577,52 @@ end
 local pbreak_interface =
 {
   get_created_items = function()
-    return global.created_items
+    return storage.created_items
   end,
   set_created_items = function(map)
-    global.created_items = map or error("Remote call parameter to set created items can't be nil.")
+    storage.created_items = map or error("Remote call parameter to set created items can't be nil.")
   end,
   get_respawn_items = function()
-    return global.respawn_items
+    return storage.respawn_items
   end,
   set_respawn_items = function(map)
-    global.respawn_items = map or error("Remote call parameter to set respawn items can't be nil.")
+    storage.respawn_items = map or error("Remote call parameter to set respawn items can't be nil.")
   end,
   set_skip_intro = function(bool)
-    global.skip_intro = bool
+    storage.skip_intro = bool
   end,
   get_skip_intro = function()
-    return global.skip_intro
+    return storage.skip_intro
   end,
   set_chart_distance = function(value)
-    global.chart_distance = tonumber(value) or error("Remote call parameter to set chart distance must be a number")
+    storage.chart_distance = tonumber(value) or error("Remote call parameter to set chart distance must be a number")
   end,
   get_disable_crashsite = function()
-    return global.disable_crashsite
+    return storage.disable_crashsite
   end,
   set_disable_crashsite = function(bool)
-    global.disable_crashsite = bool
+    storage.disable_crashsite = bool
   end,
   get_init_ran = function()
-    return global.init_ran
+    return storage.init_ran
   end,
   get_ship_items = function()
-    return global.crashed_ship_items
+    return storage.crashed_ship_items
   end,
   set_ship_items = function(map)
-    global.crashed_ship_items = map or error("Remote call parameter to set created items can't be nil.")
+    storage.crashed_ship_items = map or error("Remote call parameter to set created items can't be nil.")
   end,
   get_debris_items = function()
-    return global.crashed_debris_items
+    return storage.crashed_debris_items
   end,
   set_debris_items = function(map)
-    global.crashed_debris_items = map or error("Remote call parameter to set respawn items can't be nil.")
+    storage.crashed_debris_items = map or error("Remote call parameter to set respawn items can't be nil.")
   end,
   get_ship_parts = function()
-    return global.crashed_ship_parts
+    return storage.crashed_ship_parts
   end,
   set_ship_parts = function(parts)
-    global.crashed_ship_parts = parts or error("Remote call parameter to set ship parts can't be nil.")
+    storage.crashed_ship_parts = parts or error("Remote call parameter to set ship parts can't be nil.")
   end
 }
 
@@ -670,29 +670,29 @@ pbreak.on_nth_tick =
 
 
 pbreak.on_configuration_changed = function()
-  global.created_items = global.created_items or created_items()
-  global.respawn_items = global.respawn_items or respawn_items()
-  global.crashed_ship_items = global.crashed_ship_items or ship_items()
-  global.crashed_debris_items = global.crashed_debris_items or debris_items()
-  global.crashed_ship_parts = global.crashed_ship_parts or ship_parts()
+  storage.created_items = storage.created_items or created_items()
+  storage.respawn_items = storage.respawn_items or respawn_items()
+  storage.crashed_ship_items = storage.crashed_ship_items or ship_items()
+  storage.crashed_debris_items = storage.crashed_debris_items or debris_items()
+  storage.crashed_ship_parts = storage.crashed_ship_parts or ship_parts()
 
-  if not global.init_ran then
+  if not storage.init_ran then
     -- migrating old saves.
-    global.init_ran = #game.players > 0
+    storage.init_ran = #game.players > 0
   end
 end
 
 
 pbreak.on_init = function()
-  global.created_items = created_items()
-  global.respawn_items = respawn_items()
-  global.crashed_ship_items = {}
-  global.crashed_debris_items = {}
-  global.crashed_ship_parts = ship_parts()
+  storage.created_items = created_items()
+  storage.respawn_items = respawn_items()
+  storage.crashed_ship_items = {}
+  storage.crashed_debris_items = {}
+  storage.crashed_ship_parts = ship_parts()
 
   if is_debug() then
-    global.skip_intro = true
-    global.disable_crashsite = true
+    storage.skip_intro = true
+    storage.disable_crashsite = true
   end
 
 end

@@ -198,7 +198,7 @@ local function LookupArc(turret)
     return firing_arcs[turret.name]
   end
 
-  local tPrototype = game.entity_prototypes[turret.name]
+  local tPrototype = prototypes.entity[turret.name]
 
   if tPrototype.attack_parameters
      and tPrototype.attack_parameters.turn_range then
@@ -217,7 +217,7 @@ local function LookupRange(turret)
     return firing_range[turret.name]
   end
 
-  local tPrototype = game.entity_prototypes[turret.name]
+  local tPrototype = prototypes.entity[turret.name]
 
   if tPrototype.turret_range then
     firing_range[turret.name] = tPrototype.turret_range
@@ -385,6 +385,7 @@ function(oldT, newT)
   newT.direction = oldT.direction
   newT.orientation = oldT.orientation
   newT.damage_dealt = oldT.damage_dealt
+  newT.operable = oldT.operable
 
   if oldT.energy ~= nil then
     newT.energy = oldT.energy

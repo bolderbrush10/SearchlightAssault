@@ -25,7 +25,7 @@ local ciItem = {}
 ciItem.type = "item"
 ciItem.name = d.searchlightSignalInterfaceName
 ciItem.place_result = d.searchlightSignalInterfaceName
-ciItem.flags = {"hidden"}
+ciItem.hidden = true
 ciItem.icon = icon.filename
 ciItem.icon_size = icon.icon_size
 ciItem.stack_size = 50
@@ -34,15 +34,15 @@ ciItem.stack_size = 50
 local recipe = {}
 recipe.type = "recipe"
 recipe.name = d.searchlightRecipeName
-recipe.result = d.searchlightItemName
+recipe.results = {{type = "item", name = d.searchlightItemName, amount = 1}}
 recipe.order = "a[small-lamp]-a[searchlight]"
 recipe.energy_required = 20
 recipe.enabled = false
 recipe.ingredients =
 {
-  {"radar",1},
-  {"small-lamp",6},
-  {"decider-combinator",2},
+  {type = "item", name = "radar", amount = 1},
+  {type = "item", name = "small-lamp", amount = 6},
+  {type = "item", name = "decider-combinator", amount = 2},
 }
 
 
@@ -59,14 +59,14 @@ t.effects =
     recipe = d.searchlightRecipeName
   }
 }
-t.prerequisites = {"optics", "circuit-network"}
+t.prerequisites = {"lamp", "circuit-network", "radar"}
 t.unit =
 {
   count = 125,
   ingredients =
   {
-    {"automation-science-pack", 1},
-    {"logistic-science-pack", 1}
+    {"automation-science-pack",1},
+    {"logistic-science-pack",1}
   },
   time = 15
 }

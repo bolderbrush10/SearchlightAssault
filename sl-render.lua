@@ -19,11 +19,11 @@ local EDGE_OUTER = 4
 
 -- The map helps limit UI redraws for a given searchlight
 export.InitTables_Render = function()
-  -- Map: gID -> 0/playerIndex -> {epochTick, {render_id}}
-  global.slFOVRenders = {}
+  -- Map: gID -> 0/playerIndex -> {epochTick, {LuaRenderObject}}
+  storage.slFOVRenders = {}
 
-  -- Map: playerIndex -> {g, {render_id}}
-  global.tposRenders = {}
+  -- Map: playerIndex -> {g, {LuaRenderObject}}
+  storage.tposRenders = {}
 end
 
 
@@ -114,25 +114,25 @@ end
 
 local function Render(g, player, force, wParams)
   local sl = g.light
-  local ids = {}
+  local objs = {}
 
-  ids[1] = rendering.draw_arc(MakeArcParams(sl, player, force, wParams))
-  ids[2] = rendering.draw_arc(MakeEdgeParams(sl, player, force, wParams, EDGE_INNER))
-  ids[3] = rendering.draw_arc(MakeEdgeParams(sl, player, force, wParams, EDGE_OUTER))
+  objs[1] = rendering.draw_arc(MakeArcParams(sl, player, force, wParams))
+  objs[2] = rendering.draw_arc(MakeEdgeParams(sl, player, force, wParams, EDGE_INNER))
+  objs[3] = rendering.draw_arc(MakeEdgeParams(sl, player, force, wParams, EDGE_OUTER))
 
   if wParams.len < (math.pi*2) then
-    ids[4] = rendering.draw_line(MakeLineParams(sl, player, force, wParams, EDGE_LEFT))
-    ids[5] = rendering.draw_line(MakeLineParams(sl, player, force, wParams, EDGE_RIGHT))
+    objs[4] = rendering.draw_line(MakeLineParams(sl, player, force, wParams, EDGE_LEFT))
+    objs[5] = rendering.draw_line(MakeLineParams(sl, player, force, wParams, EDGE_RIGHT))
   end
 
-  return ids
+  return objs
 end
 
 
 local function Unrender(epochAndRender)
   if epochAndRender and epochAndRender[2] then
-    for _, rID in pairs(epochAndRender[2]) do
-      rendering.destroy(rID)
+    for _, rObj in pairs(epochAndRender[2]) do
+      rObj.destroy()
     end
     epochAndRender[2] = nil 
   end
@@ -140,30 +140,30 @@ end
 
 
 local function ClearGestaltRender(gID)
-  local pIndexToEpochAndRenderMap = global.slFOVRenders[gID]
+  local pIndexToEpochAndRenderMap = storage.slFOVRenders[gID]
   for pIndex, epochAndRender in pairs(pIndexToEpochAndRenderMap) do
     Unrender(epochAndRender)
   end
-  global.slFOVRenders[gID] = nil
+  storage.slFOVRenders[gID] = nil
 end
 
 
 export.DrawTurtlePos = function(player, g)
-  if not global.tposRenders[player.index] then
-    local rID = rendering.draw_sprite{sprite  = "utility/shoot_cursor_green", 
+  if not storage.tposRenders[player.index] then
+    local rOb = rendering.draw_sprite{sprite  = "utility/shoot_cursor_green", 
                                       target  = g.turtle, 
                                       surface = g.turtle.surface,
                                       players = {player},
                                       x_scale = 0.4,
                                       y_scale = 0.48,}
 
-    global.tposRenders[player.index] = {g, rID}
+    storage.tposRenders[player.index] = {g, rOb}
   end
 end
 
 
 export.DrawSearchArea = function(sl, player, force, forceRedraw)
-  local g = global.unum_to_g[sl.unit_number]
+  local g = storage.unum_to_g[sl.unit_number]
   if not g or not g.tAdjParams then
     return
   end
@@ -180,22 +180,22 @@ export.DrawSearchArea = function(sl, player, force, forceRedraw)
 
   local gID = g.gID
 
-  if not global.slFOVRenders[gID] then
-    global.slFOVRenders[gID] = {}
+  if not storage.slFOVRenders[gID] then
+    storage.slFOVRenders[gID] = {}
   end
 
   -- If the whole force just saw this area, no need to redraw for just one of its players
   -- (which would cause a double-draw and render it twice as bright as intended)
-  if player and not global.slFOVRenders[gID][0] then
+  if player and not storage.slFOVRenders[gID][0] then
     local pIndex = player.index
-    Unrender(global.slFOVRenders[gID][pIndex])
-    global.slFOVRenders[gID][pIndex] = {game.tick, Render(g, player, force, params)}
+    Unrender(storage.slFOVRenders[gID][pIndex])
+    storage.slFOVRenders[gID][pIndex] = {game.tick, Render(g, player, force, params)}
   elseif force then
-    for index, _ in pairs(global.slFOVRenders[gID]) do
-      Unrender(global.slFOVRenders[gID][index])
+    for index, _ in pairs(storage.slFOVRenders[gID]) do
+      Unrender(storage.slFOVRenders[gID][index])
     end
 
-    global.slFOVRenders[gID][0] = {game.tick, Render(g, player, force, params)}
+    storage.slFOVRenders[gID][0] = {game.tick, Render(g, player, force, params)}
   end
 end
 
@@ -203,8 +203,8 @@ end
 export.Update = function(tick)
   local added = {}
 
-  for gID, pIndexToEpochAndRenderMap in pairs(global.slFOVRenders) do
-    local g = global.gestalts[gID]
+  for gID, pIndexToEpochAndRenderMap in pairs(storage.slFOVRenders) do
+    local g = storage.gestalts[gID]
 
     if not g or not next(pIndexToEpochAndRenderMap) then
       ClearGestaltRender(gID)
@@ -219,7 +219,7 @@ export.Update = function(tick)
           -- If a player is still mousing over this light, or has its GUI open,
           -- then keep showing its range for that player
           for _, p in pairs(force.players) do
-            local gAndGUI = global.pIndexToGUI[p.index]
+            local gAndGUI = storage.pIndexToGUI[p.index]
             if     (p.selected == g.light or p.selected == g.signal)
                 or (gAndGUI and gAndGUI[1] == g.gID) then
               -- Unsafe to add to map while iterating it, 
@@ -233,7 +233,7 @@ export.Update = function(tick)
           -- If this just emptied the outer map, we'll clear it next tick by checking next()
 
         elseif pIndex > 0 and game.players[pIndex] and game.players[pIndex].selected ~= g.light then          
-          local gAndGUI = global.pIndexToGUI[pIndex]
+          local gAndGUI = storage.pIndexToGUI[pIndex]
           -- Keep delaying the Unrender while the player has the GUI open
           if not gAndGUI or gAndGUI[1] ~= g.gID then
             Unrender(epochAndRender)
@@ -251,30 +251,30 @@ export.Update = function(tick)
     local g = entry.g
     local p = entry.p
     Unrender(entry)
-    global.slFOVRenders[g.gID][p.index] = {game.tick, Render(g, p, nil, g.tAdjParams)}
+    storage.slFOVRenders[g.gID][p.index] = {game.tick, Render(g, p, nil, g.tAdjParams)}
   end
 
   -- Finally, update turtle position rendering for players
   -- who are mousing over a searchlight or have its GUI open
-  for pIndex, gAndRID in pairs(global.tposRenders) do
+  for pIndex, gAndRID in pairs(storage.tposRenders) do
     if game.players[pIndex] then
       local g = gAndRID[1]
 
       if g and g.light and g.light.valid and g.turtle and g.turtle.valid
            and game.players[pIndex].selected == g.light then
-        if rendering.is_valid(gAndRID[2]) then
-          rendering.set_target(gAndRID[2], g.turtle)
+        if gAndRID[2].valid then
+          gAndRID[2].target = g.turtle
         else
-          global.tposRenders[pIndex] = nil
+          storage.tposRenders[pIndex] = nil
           export.DrawTurtlePos(game.players[pIndex], g)
         end
       else
-        rendering.destroy(gAndRID[2])
-        global.tposRenders[pIndex] = nil
+        gAndRID[2].destroy()
+        storage.tposRenders[pIndex] = nil
       end
     else
-      rendering.destroy(gAndRID[2])
-      global.tposRenders[pIndex] = nil
+      gAndRID[2].destroy()
+      storage.tposRenders[pIndex] = nil
     end
   end
 end

@@ -70,7 +70,7 @@ end)
 
 local function handleUninstall()
   if settings.global[d.uninstallMod].value then
-    for _, g in pairs(global.gestalts) do
+    for _, g in pairs(storage.gestalts) do
       local b = g.light;
       cg.SearchlightRemoved(b.unit_number);
       b.destroy()
@@ -78,12 +78,12 @@ local function handleUninstall()
 
     -- The above loop SHOULD have cleaned this out,
     -- but it can't hurt to be careful
-    for _, tID in pairs(global.boosted_to_tunion) do
-      cu.UnBoost(global.tunions[tID])
+    for _, tID in pairs(storage.boosted_to_tunion) do
+      cu.UnBoost(storage.tunions[tID])
     end
 
-    global.boosted_to_tunion = {}
-    global.tunions = {}
+    storage.boosted_to_tunion = {}
+    storage.tunions = {}
   end
 end
 
@@ -137,7 +137,7 @@ end)
 
 
 local function detectEditorChanges()
-  local surfaces = global.editorSurfaces
+  local surfaces = storage.editorSurfaces
   
   if not surfaces then
     surfaces = {}
@@ -154,14 +154,14 @@ local function detectEditorChanges()
     -- and carefully pick apart any tunions with an invalid turret
     -- (We'll do the turrets first to make it less likely to crash
     --  if an invalid searchlight references an invalid turret)
-    for tuID, tu in pairs(global.tunions) do
+    for tuID, tu in pairs(storage.tunions) do
       if not tu.turret.valid then
         cu.TurretRemoved(nil, tu)
       end
     end
 
     -- Then do the same for gestalts
-    for gID, g in pairs(global.gestalts) do
+    for gID, g in pairs(storage.gestalts) do
       if not g.light.valid then
         cg.SearchlightRemoved(nil, false, g)
       end
@@ -172,9 +172,9 @@ local function detectEditorChanges()
       if  t.name == d.searchlightBaseName
           or t.name == d.searchlightAlarmName
           or t.name == d.searchlightSafeName then
-        if not global.unum_to_g[t.unit_number] then SearchlightAdded(t) end
+        if not storage.unum_to_g[t.unit_number] then SearchlightAdded(t) end
       -- Then check for turrets neighboring gestalts to make sure they got added
-      elseif not global.tun_to_tunion[t.unit_number] then
+      elseif not storage.tun_to_tunion[t.unit_number] then
         cu.TurretAdded(t)
       end   
     end
@@ -187,20 +187,20 @@ end
 -- a player is messing with stuff in the map editor
 -- (Since events don't fire in some editor tabs)
 local function checkEditor()
-  global.editorSurfaces = nil
+  storage.editorSurfaces = nil
 
   for _, p in pairs(game.players) do
     if p.controller_type == defines.controllers.editor then
-      if not global.editorSurfaces then
-        global.editorSurfaces = {}
+      if not storage.editorSurfaces then
+        storage.editorSurfaces = {}
       end
 
-      global.editorSurfaces[p.surface.index] = true
+      storage.editorSurfaces[p.surface.index] = true
     end
   end
 
   -- All players left the editor, do a final sweep
-  if global.inEditor == nil then
+  if storage.inEditor == nil then
     detectEditorChanges()
   end
 end
@@ -217,10 +217,10 @@ function(event)
     if     entity.name == d.searchlightBaseName 
         or entity.name == d.searchlightSafeName
         or entity.name == d.searchlightAlarmName then
-      local g = global.unum_to_g[entity.unit_number]
+      local g = storage.unum_to_g[entity.unit_number]
       if g then
         -- 'Wake' safe-mode'd searchlights so they update wander parameters
-        cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+        cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior().sections[1])
 
         -- Shouldn't double draw if already drawn for whole force by above call
         rd.DrawSearchArea(entity, p, nil)
@@ -257,28 +257,28 @@ function(event)
 
   cg.CheckGestaltFoes()
 
-  if global.spotter_timeouts[tick] then
-    cg.CloseWatch(global.spotter_timeouts[tick])
-    global.spotter_timeouts[tick] = nil
+  if storage.spotter_timeouts[tick] then
+    cg.CloseWatch(storage.spotter_timeouts[tick])
+    storage.spotter_timeouts[tick] = nil
   end
 
-  for syncTick, list in pairs(global.animation_sync) do
+  for syncTick, list in pairs(storage.animation_sync) do
     if tick == syncTick then
       cg.SyncReady(list)
       -- Should be safe to remove from table while iterating in lua      
-      global.animation_sync[tick] = nil
+      storage.animation_sync[tick] = nil
     else
       cg.CheckSync(list)
     end
   end
 
-  for pIndex, gAndGUI in pairs(global.pIndexToGUI) do
+  for pIndex, gAndGUI in pairs(storage.pIndexToGUI) do
     local gID = gAndGUI[1]
     if cgui.validatePlayerAndLight(pIndex, gID) and cgui.validateGUI(gAndGUI[2]) then
-      local g = global.gestalts[gID]
+      local g = storage.gestalts[gID]
       cgui.updateOnTick(g, gAndGUI[2])
       -- Update the wander parameters, just in case this searchlight is in safe mode
-      cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+      cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior().sections[1])
     else
       -- Should be safe to remove from table while iterating in lua
       cgui.CloseSearchlightGUI(pIndex)
@@ -334,7 +334,7 @@ end)
 
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
-  local gAndGUI = global.pIndexToGUI[event.player_index]
+  local gAndGUI = storage.pIndexToGUI[event.player_index]
   if not gAndGUI then
     return
   end
@@ -345,10 +345,10 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
     return
   end
 
-  local g = global.gestalts[gAndGUI[1]]
+  local g = storage.gestalts[gAndGUI[1]]
   cgui.updateOnTextInput(g, gAndGUI[2])
 
-  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior())
+  cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior().sections[1])
 end)
 
 
@@ -371,7 +371,7 @@ end)
 script.on_event(defines.events.on_ai_command_completed,
 function(event)
 
-  local g = global.unum_to_g[event.unit_number]
+  local g = storage.unum_to_g[event.unit_number]
   if not g then
     return
   end
@@ -399,8 +399,8 @@ end)
 script.on_event(defines.events.on_player_rotated_entity,
 function(event)
   local e = event.entity
-  local tu = global.tun_to_tunion[e.unit_number]
-  local g = global.unum_to_g[e.unit_number]
+  local tu = storage.tun_to_tunion[e.unit_number]
+  local g = storage.unum_to_g[e.unit_number]
 
   if tu and tu.boosted then
     -- Detect if a player rotated a turret with an arc (eg, a flame turret)
@@ -473,9 +473,9 @@ end)
 -- DESTRUCTIONS
 --
 
--- Detect destructions registered through LuaBootstrap.register_on_entity_destroyed
+-- Detect destructions registered through LuaBootstrap.register_on_object_destroyed
 -- TODO Do I need to register ghost-entities for the searchlight & interface, too?
-script.on_event(defines.events.on_entity_destroyed, function(event)
+script.on_event(defines.events.on_object_destroyed, function(event)
   if event.unit_number then
     cg.SearchlightRemoved(event.unit_number)
   end
@@ -517,7 +517,7 @@ local function entityRemoved(event)
   end
 
   -- It's possible that one searchlight's friend is another's foe...
-  if entity.unit_number and next(r.getRelationLHS(global.FoeGestaltRelations, entity.unit_number)) then
+  if entity.unit_number and next(r.getRelationLHS(storage.FoeGestaltRelations, entity.unit_number)) then
     cg.FoeDied(entity)
   end
 end
@@ -598,19 +598,19 @@ end)
 --
 
 local function CopyCombinatorToSignalInterface(source, dest)
-  local sourceParams = source.parameters
+  local sourceParams = source.filters
 
   for _, slotNum in pairs(pastableSignals) do
-    local currSig = dest.get_signal(slotNum)
-    currSig.count = 0
+    local currSig = dest.get_slot(slotNum)
+    currSig.min = 0
     
     for _, p in pairs(sourceParams) do
-      if p.signal.name == currSig.signal.name and p.count then
-        currSig.count = currSig.count + p.count
+      if p.value.name == currSig.value.name and p.min then
+        currSig.min = currSig.min + p.min
       end
     end
 
-    dest.set_signal(slotNum, currSig)
+    dest.set_slot(slotNum, currSig)
   end
 end
 
@@ -652,7 +652,7 @@ function(event)
     return
   end
 
-  if not game.entity_prototypes[unboostedName] then
+  if not prototypes.entity[unboostedName] then
     return
   end
 
@@ -689,26 +689,26 @@ function(event)
     return
   end
 
-  local gDest = global.unum_to_g[dest.unit_number]
+  local gDest = storage.unum_to_g[dest.unit_number]
 
   if not gDest then
     return
   end
 
   if source.name == "constant-combinator" then
-    CopyCombinatorToSignalInterface(source.get_control_behavior(), 
-                                    gDest.signal.get_control_behavior())
+    CopyCombinatorToSignalInterface(source.get_control_behavior().sections[1], 
+                                    gDest.signal.get_control_behavior().sections[1])
   else
-    local gSource = global.unum_to_g[source.unit_number]
+    local gSource = storage.unum_to_g[source.unit_number]
 
     if not gSource then
       return
     end
 
-    local sourceC = gSource.signal.get_control_behavior()
-    local destC = gDest.signal.get_control_behavior()
+    local sourceC = gSource.signal.get_control_behavior().sections[1]
+    local destC = gDest.signal.get_control_behavior().sections[1]
     for _, slotNum in pairs(pastableSignals) do
-      destC.set_signal(slotNum, sourceC.get_signal(slotNum))
+      destC.set_slot(slotNum, sourceC.get_slot(slotNum))
     end      
   end
 end)

@@ -1,1 +1,1 @@
-global.remoteBlock = {}
+storage.remoteBlock = {}

@@ -32,7 +32,7 @@ local lookupAmmoToBoosted = {}
 
 
 export.InitTables_Ammo = function()
-  global.ammoAudit = {}
+  storage.ammoAudit = {}
 end
 
 
@@ -145,7 +145,7 @@ local function TryBoostingAmmo(turret)
     return
   end
 
-  global.ammoAudit[turret.unit_number] = ammoCount
+  storage.ammoAudit[turret.unit_number] = ammoCount
 end
 
 
@@ -162,7 +162,7 @@ export.UnBoostAmmo = function(entity)
     return
   end
 
-  global.ammoAudit[entity.unit_number] = nil
+  storage.ammoAudit[entity.unit_number] = nil
 
   local invList = GetEntityInventoriesList(entity)
 
@@ -188,7 +188,7 @@ end
 
 
 export.AuditBoostedAmmo = function(turret)
-  if global.ammoAudit[turret.unit_number] then
+  if storage.ammoAudit[turret.unit_number] then
     local ammoCount = 0
     local inv = GetTurretInventory(turret)
 
@@ -196,7 +196,7 @@ export.AuditBoostedAmmo = function(turret)
       return -- Inventory invalidated, try again later
     end
 
-    auditAmmo = global.ammoAudit[turret.unit_number]
+    auditAmmo = storage.ammoAudit[turret.unit_number]
     currentAmmo = 0
     for index=1, #inv do
       slotAmmo = GetSlotBoostedAmmoCount(inv[index])
@@ -206,9 +206,9 @@ export.AuditBoostedAmmo = function(turret)
     end
 
     if currentAmmo > 0 then
-      global.ammoAudit[turret.unit_number] = currentAmmo
+      storage.ammoAudit[turret.unit_number] = currentAmmo
     else
-      global.ammoAudit[turret.unit_number] = nil
+      storage.ammoAudit[turret.unit_number] = nil
     end
 
     if currentAmmo >= auditAmmo then

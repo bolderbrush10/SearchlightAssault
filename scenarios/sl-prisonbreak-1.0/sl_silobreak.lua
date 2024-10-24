@@ -116,7 +116,7 @@ end
 
 local on_rocket_launched = function(event)
 
-  if global.no_victory then return end
+  if storage.no_victory then return end
 
   local rocket = event.rocket
   if not (rocket and rocket.valid) then return end
@@ -192,7 +192,7 @@ local add_remote_interface = function()
     {
       set_no_victory = function(bool)
         if type(bool) ~= "boolean" then error("Value for 'set_no_victory' must be a boolean") end
-        global.no_victory = bool
+        storage.no_victory = bool
       end
     })
   end
@@ -222,7 +222,6 @@ silo_script.on_configuration_changed = function()
     script_data.removed_old_gui = true
     script_data.tracked_items = nil
     remove_old_gui()
-    log("Remove the old silo script GUI")
   end
   script_data.finished = script_data.finished or {}
   script_data.spaced = script_data.spaced or {}
@@ -230,12 +229,12 @@ end
 
 
 silo_script.on_init = function()
-  global.silo_script = global.silo_script or script_data
+  storage.silo_script = storage.silo_script or script_data
 end
 
 
 silo_script.on_load = function()
-  script_data = global.silo_script or script_data
+  script_data = storage.silo_script or script_data
 end
 
 

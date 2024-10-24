@@ -9,19 +9,25 @@ local cgui = require "control-gui"
 
 local export = {}
 
+-- TODO Will be able to simpifly signals in the future
+-- https://forums.factorio.com/viewtopic.php?t=116334
+
 -- hardcoded name lookup below for an ever-so-slight speedup
-local sigDirectX = {type="virtual", name="sl-x"}
-local sigDirectY = {type="virtual", name="sl-y"}
-local sigFoeX    = {type="virtual", name="foe-x-position"}
-local sigFoeY    = {type="virtual", name="foe-y-position"}
-local sigWarn    = {type="virtual", name="sl-warn"}
-local sigAlarm   = {type="virtual", name="sl-alarm"}
-local sigOwnX    = {type="virtual", name="sl-own-x"}
-local sigOwnY    = {type="virtual", name="sl-own-y"}
-local sigRadius  = {type="virtual", name="sl-radius"}
-local sigMin     = {type="virtual", name="sl-minimum"}
-local sigMax     = {type="virtual", name="sl-maximum"}
-local sigRotate  = {type="virtual", name="sl-rotation"}
+local sigDirectX = {type="virtual", quality="normal", name="sl-x"}
+local sigDirectY = {type="virtual", quality="normal", name="sl-y"}
+local sigFoeX    = {type="virtual", quality="normal", name="foe-x-position"}
+local sigFoeY    = {type="virtual", quality="normal", name="foe-y-position"}
+local sigWarn    = {type="virtual", quality="normal", name="sl-warn"}
+local sigAlarm   = {type="virtual", quality="normal", name="sl-alarm"}
+local sigOwnX    = {type="virtual", quality="normal", name="sl-own-x"}
+local sigOwnY    = {type="virtual", quality="normal", name="sl-own-y"}
+local sigRadius  = {type="virtual", quality="normal", name="sl-radius"}
+local sigMin     = {type="virtual", quality="normal", name="sl-minimum"}
+local sigMax     = {type="virtual", quality="normal", name="sl-maximum"}
+local sigRotate  = {type="virtual", quality="normal", name="sl-rotation"}
+
+local rwire = defines.wire_connector_id.circuit_red
+local gwire = defines.wire_connector_id.circuit_green
 
 
 --------------------
@@ -122,25 +128,25 @@ end
 
 export.ReadWanderParameters = function(g, i, c)
   local i = g.signal
-  local c = i.get_control_behavior()
+  local c = i.get_control_behavior().sections[1]
 
-  local connected = (i.get_circuit_network(defines.wire_type.red)
-                  or i.get_circuit_network(defines.wire_type.green))
+  local connected = (i.get_circuit_network(rwire)
+                  or i.get_circuit_network(gwire))
   local rad = 0
   local rot = 0
   local min = 0
   local max = 0
 
   if connected then
-    rad = i.get_merged_signal(sigRadius)
-    rot = i.get_merged_signal(sigRotate)
-    min = i.get_merged_signal(sigMin)
-    max = i.get_merged_signal(sigMax)
+    rad = i.get_signal(sigRadius, rwire, gwire)
+    rot = i.get_signal(sigRotate, rwire, gwire)
+    min = i.get_signal(sigMin   , rwire, gwire)
+    max = i.get_signal(sigMax   , rwire, gwire)
   else
-    rad = c.get_signal(d.circuitSlots.radiusSlot).count
-    rot = c.get_signal(d.circuitSlots.rotateSlot).count
-    min = c.get_signal(d.circuitSlots.minSlot).count
-    max = c.get_signal(d.circuitSlots.maxSlot).count
+    rad = c.get_slot(d.circuitSlots.radiusSlot).min
+    rot = c.get_slot(d.circuitSlots.rotateSlot).min
+    min = c.get_slot(d.circuitSlots.minSlot).min
+    max = c.get_slot(d.circuitSlots.maxSlot).min
   end
 
   ct.UpdateWanderParams(g, rad, rot, min, max)
@@ -150,7 +156,7 @@ end
 -- Checked only a few times a second
 export.CheckCircuitConditions = function()
   local tick = game.tick
-  for gID, g in pairs(global.check_power) do
+  for gID, g in pairs(storage.check_power) do
     if g.light.valid and g.signal.valid then
       if g.light.energy > 0 then
         OutputCircuitSignals(g, tick)
@@ -165,7 +171,7 @@ end
 -- Called by CheckCircuitConditions, but also when an alarm is cleared
 export.ProcessAlarmClearSignals = function(g, tick)
   local i = g.signal
-  local c = i.get_control_behavior()
+  local c = i.get_control_behavior().sections[1]
 
   local warning = 0
   -- Do I want to use d.searchlightSafeTime? A constant 2 seconds seems good...
@@ -174,22 +180,22 @@ export.ProcessAlarmClearSignals = function(g, tick)
   end
 
   -- TODO It turns out that setting signals every nth tick is pretty expensive. (reads are fairly cheap)
-  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
-  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = warning})
+  c.set_slot(d.circuitSlots.foePositionXSlot, {value = sigFoeX,  min = 0})
+  c.set_slot(d.circuitSlots.foePositionYSlot, {value = sigFoeY,  min = 0})
+  c.set_slot(d.circuitSlots.alarmSlot,        {value = sigAlarm, min = 0})
+  c.set_slot(d.circuitSlots.warningSlot,      {value = sigWarn,  min = warning})
 
-  local connected = (i.get_circuit_network(defines.wire_type.red)
-                  or i.get_circuit_network(defines.wire_type.green))
+  local connected = (i.get_circuit_network(defines.wire_connector_id.circuit_red)
+                  or i.get_circuit_network(defines.wire_connector_id.circuit_green))
   local x = 0
   local y = 0
 
   if connected then
-    x = i.get_merged_signal({type="virtual", name="sl-x"})
-    y = i.get_merged_signal({type="virtual", name="sl-y"})
+    x = i.get_signal({type="virtual", name="sl-x"}, rwire, gwire)
+    y = i.get_signal({type="virtual", name="sl-y"}, rwire, gwire)
   else
-    x = c.get_signal(d.circuitSlots.dirXSlot).count
-    y = c.get_signal(d.circuitSlots.dirYSlot).count
+    x = c.get_slot(d.circuitSlots.dirXSlot).min
+    y = c.get_slot(d.circuitSlots.dirYSlot).min
   end
 
   if g.tState ~= ct.FOLLOW and (x ~= 0 or y ~= 0) then
@@ -206,27 +212,26 @@ end
 -- Called by CheckCircuitConditions, but also when an alarm is raised
 export.ProcessAlarmRaiseSignals = function(g)
   local i = g.signal
-  local c = i.get_control_behavior()
+  local c = i.get_control_behavior().sections[1]
 
   if g.light.shooting_target and g.light.shooting_target.valid then
     local pos = g.light.shooting_target.position
-    c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX, count = pos.x})
-    c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY, count = pos.y})
+    c.set_slot(d.circuitSlots.foePositionXSlot, {value = sigFoeX, min = pos.x})
+    c.set_slot(d.circuitSlots.foePositionYSlot, {value = sigFoeY, min = pos.y})
   end
 
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 1})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn, count = 0})  
+  c.set_slot(d.circuitSlots.alarmSlot,        {value = sigAlarm, min = 1})
+  c.set_slot(d.circuitSlots.warningSlot,      {value = sigWarn,  min = 0})  
 end
 
 
 export.ProcessSafeSignals = function(g)
   local i = g.signal
-  local c = i.get_control_behavior()
+  local c = i.get_control_behavior().sections[1]
 
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
+  c.set_slot(d.circuitSlots.alarmSlot,        {value = sigAlarm, min = 0})
+  c.set_slot(d.circuitSlots.warningSlot,      {value = sigWarn,  min = 0})
 end
-
 
 -- Called when a new searchlight is built
 export.SpawnSignalInterface = function(sl)
@@ -236,29 +241,29 @@ export.SpawnSignalInterface = function(sl)
   i.operable = false
   i.destructible = false
 
-  local c = i.get_control_behavior()
+  local c = i.get_control_behavior().sections[1]
 
   local slRotation = u.clampDeg(360 * sl.orientation, 0, true) -- orientation goes 0.0-1
   if not revived then
-    c.set_signal(d.circuitSlots.radiusSlot, {signal = sigRadius,  count = 0})
-    c.set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = slRotation})
-    c.set_signal(d.circuitSlots.minSlot,    {signal = sigMin,     count = 0})
-    c.set_signal(d.circuitSlots.maxSlot,    {signal = sigMax,     count = 0})
-    c.set_signal(d.circuitSlots.dirXSlot,   {signal = sigDirectX, count = 0})
-    c.set_signal(d.circuitSlots.dirYSlot,   {signal = sigDirectY, count = 0})
+    c.set_slot(d.circuitSlots.radiusSlot, {value = sigRadius,  min = 0})
+    c.set_slot(d.circuitSlots.rotateSlot, {value = sigRotate,  min = slRotation})
+    c.set_slot(d.circuitSlots.minSlot,    {value = sigMin,     min = 0})
+    c.set_slot(d.circuitSlots.maxSlot,    {value = sigMax,     min = 0})
+    c.set_slot(d.circuitSlots.dirXSlot,   {value = sigDirectX, min = 0})
+    c.set_slot(d.circuitSlots.dirYSlot,   {value = sigDirectY, min = 0})
   else
-    local oldRotation = c.get_signal(d.circuitSlots.rotateSlot).count
+    local oldRotation = c.get_slot(d.circuitSlots.rotateSlot).min
     local diff = oldRotation - slRotation
     local newRot = u.clampDeg(oldRotation - diff, 0, true)
-    c.set_signal(d.circuitSlots.rotateSlot, {signal = sigRotate,  count = newRot})
+    c.set_slot(d.circuitSlots.rotateSlot, {value = sigRotate,  min = newRot})
   end
 
-  c.set_signal(d.circuitSlots.ownPositionXSlot, {signal = sigOwnX,  count = i.position.x})
-  c.set_signal(d.circuitSlots.ownPositionYSlot, {signal = sigOwnY,  count = i.position.y})
-  c.set_signal(d.circuitSlots.alarmSlot,        {signal = sigAlarm, count = 0})
-  c.set_signal(d.circuitSlots.warningSlot,      {signal = sigWarn,  count = 0})
-  c.set_signal(d.circuitSlots.foePositionXSlot, {signal = sigFoeX,  count = 0})
-  c.set_signal(d.circuitSlots.foePositionYSlot, {signal = sigFoeY,  count = 0})
+  c.set_slot(d.circuitSlots.ownPositionXSlot, {value = sigOwnX,  min = i.position.x})
+  c.set_slot(d.circuitSlots.ownPositionYSlot, {value = sigOwnY,  min = i.position.y})
+  c.set_slot(d.circuitSlots.alarmSlot,        {value = sigAlarm, min = 0})
+  c.set_slot(d.circuitSlots.warningSlot,      {value = sigWarn,  min = 0})
+  c.set_slot(d.circuitSlots.foePositionXSlot, {value = sigFoeX,  min = 0})
+  c.set_slot(d.circuitSlots.foePositionYSlot, {value = sigFoeY,  min = 0})
 
   return i
 end
@@ -278,12 +283,12 @@ export.Rotated = function(g, light, oldDir, pIndex)
                         g.tWanderParams.min, g.tWanderParams.max)
   rd.DrawSearchArea(g.light, nil, g.light.force)
 
-  local control = g.signal.get_control_behavior()
-  local sig = control.get_signal(d.circuitSlots.rotateSlot)
+  local control = g.signal.get_control_behavior().sections[1]
+  local sig = control.get_slot(d.circuitSlots.rotateSlot)
 
   -- We'll clamp the value down here so we don't try to factor in circuit signals
-  sig.count = u.clampDeg(sig.count + newRot, 0, true)
-  control.set_signal(d.circuitSlots.rotateSlot, sig)
+  sig.min = u.clampDeg(sig.min + newRot, 0, true)
+  control.set_slot(d.circuitSlots.rotateSlot, sig)
 
   -- If there's a direct waypoint set, go ahead and rotate that
   if     g.tState == ct.MOVE 
@@ -295,13 +300,13 @@ export.Rotated = function(g, light, oldDir, pIndex)
       local theta = math.atan2(g.tCoord.y, g.tCoord.x)
       newCoord = u.ScreenOrientationToPosition(light.position, theta + newRot, math.sqrt(distSq))
 
-      local dirX = control.get_signal(d.circuitSlots.dirXSlot)
-      local dirY = control.get_signal(d.circuitSlots.dirYSlot)
-      dirX.count = newCoord.x - light.position.x
-      dirY.count = newCoord.y - light.position.y
+      local dirX = control.get_slot(d.circuitSlots.dirXSlot)
+      local dirY = control.get_slot(d.circuitSlots.dirYSlot)
+      dirX.min   = newCoord.x - light.position.x
+      dirY.min   = newCoord.y - light.position.y
 
-      control.set_signal(d.circuitSlots.dirXSlot, dirX)
-      control.set_signal(d.circuitSlots.dirYSlot, dirY)
+      control.set_slot(d.circuitSlots.dirXSlot, dirX)
+      control.set_slot(d.circuitSlots.dirYSlot, dirY)
     else
       local distSq = u.lensquared(g.turtle.position, light.position)
       local theta = (g.tWanderParams.rotation*math.pi)/180

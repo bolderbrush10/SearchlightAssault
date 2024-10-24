@@ -123,7 +123,7 @@ styles["sla_circuit_icon"] = {
 
 styles["sla_safe_frame"] = {
     type = "frame_style",
-    parent = "unlocked_achievement_frame",
+    parent = "completed_achievement_frame",
     width = 250,
     padding = 0,
     left_padding = 4,
@@ -135,13 +135,13 @@ styles["sla_safe_frame"] = {
 styles["sla_safe_label"] = {
     type = "label_style",
     font = "default-large-semibold",
-    parent = "achievement_percent_label",
+    parent = "achievement_locked_title_label",
     font_color = safeGreenColor,
 }
 
 styles["sla_warn_frame"] = {
     type = "frame_style",
-    parent = "locked_achievement_frame",
+    parent = "failed_achievement_frame",
     width = 250,
     padding = 0,
     left_padding = 4,
