@@ -643,8 +643,6 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   cgui.updateOnTick(g, main_frame)
   cgui.updateOnEntity(g, main_frame)
 
-  main_frame.bring_to_front() 
-  main_frame.focus()
   player.play_sound{path="entity-open/constant-combinator"}
 end
 

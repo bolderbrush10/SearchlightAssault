@@ -46,6 +46,9 @@ local function MakeBoost(currTable, newRange)
 
       local boostCopy = table.deepcopy(currTable[turret.name])
 
+      -- Just hides from some GUIs (logistics requests, etc)
+      boostCopy.hidden = true
+
       -- Preserve existing localised_names other mods might have made
       if boostCopy.localised_name == nil then
         boostCopy.localised_name = {"entity-name." .. boostCopy.name}

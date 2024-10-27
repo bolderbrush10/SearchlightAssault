@@ -287,7 +287,9 @@ function(event)
 
   if storage.restoreOperable and storage.restoreOperable[tick] then 
     for _, e in pairs (storage.restoreOperable[tick]) do
-      e.operable = true
+      if e.valid then 
+        e.operable = true
+      end
     end
     storage.restoreOperable[tick] = nil
     if not next(storage.restoreOperable) then

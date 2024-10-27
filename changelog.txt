@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.0
+Date: 2024-10-26
+  Changes:
+    - EXPERIMENTAL RELEASE - Fixes for Space Age Release, please report any crashes through the mod portal discussion.
+---------------------------------------------------------------------------------------------------
 Version: 2.2.20
 Date: 2024-09-13
   Changes:
