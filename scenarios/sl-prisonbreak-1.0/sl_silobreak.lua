@@ -55,7 +55,7 @@ local on_built_entity = function(event)
     chest.get_inventory(defines.inventory.chest).insert({name="repair-pack", count=1})
     
     local box = chest.bounding_box
-    for k, entity in pairs (e.surface.find_entities_filtered{area = box, collision_mask = "player-layer"}) do
+    for k, entity in pairs (e.surface.find_entities_filtered{area = box, collision_mask = "player"}) do
       if entity.valid then
         if entity ~= chest and entity ~= e then
           entity.die()
@@ -67,7 +67,7 @@ local on_built_entity = function(event)
     box.left_top.y = box.left_top.y - 1.2
     box.right_bottom.x = box.right_bottom.x + 1.2
     box.right_bottom.y = box.right_bottom.y + 1.2
-    for k, entity in pairs (e.surface.find_entities_filtered{area = box, collision_mask = "player-layer"}) do
+    for k, entity in pairs (e.surface.find_entities_filtered{area = box, collision_mask = "player"}) do
       if entity.valid then
         entity.damage(200, "neutral")
       end

@@ -257,7 +257,7 @@ export.Update = function(tick)
   -- Finally, update turtle position rendering for players
   -- who are mousing over a searchlight or have its GUI open
   for pIndex, gAndRID in pairs(storage.tposRenders) do
-    if game.players[pIndex] then
+    if game.players[pIndex] and gAndRID then
       local g = gAndRID[1]
 
       if g and g.light and g.light.valid and g.turtle and g.turtle.valid
@@ -268,11 +268,11 @@ export.Update = function(tick)
           storage.tposRenders[pIndex] = nil
           export.DrawTurtlePos(game.players[pIndex], g)
         end
-      else
+      elseif gAndRID[2] and gAndRID[2].valid then
         gAndRID[2].destroy()
         storage.tposRenders[pIndex] = nil
       end
-    else
+    elseif gAndRID[2] and gAndRID[2].valid then
       gAndRID[2].destroy()
       storage.tposRenders[pIndex] = nil
     end

@@ -117,7 +117,7 @@ local getRandTile = function(tries, area)
       randPos = {x=tilePosX, y=tilePosY}
     end    
   
-    if not s.get_tile(randPos).collides_with("player-layer") then
+    if not s.get_tile(randPos).collides_with("player") then
       return randPos
     end
   end
@@ -169,7 +169,7 @@ local spawnBiters = function(nest)
     local posX = nest.position.x + offset.x
     local posY = nest.position.y + offset.y
     
-    if not s.get_tile({posX, posY}).collides_with("player-layer") then
+    if not s.get_tile({posX, posY}).collides_with("player") then
       local e = nil
       if storage.pbreakDifficulty > 2 and i % 2 == 0 then
         e = s.create_entity{name="small-spitter", position={posX, posY}}
@@ -275,13 +275,14 @@ local aggressiveBiterExpand = function()
   end
 
   local f = game.forces["enemy"]
-  if f.evolution_factor < 0.6 then
-    f.evolution_factor = f.evolution_factor + 0.0006
+  local currFactor = f.get_evolution_factor()
+  if currFactor < 0.6 then
+    f.set_evolution_factor(currFactor + 0.0006)
     if storage.pbreakDifficulty > 2 then
-      f.evolution_factor = f.evolution_factor + 0.0002
+      f.set_evolution_factor(currFactor + 0.0002)
     end
     if storage.pbreakDifficulty > 3 then
-      f.evolution_factor = f.evolution_factor + 0.004
+      f.set_evolution_factor(currFactor + 0.004)
     end
   end
   
@@ -390,7 +391,7 @@ local dropBiterCapsules = function()
     game.forces["Smugglers"].add_chart_tag(1, {position = randPos, text="specimen pod"})
 
     local box = chest.bounding_box
-    for k, entity in pairs (s.find_entities_filtered{area = box, collision_mask = "player-layer"}) do
+    for k, entity in pairs (s.find_entities_filtered{area = box, collision_mask = "player"}) do
       if entity.valid and entity ~= chest then
           entity.die()
       end
@@ -400,7 +401,7 @@ local dropBiterCapsules = function()
     box.left_top.y = box.left_top.y - 1.2
     box.right_bottom.x = box.right_bottom.x + 1.2
     box.right_bottom.y = box.right_bottom.y + 1.2
-    for k, entity in pairs (s.find_entities_filtered{area = box, collision_mask = "player-layer"}) do
+    for k, entity in pairs (s.find_entities_filtered{area = box, collision_mask = "player"}) do
       if entity.valid then
         entity.damage(120, "neutral")
       end
