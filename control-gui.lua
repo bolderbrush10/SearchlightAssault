@@ -464,15 +464,15 @@ local function updateForRotation(g, GUI)
   local control = g.signal.get_control_behavior().sections[1]
   local rotateSig = control.get_slot(d.circuitSlots.rotateSlot)
 
-  local rotateText = leftFlow["sla-gui-table-patrol"]["sla_gui_" .. rotateSig.signal.name]
+  local rotateText = leftFlow["sla-gui-table-patrol"]["sla_gui_" .. rotateSig.value.name]
   rotateText.text = tostring(rotateSig.min)
 
   local dirXSig = control.get_slot(d.circuitSlots.dirXSlot)
   local dirYSig = control.get_slot(d.circuitSlots.dirYSlot)
 
-  local dirXText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirXSig.signal.name]
+  local dirXText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirXSig.value.name]
   dirXText.text = tostring(dirXSig.min)
-  local dirYText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirYSig.signal.name]
+  local dirYText = leftFlow["sla-gui-table-guard"]["sla_gui_" .. dirYSig.value.name]
   dirYText.text = tostring(dirYSig.min)
 end
 
@@ -643,6 +643,8 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   cgui.updateOnTick(g, main_frame)
   cgui.updateOnEntity(g, main_frame)
 
+  main_frame.bring_to_front() 
+  main_frame.focus()
   player.play_sound{path="entity-open/constant-combinator"}
 end
 

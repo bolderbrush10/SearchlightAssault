@@ -97,18 +97,18 @@ local function RotateDirByOne(g, light, oldDir)
   local newDir = light.direction
 
   -- Detect clockwise looparound
-  if oldDir == 6 and newDir == 0 then
+  if oldDir == 12 and newDir == 0 then
     return 45
   end
-  if oldDir == 7 and newDir == 1 then
+  if oldDir == 14 and newDir == 2 then
     return 45
   end
 
   -- Detect counter-clockwise looparound
-  if oldDir == 0 and newDir == 6 then
+  if oldDir == 0 and newDir == 12 then
     return -45
   end
-  if oldDir == 1 and newDir == 7 then
+  if oldDir == 2 and newDir == 14 then
     return -45
   end
 

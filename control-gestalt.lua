@@ -263,7 +263,6 @@ local function EnterSafeMode(g)
     return -- Already in safe mode
   end
 
-  g.light.direction = 3
   SpawnSafeLight(g)
 
   g.turtle.active = false
@@ -404,7 +403,6 @@ export.SearchlightAdded = function(sl)
   -- and thus no on_mined / on_died event is called, we can still destroy our gestalt
   script.register_on_object_destroyed(sl)
 
-  sl.operable = false
   sl.shooting_target = turtle
   ct.WindupTurtle(g, turtle)
 

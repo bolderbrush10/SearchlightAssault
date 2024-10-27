@@ -7,8 +7,6 @@ TODO The graphics_set base_visualization is loading each of my layers pointing n
 TODO fix searchlight spotlight's rotation when targeting enemies run around (bug?)
 		 it also affects the light at the base of the turret... bug report / min viable demo?
 		 
-TODO fix that operable = false stops us from rotating our searchlights' arcs...
-
 TODO quality in searchlights, quality for boosted prototype generation
 TODO checkout placeable_position_visualization / StatelessVisualisation
 

@@ -285,6 +285,16 @@ function(event)
     end
   end
 
+  if storage.restoreOperable and storage.restoreOperable[tick] then 
+    for _, e in pairs (storage.restoreOperable[tick]) do
+      e.operable = true
+    end
+    storage.restoreOperable[tick] = nil
+    if not next(storage.restoreOperable) then
+      storage.restoreOperable = nil
+    end
+  end
+
   rd.Update(event.tick)
 end)
 
@@ -326,9 +336,31 @@ script.on_event(defines.events.on_gui_click, function(event)
   end
 end)
 
-
 -- Close our GUI if something else opens
 script.on_event(defines.events.on_gui_opened, function(event)
+  local gAndGUI = storage.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  if event.entity then
+    local g = storage.unum_to_g[event.entity.unit_number]
+
+    if g and g.gID == gAndGUI[1] then
+      -- This is the "turret GUI" for the searchlight we've got a GUI for.
+      -- Close it.
+      event.entity.operable = false
+      if not storage.restoreOperable then
+        storage.restoreOperable = {}
+      end
+      if not storage.restoreOperable[game.tick + 1] then
+        storage.restoreOperable[game.tick + 1] = {}
+      end 
+      table.insert(storage.restoreOperable[game.tick + 1], event.entity)
+      return
+    end
+  end
+
   cgui.CloseSearchlightGUI(event.player_index)
 end)
 
