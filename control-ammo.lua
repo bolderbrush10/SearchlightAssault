@@ -118,10 +118,10 @@ local function GetBoostableAmmoType(ammoStack)
     return lookupAmmoToBoosted[name]
   end
 
-  local prototype = game.item_prototypes[name]
+  local prototype = prototypes.item[name]
   local boostName = prototype.name .. d.boostSuffix
 
-  if game.item_prototypes[boostName] then
+  if prototypes.item[boostName] then
     lookupAmmoToBoosted[name] = boostName
   end
 end
@@ -137,7 +137,7 @@ local function TryBoostingAmmo(turret)
   for index=1, #inv do
     local boostName = GetBoostableAmmoType(inv[index])
     if boostName then
-      ammoCount = ammoCount + SwapAmmo(inv, inv[index], game.item_prototypes[boostName])
+      ammoCount = ammoCount + SwapAmmo(inv, inv[index], prototypes.item[boostName])
     end
   end
 
@@ -174,11 +174,11 @@ export.UnBoostAmmo = function(entity)
     local inv = entity.get_inventory(invName)
     for index=1, #inv do
       if inv[index] and inv[index].valid and inv[index].valid_for_read then
-        local prototype = game.item_prototypes[inv[index].name]
+        local prototype = prototypes.item[inv[index].name]
         if u.EndsWith(prototype.name, d.boostSuffix) then
           local baseName = prototype.name:gsub(d.boostSuffix, "")
-          if game.item_prototypes[baseName] then
-            SwapAmmo(inv, inv[index], game.item_prototypes[baseName])
+          if prototypes.item[baseName] then
+            SwapAmmo(inv, inv[index], prototypes.item[baseName])
           end
         end
       end

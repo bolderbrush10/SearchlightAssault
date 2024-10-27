@@ -278,7 +278,7 @@ local function CheckAmmo(turret)
   local min = nil
   for index=1, #inv do
     if inv[index] and inv[index].valid and inv[index].valid_for_read then
-      local prototype = game.item_prototypes[inv[index].name]
+      local prototype = prototypes.item[inv[index].name]
       if prototype then
 
         local ammoType = prototype.get_ammo_type("turret")
