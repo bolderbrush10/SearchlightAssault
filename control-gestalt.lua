@@ -536,7 +536,7 @@ export.OpenWatch = function(gID)
     storage.spotter_timeouts[tickToClose] = {}
   end
 
-  table.insert(storage.spotter_timeouts[tickToClose], gID)
+  storage.spotter_timeouts[tickToClose][gID] = true
 end
 
 
@@ -544,7 +544,7 @@ end
 export.CloseWatch = function(gIDs)
   local tick = game.tick
 
-  for _, gID in pairs(gIDs) do
+  for gID, _ in pairs(gIDs) do
     local g = storage.gestalts[gID]
 
     -- Check if our searchlight was destroyed in the ticks since the watch was opened
