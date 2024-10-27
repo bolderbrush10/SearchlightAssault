@@ -84,7 +84,7 @@ end
 for _, pIndexToEpochAndRenderMap in pairs(storage.slFOVRenders) do
   for _, epochAndRender in pairs(pIndexToEpochAndRenderMap) do
     for _, render in pairs(epochAndRender) do
-      rendering.destroy(render)
+      render.destroy()
     end
   end
 end

@@ -322,7 +322,8 @@ function export.TurretRemoved(turret, tu)
       tu.control = nil
     end
     if tu.boostAnimation then
-      rendering.destroy(tu.boostAnimation)
+      tu.boostAnimation.destroy()
+      tu.boostAnimation = nil
     end
 
     storage.tun_to_tunion[turret.unit_number] = nil
@@ -342,7 +343,8 @@ function export.TurretRemoved(turret, tu)
       tu.control = nil
     end
     if tu.boostAnimation then
-      rendering.destroy(tu.boostAnimation)
+      tu.boostAnimation.destroy()
+      tu.boostAnimation = nil
     end
 
     -- TODO I don't remember writing these 3 loops of garbage
@@ -495,7 +497,8 @@ export.UnBoost = function(tunion)
   tunion.foe = nil
 
   if tunion.boostAnimation then
-    rendering.destroy(tunion.boostAnimation)
+    tunion.boostAnimation.destroy()
+    tunion.boostAnimation = nil
   end
 
   if tunion.boosted then
