@@ -68,12 +68,14 @@ for _, s in pairs(game.surfaces) do
   combinators = s.find_entities_filtered{name="constant-combinator"}
 
   for _, c in pairs(combinators) do
-    if c.valid then
-      local cc = c.get_control_behavior().sections[1]
-      for _, p in pairs(cc.filters) do
-        if p.value.name == "sl-rotation" then
-          p.min = u.clampDeg(p.min + 90, 0, true)
-          cc.set_slot(p.index, p)
+    if c.valid and c.get_control_behavior() then
+      for i=1, c.get_control_behavior().sections_count do
+        local cc = c.get_control_behavior().sections[i]
+        for _, p in pairs(cc.filters) do
+          if p.value and p.value.name == "sl-rotation" then
+            p.min = u.clampDeg(p.min + 90, 0, true)
+            cc.set_slot(p.index, p)
+          end
         end
       end
     end
