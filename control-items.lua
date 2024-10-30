@@ -79,6 +79,10 @@ end
 -- Since the on_player_setup_blueprint event doesn't point you to the actual blueprint
 -- which has been setup, we have to trawl all of the player's blueprints recursively.
 local function SeekBlueprints(inventory)
+  if not inventory then
+    return
+  end
+
   for index = 1, #inventory - inventory.count_empty_stacks() do
     local item = inventory[index]
     if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() then

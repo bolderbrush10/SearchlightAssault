@@ -1,5 +1,9 @@
 ## Current Task:
 
+TODO Do a more thorough pass for blueprints
+
+TODO Gui is showing stale values for a newly built searchlight, based on some old searchlight I built i guess
+
 TODO The graphics_set base_visualization is loading each of my layers pointing north..
 	   But energy_glow_animation points east...
 	   Can we get a min viable mod to show this repro from old vs new factorio versions?
