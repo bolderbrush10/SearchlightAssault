@@ -516,6 +516,11 @@ export.FoeSuspected = function(spotter)
     return
   end
 
+  if not g.light.valid then
+    export.SearchlightRemoved(nil, false, g)
+    return
+  end
+
   g.lastSpotted = game.tick
   export.OpenWatch(g.gID)
 
