@@ -473,7 +473,9 @@ for index, e in pairs
       entity = event.entity
     end
 
-    if entity.name == d.searchlightBaseName then
+    if   entity.name == d.searchlightBaseName
+      or entity.name == d.searchlightAlarmName
+      or entity.name == d.searchlightSafeName then
       cg.SearchlightAdded(entity)
     elseif entity.name == d.searchlightSignalInterfaceName then
       ci.CheckSignalInterfaceHasSearchlight(entity)
