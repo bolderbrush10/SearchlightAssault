@@ -186,7 +186,10 @@ local function BoostFriends(gestalt, spottedFoe)
 
   for tID, _ in pairs(r.getRelationLHS(gtRelations, gestalt.gID)) do
     local tu = storage.tunions[tID]
-    if not tu.boosted and tu.turret.shooting_target == nil then
+    if not tu.turret and not tu.turret.valid then
+      -- Don't ask me how this happens, never happened before the SpaceAge 2.0 api
+      cu.TurretRemoved(nil, tu)
+    elseif not tu.boosted and tu.turret.shooting_target == nil then
       cu.Boost(tu, spottedFoe)
     end
   end

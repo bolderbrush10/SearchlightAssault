@@ -22,6 +22,10 @@ TODO tile blocked graphic doesn't match regular turrets when trying to build ove
 
 TODO Whatever we doing before to cleanup blueprints so they always have the base version of a searchlight isn't working anymore
 
+TODO Searchlight turret GUI still pops up for safe lights
+
+TODO  CTRL+X drag looses wires
+
 ### Advertising
 
 - Submit mod to Xterminator, KatherineOfSky, Trupen, The Spiffing Brit, Noobert, AmbiguousAmphibian, PBL, other big modded factorio youtubers / names
