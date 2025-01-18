@@ -695,6 +695,7 @@ function(event)
   local gh = event.ghost
 
   game.surfaces[event.surface_index].create_entity{name = "entity-ghost",
+                                                   quality = gh.quality,
                                                    inner_name = unboostedName,
                                                    expires = true,
                                                    fast_replace = false,

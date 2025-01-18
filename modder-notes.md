@@ -26,6 +26,17 @@ TODO Searchlight turret GUI still pops up for safe lights
 
 TODO  CTRL+X drag looses wires
 
+TODO Added LuaEntity::minable_flag read/write. Write to LuaEntity::minable is now deprecated.
+    - Added LuaCustomEventPrototype::event_id read.
+    - Added LuaCustomInputPrototype::event_id read.
+    - Added LuaBootstrap::get_event_id.
+    - Unified parsing of event types into LuaEventType. Made it possible to specify custom events and custom inputs by providing prototype instance.
+    - Custom events and custom inputs defined by prototypes are given constants inside of defines.events.
+
+TODO Remnants & beams in the factoriopedia
+
+TODO searchlight should probably freeze on aquilo
+
 ### Advertising
 
 - Submit mod to Xterminator, KatherineOfSky, Trupen, The Spiffing Brit, Noobert, AmbiguousAmphibian, PBL, other big modded factorio youtubers / names

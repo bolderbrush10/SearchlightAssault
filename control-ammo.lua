@@ -40,8 +40,9 @@ end
 local function SwapAmmo(inventory, stack, new)
   local ammoCount = stack.count
   local roundCount = stack.ammo
+  local quality = stack.quality
   stack.clear()
-  inventory.insert({name=new.name, count=ammoCount})
+  inventory.insert({name=new.name, count=ammoCount, quality=stack.quality})
 
   -- Hopefully this won't be abused in turrets with multiple ammo slots
   if roundCount then

@@ -28,6 +28,8 @@ end
 
 local function SearchlightMoved(g, e, event)
   local i = g.signal
+  -- TODO New feature: added build_check_type to LuaControl::teleport
+  --      https://forums.factorio.com/122001
   i.teleport(e.position)
 
   -- Revert the picker's teleport if the new position is invalid for our hidden entity,

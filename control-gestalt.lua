@@ -74,6 +74,7 @@ local function SpawnAlarmLight(gestalt)
 
   local base = gestalt.light
   local raised = base.surface.create_entity{name = d.searchlightAlarmName,
+                                            quality = base.quality,
                                             position = base.position,
                                             force = base.force,
                                             fast_replace = false,
@@ -99,6 +100,7 @@ local function SpawnBaseLight(gestalt)
 
   local base = gestalt.light
   local cleared = base.surface.create_entity{name = d.searchlightBaseName,
+                                             quality = base.quality,
                                              position = base.position,
                                              force = base.force,
                                              fast_replace = false,
@@ -122,6 +124,7 @@ local function SpawnSafeLight(gestalt)
 
   local base = gestalt.light
   local safe = base.surface.create_entity{name = d.searchlightSafeName,
+                                          quality = base.quality,
                                           position = base.position,
                                           force = base.force,
                                           fast_replace = false,

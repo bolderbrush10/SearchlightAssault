@@ -196,6 +196,7 @@ local function AmplifyRange(tunion, foe)
   end
 
   local newT = turret.surface.create_entity{name = turret.name .. d.boostSuffix,
+                                            quality = turret.quality,
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
@@ -230,6 +231,7 @@ local function DeamplifyRange(tunion)
   end
 
   local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
+                                            quality = turret.quality,
                                             position = turret.position,
                                             force = turret.force,
                                             direction = turret.direction,
