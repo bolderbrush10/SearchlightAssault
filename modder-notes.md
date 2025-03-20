@@ -2,6 +2,10 @@
 
 TODO Do a more thorough pass for blueprints
 
+TODO New blueprint system: https://forums.factorio.com/viewtopic.php?p=661598#p661598
+
+TODO The main menu simulation is showing the character UI hotbar for some reason now?? When did that happen?
+
 TODO Target tracking tends to break, requiring searchlights to be rebuilt,
      even though the searchlight has started targeting a foe instead of the turtle..
      Not often, but not never
@@ -32,6 +36,12 @@ TODO Added LuaEntity::minable_flag read/write. Write to LuaEntity::minable is no
     - Added LuaBootstrap::get_event_id.
     - Unified parsing of event types into LuaEventType. Made it possible to specify custom events and custom inputs by providing prototype instance.
     - Custom events and custom inputs defined by prototypes are given constants inside of defines.events.
+
+    - Renamed WorkingSound::max_sounds_per_type to WorkingSound::max_sounds_per_prototype. The limit is now applied per prototype.
+    - Removed WorkingSound::apparent_volume.
+    - Removed WorkingSound::audible_distance_modifier, MainSound::audible_distance_modifier and SoundAccent::audible_distance_modifier. Sound::audible_distance_modifier is used instead.
+    - Removed PlaySoundTriggerEffectItem::volume_modifier and PlaySoundTriggerEffectItem::audible_distance_modifier.
+
 
 TODO Remnants & beams in the factoriopedia
 

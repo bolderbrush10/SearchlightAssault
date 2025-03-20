@@ -401,12 +401,19 @@ local Light_Layer_Searchlight_NormLight =
   frame_sequence = slStaticFrameSeq,
   flags = { "light" },
   rotate_shift = true,
-  draw_as_glow = true,
-  blend_mode = "multiplicative-with-alpha",
+  draw_as_light = true, -- draw_as_glow would be better, but that doesn't draw the light part anymore
+  -- blend_mode = "multiplicative-with-alpha", -- would work great, but doesn't glow at night anymore
+  blend_mode = "additive", -- looks okay at night, but doesn't work during the day
   scale = 2.2 * (settings.startup[d.lightRadiusSetting].value / d.defaultSearchlightSpotRadius),
   tint = warnTint,
 }
 
+-- Compromise, just draw the layers twice with different blend_modes I guess?
+local function make_mult_blend_copy(layer)
+  layer_copy = table.deepcopy(layer)
+  layer_copy.blend_mode = "multiplicative-with-alpha"
+  return layer_copy
+end
 
 local Light_Layer_Searchlight_StartLight = table.deepcopy(Light_Layer_Searchlight_NormLight)
 Light_Layer_Searchlight_StartLight.scale = 0.6
@@ -454,10 +461,22 @@ local SearchlightBeamPassive =
       {
         layers =
         {
+           -- just keep stacking on the layers I guess
+           -- That's kinda llike how draw_as_glow says it worked anyway, right?
+           -- "Draws first as a normal sprite, then again as a light layer"
           Light_Layer_Searchlight_StartLight,
+          make_mult_blend_copy(Light_Layer_Searchlight_StartLight),
         }
       },
-      ending = (enableHaze and Light_Layer_Searchlight_DayHaze or nil),
+      ending = 
+      { 
+        layers = 
+        {
+          Light_Layer_Searchlight_NormLight,
+          make_mult_blend_copy(Light_Layer_Searchlight_NormLight),
+          (enableHaze and Light_Layer_Searchlight_DayHaze or nil),
+        }
+      }
     }
   },
 }
@@ -476,6 +495,7 @@ SearchlightBeamAlarm.graphics_set =
       layers =
       {
         Light_Layer_Searchlight_StartLight_Red,
+        make_mult_blend_copy(Light_Layer_Searchlight_StartLight_Red),
       }
     },
     ending =
@@ -484,6 +504,8 @@ SearchlightBeamAlarm.graphics_set =
       {
         Light_Layer_Searchlight_NormLight_Red,
         Light_Layer_Searchlight_DimLight_Red,
+        make_mult_blend_copy(Light_Layer_Searchlight_NormLight_Red),
+        make_mult_blend_copy(Light_Layer_Searchlight_DimLight_Red),
       }
     }
   }
@@ -508,6 +530,7 @@ local SearchlightBeamSafe =
         layers =
         {
           Light_Layer_Searchlight_RingLight,
+          make_mult_blend_copy(Light_Layer_Searchlight_RingLight),
         }
       },
     },
