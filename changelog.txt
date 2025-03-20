@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.11
+Date: 2025-03-19
+  Changes:
+    - Hacky fix for searchlights not having light. It's still kind of terrible, but idk when I'll get more free time to do better
+---------------------------------------------------------------------------------------------------
 Version: 2.3.10
 Date: 2025-01-17
   Changes:
