@@ -14,9 +14,9 @@ local sigOwnY    = {type="virtual", quality="normal", name="sl-own-y"}
 
 
 local function WillWiresReach(entity)
-  for _, wire_type in pairs(entity.circuit_connected_entities) do
-    for _, neighbour in pairs(wire_type) do
-      if not entity.can_wires_reach(neighbour) then 
+  for _, wire_type in pairs(entity.get_wire_connectors()) do
+    for _, neighbour in pairs(wire_type.connections) do
+      if not entity.can_wires_reach(neighbour.target.owner) then 
         return false 
       end
     end
