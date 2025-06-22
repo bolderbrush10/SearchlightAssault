@@ -453,37 +453,55 @@ end)
 -- CONSTRUCTIONS
 --
 
+local function turretOrInterfaceBuilt(event)
+
+  local entity = nil
+  if event.created_entity then
+    entity = event.created_entity
+  else
+    entity = event.entity
+  end
+
+  if   entity.name == d.searchlightBaseName
+    or entity.name == d.searchlightAlarmName
+    or entity.name == d.searchlightSafeName then
+    cg.SearchlightAdded(entity)
+  elseif entity.name == d.searchlightSignalInterfaceName then
+    ci.CheckSignalInterfaceHasSearchlight(entity)
+  else
+    cu.TurretAdded(entity)
+  end
+
+end
+
+
+script.on_event(defines.events.on_built_entity, function(event)
+
+  if event.entity.type == "entity-ghost" then
+    ci.SwapGhostToBaseType(event.entity)
+  else
+    turretOrInterfaceBuilt(event)
+  end
+
+end, {
+{filter = "turret"},
+{filter = "name", name = d.searchlightSignalInterfaceName},
+{filter = "ghost"},
+{filter = "ghost_type", type = "turret", mode="and"},
+{filter = "ghost_type", type = "ammo-turret", mode="or"},
+{filter = "ghost_type", type = "fluid-turret", mode="or"},
+{filter = "ghost_type", type = "electric-turret", mode="or"},
+})
 
 -- Instead of doing this loop, you could pass in an array of events.
 -- But you can't use filters with such an array, so loop we shall.
 for index, e in pairs
 ({
-  defines.events.on_built_entity,
   defines.events.on_robot_built_entity,
   defines.events.script_raised_built,
   defines.events.script_raised_revive,
 }) do
-  script.on_event(e,
-  function(event)
-
-    local entity = nil
-    if event.created_entity then
-      entity = event.created_entity
-    else
-      entity = event.entity
-    end
-
-    if   entity.name == d.searchlightBaseName
-      or entity.name == d.searchlightAlarmName
-      or entity.name == d.searchlightSafeName then
-      cg.SearchlightAdded(entity)
-    elseif entity.name == d.searchlightSignalInterfaceName then
-      ci.CheckSignalInterfaceHasSearchlight(entity)
-    else
-      cu.TurretAdded(entity)
-    end
-
-  end, {
+  script.on_event(e, turretOrInterfaceBuilt, {
     {filter = "turret"},
     {filter = "name", name = d.searchlightSignalInterfaceName}
   })

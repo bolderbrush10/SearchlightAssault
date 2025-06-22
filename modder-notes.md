@@ -1,5 +1,14 @@
 ## Current Task:
 
+TODO An entity that has been marked for deconstruction was still able to get boosted and then un-marked for deconstruction... 
+     I fixed that real quick, but I still need to figure out what to do about marked for upgrades etc
+
+TODO Look into using "fast_replaceable_group" in the prototype stage
+     between regular and boosted versions of turrets, various searchlights, etc
+
+TODO Decals now support draw_as_light and draw_as_glow 
+    Did this fix draw as glow for beams??
+
 TODO Do a more thorough pass for blueprints
 
 TODO New blueprint system: https://forums.factorio.com/viewtopic.php?p=661598#p661598

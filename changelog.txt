@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.13
+Date: 2025-06-22
+  Changes:
+    - Tentative fix for wires being lost when using the Cut command and dropped blueprint tags
+---------------------------------------------------------------------------------------------------
 Version: 2.3.12
 Date: 2025-04-27
   Changes:

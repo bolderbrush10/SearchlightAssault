@@ -391,6 +391,10 @@ function(oldT, newT)
     newT.energy = oldT.energy
   end
 
+  if oldT.to_be_deconstructed() then
+    newT.order_deconstruction(oldT.force)
+  end
+
   if oldT.get_output_inventory() ~= nil then
     CopyItems(oldT.get_output_inventory(), newT.get_output_inventory())
   end

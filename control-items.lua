@@ -4,6 +4,18 @@ local u = require "sl-util"
 
 local export = {}
 
+local function lookupBaseName(name)
+    -- Get the base searchlight/turret name of alarm/safe/boosted versions
+    if name == d.searchlightAlarmName  then
+     return d.searchlightBaseName
+    elseif name == d.searchlightSafeName  then
+      return d.searchlightBaseName
+    elseif u.EndsWith(name, d.boostSuffix) then
+      return name:gsub(d.boostSuffix, "")
+    end
+
+    return name
+end
 
 local function SwapToBaseEntityType(itemStack)
   -- Step 1: Swap the items
@@ -14,16 +26,13 @@ local function SwapToBaseEntityType(itemStack)
   end
 
   local new = {}
+  local tags = {}
 
   for index, e in pairs(old) do
-    -- Build the base searchlight instead of the alarm/safe mode versions
-    if e.name == d.searchlightAlarmName  then
-      e.name = d.searchlightBaseName
-    elseif e.name == d.searchlightSafeName  then
-      e.name = d.searchlightBaseName
-    elseif u.EndsWith(e.name, d.boostSuffix) then
-      e.name = e.name:gsub(d.boostSuffix, "")
-    end
+    tags[index] = itemStack.get_blueprint_entity_tags(index)
+
+    e.name = lookupBaseName(e.name)
+
 
     -- Resort the items so the signal interface ghost stops appearing on top
     if e.name == d.searchlightSignalInterfaceName then
@@ -34,6 +43,12 @@ local function SwapToBaseEntityType(itemStack)
   end
 
   itemStack.set_blueprint_entities(new)
+
+  -- Tentative, no idea if this will work since most other mods
+  -- I've tested against don't seem to use tags
+  for index, tag in pairs(tags) do
+    itemStack.set_blueprint_entity_tags(index, tag)
+  end
 end
 
 
@@ -102,8 +117,12 @@ export.ScanBP_StacksAndSwapToBaseType = function(event)
   local pstack = player.blueprint_to_setup
 
   if cstack and cstack.valid_for_read and cstack.is_blueprint and cstack.is_blueprint_setup() then
-    SwapToBaseEntityType(cstack)
-    CheckForSignalSearchlightParity(cstack)
+    -- The player has very likely used either cut or copy.
+    -- If we mess with the item stack here while the player
+    -- has cut wire-connected entities, the wires will be dropped,
+    -- and the player will be very disappointed.
+    -- We'll work around that by checking the ghost in SwapGhostToBaseType
+    SeekBlueprints(player.get_main_inventory())
   elseif pstack and pstack.valid_for_read and pstack.is_blueprint and pstack.is_blueprint_setup() then
     SwapToBaseEntityType(pstack)
     CheckForSignalSearchlightParity(pstack)
@@ -129,6 +148,31 @@ export.CheckSignalInterfaceHasSearchlight = function(i)
        or (slGhost and slGhost[1])) then
     i.destroy()
   end
+end
+
+
+export.SwapGhostToBaseType = function(entity)
+  local newInnerName = lookupBaseName(entity.ghost_name)
+  if newInnerName == entity.ghost_name then
+    return
+  end
+
+  local s = entity.surface
+
+  local params = {
+    name = entity.name,
+    position = entity.position,
+    direction = entity.direction,
+    quality = entity.quality,
+    force = entity.force,
+    tags = entity.tags,
+    inner_name = newInnerName,
+    create_build_effect_smoke = false,
+    raise_built = true,
+  }
+
+  entity.destroy({raise_destroy=true})
+  s.create_entity(params)
 end
 
 
