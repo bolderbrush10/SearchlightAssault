@@ -21,7 +21,6 @@ local baseHiddenEntityFlags =
   "not-in-kill-statistics",
   "not-on-map",
   "not-repairable",
-  "not-rotatable",
   "not-upgradable",
   "placeable-off-grid",
 }
@@ -68,6 +67,7 @@ sl_b.drawing_box_vertical_extension = 0.5  -- Controls drawing-bounds in the inf
 sl_b.allow_copy_paste = true
 sl_b.additional_pastable_entities = {d.searchlightAlarmName, d.searchlightSafeName, d.searchlightSignalInterfaceName}
 sl_b.flags = {"placeable-player", "player-creation"}
+sl_b.hidden_in_factoriopedia = true -- Already covered by recipe entry apparently
 sl_b.is_military_target  = true
 sl_b.allow_run_time_change_of_is_military_target = false
 sl_b.call_for_help_radius = 40

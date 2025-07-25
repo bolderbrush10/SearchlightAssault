@@ -1,5 +1,10 @@
 ## Current Task:
 
+TODO Setting operable to false/whatever doesn't effect players in editor.
+     That's probably for the best, so they can mess with flags and stuff.
+     We should probably just check if the player is in editor mode,
+     then move the GUI out of the way or something.
+
 TODO An entity that has been marked for deconstruction was still able to get boosted and then un-marked for deconstruction... 
      I fixed that real quick, but I still need to figure out what to do about marked for upgrades etc
 
