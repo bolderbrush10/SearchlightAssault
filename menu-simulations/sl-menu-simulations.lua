@@ -5,6 +5,7 @@ data.raw["utility-constants"]["default"].main_menu_simulations.sl_sweep =
   length = 60 * 9,
   init =
   [[
+    game.players[1].set_controller{type=defines.controllers.ghost}
     local logo = game.surfaces.nauvis.find_entities_filtered{name = "factorio-logo-11tiles", limit = 1}[1]
     logo.destructible = false
     game.simulation.camera_position = {logo.position.x, logo.position.y+9.75}
