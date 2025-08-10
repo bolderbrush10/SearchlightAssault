@@ -414,6 +414,23 @@ function(oldT, newT)
   if oldT.fluidbox ~= nil then
     CopyFluids(oldT, newT)
   end
+
+  for w in pairs({defines.wire_connector_id.circuit_red, defines.wire_connector_id.circuit_green}) do
+    local oldNet = oldT.get_wire_connector(w, false)
+    if oldNet ~= nil and oldNet.valid and oldNet.connection_count > 0 then
+      local newNet = newT.get_wire_connector(w, true)
+      if newNet and newNet.valid then
+        for i=1, oldNet.connection_count do
+          local target = oldNet.connections[i].target
+          if target and target.valid then
+            newNet.connect_to(target, false)
+          end
+        end
+      end
+      oldNet.disconnect_all()
+    end
+  end
+
 end
 
 u.CheckEntityOrDriver =
