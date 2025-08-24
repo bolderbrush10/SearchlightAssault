@@ -50,6 +50,9 @@ export.InitTables_Turrets = function()
   -- Map: turret name -> BOOSTED / UNBOOSTED / BLOCKED / NOT_BOOSTABLE
   storage.boostInfo = {}
 
+  -- Map: tuID -> TUnion
+  storage.deferred_unboosts = {}
+
   ca.InitTables_Ammo()
 end
 
@@ -227,8 +230,19 @@ local function DeamplifyRange(tunion)
   local turret = tunion.turret
 
   if not turret.valid or not tunion.boosted then
-    return
+    return true
   end
+
+  -- For compatability with zeus-wrath,
+  -- defer unboosting until the shooting_target clears.
+  -- Otherwise, its script effect will crash when it tries to look for the turret
+  -- we're about to destroy()
+  if turret.shooting_target then
+    turret.active = false
+    storage.deferred_unboosts[tunion.tuID] = tunion
+    return nil
+  end
+
 
   local newT = turret.surface.create_entity{name = turret.name:gsub(d.boostSuffix, ""),
                                             quality = turret.quality,
@@ -274,7 +288,7 @@ export.CheckAmmoElectricNeeds = function()
       if not ReassignTurret(turret, tuID) then
         export.UnBoost(tu)
       end
-    elseif tu.control.energy > 5000 then
+    elseif tu.control.energy > 5000 and tu.turret.shooting_target == nil then
       AmplifyRange(tu, foe) -- will invalidate reference to turret
       if overrideAmmoRange then
         ca.AuditBoostedAmmo(tu.turret)
@@ -284,6 +298,16 @@ export.CheckAmmoElectricNeeds = function()
     end
     
   end
+
+  for tuID, tu in pairs(storage.deferred_unboosts) do
+    local turret = tu.turret
+    if turret and turret.valid and turret.shooting_target == nil then
+      if DeamplifyRange(tu) ~= nil then
+        storage.deferred_unboosts[tuID] = nil
+      end
+    end
+  end
+
 end
 
 
@@ -497,6 +521,10 @@ export.UnBoost = function(tunion)
 
   tunion.control = nil
   tunion.foe = nil
+
+  if tunion.turret and tunion.turret.valid then
+    tunion.turret.active = true
+  end
 
   if tunion.boostAnimation then
     tunion.boostAnimation.destroy()

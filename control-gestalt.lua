@@ -193,6 +193,8 @@ local function BoostFriends(gestalt, spottedFoe)
       -- Don't ask me how this happens, never happened before the SpaceAge 2.0 api
       cu.TurretRemoved(nil, tu)
     elseif not tu.boosted and tu.turret.shooting_target == nil then
+       -- Make sure turret doesn't acquire a new target while we wait to boost it next tick
+      tu.turret.active = false
       cu.Boost(tu, spottedFoe)
     end
   end
