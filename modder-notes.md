@@ -18,8 +18,6 @@ TODO Do a more thorough pass for blueprints
 
 TODO New blueprint system: https://forums.factorio.com/viewtopic.php?p=661598#p661598
 
-TODO The main menu simulation is showing the character UI hotbar for some reason now?? When did that happen?
-
 TODO Target tracking tends to break, requiring searchlights to be rebuilt,
      even though the searchlight has started targeting a foe instead of the turtle..
      Not often, but not never
@@ -56,8 +54,6 @@ TODO Added LuaEntity::minable_flag read/write. Write to LuaEntity::minable is no
     - Removed WorkingSound::audible_distance_modifier, MainSound::audible_distance_modifier and SoundAccent::audible_distance_modifier. Sound::audible_distance_modifier is used instead.
     - Removed PlaySoundTriggerEffectItem::volume_modifier and PlaySoundTriggerEffectItem::audible_distance_modifier.
 
-
-TODO Remnants & beams in the factoriopedia
 
 TODO searchlight should probably freeze on aquilo
 
