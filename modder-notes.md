@@ -1,5 +1,9 @@
 ## Current Task:
 
+TODO Other mods are stuffing like a dozen trigger target masks and collision layers into the attack_prototypes
+     of my entities, and this has broken the spotter in some cases. 
+     WaterTurrets-revived seems to have just been the straw that broke the camel's back...
+
 TODO Setting operable to false/whatever doesn't effect players in editor.
      That's probably for the best, so they can mess with flags and stuff.
      We should probably just check if the player is in editor mode,
@@ -41,6 +45,9 @@ TODO Whatever we doing before to cleanup blueprints so they always have the base
 TODO Searchlight turret GUI still pops up for safe lights
 
 TODO  CTRL+X drag looses wires
+
+TODO A feature to click to set a patrol area would be really nice.. Maybe a blueprint-like tool?
+
 
 TODO Added LuaEntity::minable_flag read/write. Write to LuaEntity::minable is now deprecated.
     - Added LuaCustomEventPrototype::event_id read.
