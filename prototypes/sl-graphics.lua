@@ -451,9 +451,9 @@ local SearchlightBeamPassive =
   flags = {"not-on-map"},
   width = 1,
   damage_interval = 1,
-  random_end_animation_rotation = false,
   graphics_set =
   {
+    random_end_animation_rotation = false,
     ground =
     {
       render_layer = "light-effect",
@@ -487,6 +487,7 @@ SearchlightBeamAlarm.name = "searchlight-beam-alarm"
 SearchlightBeamAlarm.ending = (enableHaze and Light_Layer_Searchlight_AlarmHaze or nil)
 SearchlightBeamAlarm.graphics_set =
 {
+  random_end_animation_rotation = false,
   beam =
   {
     render_layer = "light-effect",
@@ -519,9 +520,9 @@ local SearchlightBeamSafe =
   flags = {"not-on-map"},
   width = 1,
   damage_interval = 1,
-  random_end_animation_rotation = false,
   graphics_set =
   {
+    random_end_animation_rotation = false,
     ground =
     {
       render_layer = "light-effect",

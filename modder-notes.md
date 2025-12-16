@@ -64,6 +64,8 @@ TODO Added LuaEntity::minable_flag read/write. Write to LuaEntity::minable is no
 
 TODO searchlight should probably freeze on aquilo
 
+TODO Fix all the unused prototype warnings
+
 ### Advertising
 
 - Submit mod to Xterminator, KatherineOfSky, Trupen, The Spiffing Brit, Noobert, AmbiguousAmphibian, PBL, other big modded factorio youtubers / names
