@@ -189,3 +189,11 @@ MakeAmmoBoost(data.raw["ammo"])
 MakeTechBoost(data.raw["ammo-turret"])
 MakeTechBoost(data.raw["fluid-turret"])
 MakeTechBoost(data.raw["electric-turret"])
+
+-- Reset collision layers since combining Jetpack and Combat Mechanics Overhaul
+-- will mess up our hidden entities
+local noClipMask = {layers={}}
+data.raw["electric-energy-interface"][d.searchlightControllerName].collision_mask = noClipMask
+data.raw["constant-combinator"][d.searchlightSignalInterfaceName].collision_mask = noClipMask
+data.raw["unit"][d.turtleName].collision_mask = noClipMask
+data.raw["turret"][d.spotterName].collision_mask = noClipMask

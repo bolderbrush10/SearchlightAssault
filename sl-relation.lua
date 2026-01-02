@@ -59,7 +59,7 @@ function Relation.getRelationRHS(rel, rhs)
   local results = {}
   for lhsInd, lhs in pairs(rel.matrix) do
     if lhs[rhs] then
-    results[lhsInd] = true
+      results[lhsInd] = true
     end
   end
   return results
@@ -91,8 +91,8 @@ end
 
 
 function Relation.removeRelationRHS(rel, rhs)
-  for _, lhs in pairs(rel.matrix) do
-    lhs[rhs] = nil
+  for lhs, _ in pairs(rel.matrix) do
+    rel.matrix[lhs][rhs] = nil
 
     -- Clear {} (empty tables)
     if rel.matrix[lhs] and next(rel.matrix[lhs]) == nil then
@@ -123,13 +123,13 @@ end
 function Relation.popRelationRHS(rel, rhs)
   local results = {}
 
-  for _, lhs in pairs(rel.matrix) do
+  for i, lhs in pairs(rel.matrix) do
     results[lhs] = lhs[rhs]
-    lhs[rhs] = nil
+    rel.matrix[i][rhs] = nil
 
     -- Clear {} (empty tables)
-    if next(rel.matrix[lhs]) == nil then
-      rel.matrix[lhs] = nil
+    if next(rel.matrix[i]) == nil then
+      rel.matrix[i] = nil
     end
   end
 

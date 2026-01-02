@@ -96,6 +96,13 @@ local function getTuID(turret)
     return makeTUnionFromTurret(turret).tuID
   end
 
+  local tuID = storage.tun_to_tunion[turret.unit_number].tuID
+
+  -- No idea how this happened, but somehow it did for somebody.
+  if not storage.tunions[tuID] then
+    storage.tunions[tuID] = storage.tun_to_tunion[turret.unit_number]
+  end
+
   return storage.tun_to_tunion[turret.unit_number].tuID
 end
 
@@ -301,9 +308,17 @@ export.CheckAmmoElectricNeeds = function()
 
   for tuID, tu in pairs(storage.deferred_unboosts) do
     local turret = tu.turret
-    if turret and turret.valid and turret.shooting_target == nil then
-      if DeamplifyRange(tu) ~= nil then
-        storage.deferred_unboosts[tuID] = nil
+    if turret and turret.valid then
+      if turret.shooting_target ~= nil then
+        turret.shooting_target = nil
+      end
+
+      -- Not sure if can always happen in the same tick as above if case
+      if turret.shooting_target == nil then
+        turret.active = true
+        if DeamplifyRange(tu) ~= nil then
+          storage.deferred_unboosts[tuID] = nil
+        end
       end
     end
   end

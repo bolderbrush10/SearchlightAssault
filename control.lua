@@ -84,6 +84,7 @@ local function handleUninstall()
 
     storage.boosted_to_tunion = {}
     storage.tunions = {}
+    storage.tun_to_tunion = {}
   end
 end
 

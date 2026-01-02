@@ -187,10 +187,15 @@ end
 local function BoostFriends(gestalt, spottedFoe)
   local gtRelations = storage.GestaltTunionRelations
 
+  local repair = {}
+
   for tID, _ in pairs(r.getRelationLHS(gtRelations, gestalt.gID)) do
     local tu = storage.tunions[tID]
-    if not tu.turret or not tu.turret.valid then
+    if not tu then
       -- Don't ask me how this happens, never happened before the SpaceAge 2.0 api
+      table.insert(repair, tID)
+    elseif not tu.turret or not tu.turret.valid then
+      -- Again, don't ask me how this happens, never happened before the SpaceAge 2.0 api
       cu.TurretRemoved(nil, tu)
     elseif not tu.boosted and tu.turret.shooting_target == nil then
        -- Make sure turret doesn't acquire a new target while we wait to boost it next tick
@@ -198,6 +203,20 @@ local function BoostFriends(gestalt, spottedFoe)
       cu.Boost(tu, spottedFoe)
     end
   end
+
+  for _, tID in pairs(repair) do
+    r.removeRelationRHS(storage.GestaltTunionRelations, tID)
+  end
+  if #repair > 0 then
+    local sl = gestalt.light
+    local friends = sl.surface.find_entities_filtered{area=u.GetBoostableAreaFromPosition(sl.position),
+                                                      type={"fluid-turret", "electric-turret", "ammo-turret"},
+                                                      force=sl.force}
+    for _, f in pairs(friends) do
+      cu.TurretAdded(f)
+    end
+  end
+
 end
 
 
@@ -513,6 +532,9 @@ export.FoeFound = function(turtle, foe)
   end
 
   local g = storage.unum_to_g[turtle.unit_number]
+  if not g then
+    return -- TODO Probably should do some kind of cleanup, idk how this happens
+  end
 
   EnterAlarmMode(g, foe)
 end

@@ -357,6 +357,8 @@ t.attack_parameters =
 {
   range = 1,
   type = "projectile",
+  -- prevent Combat Overhaul from adding collision
+  cmo_ignore = true,
   cooldown = 60, -- measured in ticks
   animation = util.empty_sprite(),
   range_mode = "center-to-center",
@@ -411,6 +413,8 @@ spotter.attack_parameters =
 {
   range = d.searchlightSafeRange,
   type = "projectile",
+  -- prevent Combat Overhaul from adding collision
+  cmo_ignore = true,
   cooldown = 60, -- measured in ticks
   animation = util.empty_sprite(),
   range_mode = "center-to-center",
