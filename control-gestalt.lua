@@ -181,8 +181,6 @@ local function makeGestalt(sl, sigInterface, turtle, spotter)
 
   ct.SetDefaultWanderParams(g)
 
-  sl.operable = false
-
   return g
 end
 

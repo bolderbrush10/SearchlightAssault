@@ -63,7 +63,7 @@ cgui.InitTables_GUI = function()
   -- GUIs are persisted in many circumstances,
   -- so we must manage many aspects of them.
 
-  -- Map: playerIndex -> {gestaltID, GUI}
+  -- Map: playerIndex -> {gestaltID, GUI, tickOpened}
   storage.pIndexToGUI = {}
 end
 
@@ -530,6 +530,8 @@ cgui.updateOnTick = function(g, GUI)
 
   updateSigTables(leftContent, g)
   updateModeStatus(rightContent, g)
+
+  leftContent["sla-gui-table-kaglobal"].children[1].state = storage.kaglobal or false
 end
 
 
@@ -668,7 +670,7 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   local main_frame = create(main_gui, g)
 
   player.opened = main_frame
-  storage.pIndexToGUI[pIndex] = {g.gID, main_frame}
+  storage.pIndexToGUI[pIndex] = {g.gID, main_frame, game.tick}
 
   cgui.updateOnTick(g, main_frame)
   cgui.updateOnEntity(g, main_frame)

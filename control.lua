@@ -286,18 +286,6 @@ function(event)
     end
   end
 
-  if storage.restoreOperable and storage.restoreOperable[tick] then 
-    for _, e in pairs (storage.restoreOperable[tick]) do
-      if e.valid then 
-        e.operable = true
-      end
-    end
-    storage.restoreOperable[tick] = nil
-    if not next(storage.restoreOperable) then
-      storage.restoreOperable = nil
-    end
-  end
-
   rd.Update(event.tick)
 end)
 
@@ -322,11 +310,26 @@ script.on_event(d.openSearchlightGUI, function(event)
   end
 end)
 
+
 script.on_event(defines.events.on_gui_click, function(event)
   if event.element and event.element.name == d.guiClose then
     cgui.CloseSearchlightGUI(event.player_index)
   end
 end)
+
+
+script.on_event(defines.events.on_gui_opened, function(event)
+  local gAndGUI = storage.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  -- A little janky, but we'd like to allow editors to edit the actual entity
+  if game.players[event.player_index].controller_type ~= defines.controllers.editor then
+    game.players[event.player_index].opened = gAndGUI[2]
+  end
+end)
+
 
 script.on_event(defines.events.on_gui_closed, function(event)
   local gAndGUI = storage.pIndexToGUI[event.player_index]
@@ -335,11 +338,14 @@ script.on_event(defines.events.on_gui_closed, function(event)
   end
 
   if gAndGUI[2] == event.element then
-    if game.players[event.player_index].controller_type ~= defines.controllers.editor then
+    if not gAndGUI[2] or gAndGUI[3] ~= event.tick then
       cgui.CloseSearchlightGUI(event.player_index)
+    else
+      game.players[event.player_index].opened = gAndGUI[2]
     end
   end
 end)
+
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
   local gAndGUI = storage.pIndexToGUI[event.player_index]
@@ -359,6 +365,7 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
   cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior().sections[1])
 end)
 
+
 script.on_event(defines.events.on_gui_checked_state_changed, function(event)
   local gAndGUI = storage.pIndexToGUI[event.player_index]
   if not gAndGUI then
@@ -376,8 +383,6 @@ script.on_event(defines.events.on_gui_checked_state_changed, function(event)
     g.keepalive = event.element.state
   elseif event.element.name == "sla_gui_kaglobal_checkbox" then
     storage.kaglobal = event.element.state
-    -- TODO handle multiple players toggling this box
-    -- cgui.updateOnTick ?
   end
 
 end)
