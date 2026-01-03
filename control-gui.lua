@@ -585,11 +585,6 @@ end
 cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   local player = game.players[pIndex]
 
-  -- Ignore players in map mode, etc
-  if player.render_mode ~= defines.render_mode.game then
-    return
-  end
-
   local sl = player.selected
   if not sl then
     local res = player.surface.find_entities_filtered{position=cursor_pos, type="turret", force=player.force, limit=1}

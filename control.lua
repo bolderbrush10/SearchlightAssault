@@ -319,12 +319,23 @@ end)
 
 
 script.on_event(defines.events.on_gui_opened, function(event)
+  -- Fix for players double-opening the searchlight turret
+  if event.entity and
+     game.players[event.player_index].controller_type ~= defines.controllers.editor then
+    if    event.entity.name == d.searchlightBaseName
+       or event.entity.name == d.searchlightAlarmName
+       or event.entity.name == d.searchlightSafeName
+    then
+      game.players[event.player_index].opened = nil
+    end
+  end
+
   local gAndGUI = storage.pIndexToGUI[event.player_index]
   if not gAndGUI then
     return
   end
 
-  -- A little janky, but we'd like to allow editors to edit the actual entity
+  -- A little janky, but we'd like to make sure editors can edit the actual entity
   if game.players[event.player_index].controller_type ~= defines.controllers.editor then
     game.players[event.player_index].opened = gAndGUI[2]
   end
