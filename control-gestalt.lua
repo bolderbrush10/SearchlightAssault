@@ -589,7 +589,8 @@ export.CloseWatch = function(gIDs)
 
       if     not g.lastSpotted 
           or (tick - g.lastSpotted) >= d.searchlightSafeTime then
-        if g.light.energy > 0 and not g.keepalive and not storage.kaglobal then
+        local kastate = g.light.priority_targets[1] and true or false
+        if g.light.energy > 0 and not kastate and not storage.kaglobal then
           EnterSafeModeSync(g)
         else
           -- If we're out of power or in keepalive, try again later
