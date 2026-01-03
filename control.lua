@@ -381,8 +381,16 @@ script.on_event(defines.events.on_gui_checked_state_changed, function(event)
   if event.element.name == "sla_gui_keepalive_checkbox" then
     local g = storage.gestalts[gAndGUI[1]]
     g.keepalive = event.element.state
+    cg.FoeSuspected(g.spotter) -- wakey wakey
   elseif event.element.name == "sla_gui_kaglobal_checkbox" then
     storage.kaglobal = event.element.state
+    if event.element.state then
+      for _, g in pairs(storage.gestalts) do
+        if g.light.name == d.searchlightSafeName then
+          cg.FoeSuspected(g.spotter) -- wakey wakey
+        end
+      end
+    end
   end
 
 end)
