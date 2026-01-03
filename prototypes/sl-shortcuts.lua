@@ -11,18 +11,4 @@ data:extend({
     linked_game_control = "open-gui",
     include_selected_prototype = true,
   },
-  {
-    type = "custom-input",
-    name = d.closeSearchlightGUI,
-    key_sequence = "",
-    linked_game_control = "confirm-gui",
-    include_selected_prototype = false,
-  },
-  {
-    type = "custom-input",
-    name = d.closeSearchlightGUIalt,
-    key_sequence = "",
-    linked_game_control = "toggle-menu",
-    include_selected_prototype = false,
-  },
 })

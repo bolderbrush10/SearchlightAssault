@@ -322,51 +322,23 @@ script.on_event(d.openSearchlightGUI, function(event)
   end
 end)
 
-
-script.on_event(d.closeSearchlightGUI, function(event)
-  cgui.CloseSearchlightGUI(event.player_index)
-end)
-
-
-script.on_event(d.closeSearchlightGUIalt, function(event)
-  cgui.CloseSearchlightGUI(event.player_index)
-end)
-
-
 script.on_event(defines.events.on_gui_click, function(event)
   if event.element and event.element.name == d.guiClose then
     cgui.CloseSearchlightGUI(event.player_index)
   end
 end)
 
--- Close our GUI if something else opens
-script.on_event(defines.events.on_gui_opened, function(event)
+script.on_event(defines.events.on_gui_closed, function(event)
   local gAndGUI = storage.pIndexToGUI[event.player_index]
   if not gAndGUI then
     return
   end
 
-  if event.entity then
-    local g = storage.unum_to_g[event.entity.unit_number]
-
-    if g and g.gID == gAndGUI[1] then
-      -- This is the "turret GUI" for the searchlight we've got a GUI for.
-      -- Close it.
-      event.entity.operable = false
-      if not storage.restoreOperable then
-        storage.restoreOperable = {}
-      end
-      if not storage.restoreOperable[game.tick + 1] then
-        storage.restoreOperable[game.tick + 1] = {}
-      end 
-      table.insert(storage.restoreOperable[game.tick + 1], event.entity)
-      return
-    end
+  if gAndGUI[2] == event.element then
+    cgui.CloseSearchlightGUI(event.player_index)
+    return
   end
-
-  cgui.CloseSearchlightGUI(event.player_index)
 end)
-
 
 script.on_event(defines.events.on_gui_text_changed, function(event)
   local gAndGUI = storage.pIndexToGUI[event.player_index]
@@ -384,6 +356,29 @@ script.on_event(defines.events.on_gui_text_changed, function(event)
   cgui.updateOnTextInput(g, gAndGUI[2])
 
   cs.ReadWanderParameters(g, g.signal, g.signal.get_control_behavior().sections[1])
+end)
+
+script.on_event(defines.events.on_gui_checked_state_changed, function(event)
+  local gAndGUI = storage.pIndexToGUI[event.player_index]
+  if not gAndGUI then
+    return
+  end
+
+  if     not cgui.validatePlayerAndLight(event.player_index, gAndGUI[1])
+      or not cgui.validateGUI(gAndGUI[2]) then
+    cgui.CloseSearchlightGUI(event.player_index)
+    return
+  end
+
+  if event.element.name == "sla_gui_keepalive_checkbox" then
+    local g = storage.gestalts[gAndGUI[1]]
+    g.keepalive = event.element.state
+  elseif event.element.name == "sla_gui_kaglobal_checkbox" then
+    storage.kaglobal = event.element.state
+    -- TODO handle multiple players toggling this box
+    -- cgui.updateOnTick ?
+  end
+
 end)
 
 

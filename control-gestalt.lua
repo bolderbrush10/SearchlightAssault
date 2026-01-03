@@ -37,6 +37,7 @@ local export = {}
   tOldCoord     = WANDER / {x, y} (Raw signal coords)
   tWanderParams = .radius (deg), .rotation (deg), .min, .max (raw values)
   tAdjParams    = .angleStart(rad), .len(rad), .min, .max (bounds-checked)
+  keepalive     = nil / true
 }
 ]]--
 
@@ -179,6 +180,8 @@ local function makeGestalt(sl, sigInterface, turtle, spotter)
   storage.check_power[g.gID] = g
 
   ct.SetDefaultWanderParams(g)
+
+  sl.operable = false
 
   return g
 end

@@ -108,6 +108,15 @@ local function addSigTable(flow, name, label)
   return sigDirectTable
 end
 
+local function addKeepAliveTable(flow, name)
+  local t = flow.add{type="table",
+                     name=name,
+                     column_count=2,
+                     draw_vertical_lines=false,
+                     draw_horizontal_line=false,}
+  return t
+end
+
 
 local function addContentLeft(contentFlow, g)
   local leftFrame = contentFlow.add{type="frame",
@@ -128,6 +137,28 @@ local function addContentLeft(contentFlow, g)
   for _, s in pairs(PatrolSignals) do
     addSignal(sigPatrolTable, g, s, control)
   end
+
+  leftFrame.add{type="line", style="sla_line"}
+
+  leftFrame.add{type="label",
+                caption={"sla.sla-gui-kalabel"},
+                style="sla_bold_label"}
+
+  local t1 = addKeepAliveTable(leftFrame, "sla-gui-table-keepalive")
+  t1.add{type="checkbox",
+         state=g.keepalive or false,
+         name="sla_gui_keepalive_checkbox"}
+
+  t1.add{type="label",
+         caption={"sla.sla-gui-keepalive"},}
+
+  local t2 = addKeepAliveTable(leftFrame, "sla-gui-table-kaglobal")
+  t2.add{type="checkbox",
+         state=storage.kaglobal or false,
+         name="sla_gui_kaglobal_checkbox"}
+
+  t2.add{type="label",
+         caption={"sla.sla-gui-kaglobal"},}
 
   leftFrame.add{type="line", style="sla_line"}
 
@@ -173,7 +204,7 @@ end
 
 local function create(main_gui, g)
   local main_frame = main_gui.add{type="frame", name=d.guiName, direction="vertical",}
-  main_frame.force_auto_center()
+  main_frame.auto_center = true
 
   local title_flow = main_frame.add{type = "flow", name = "titlebar",}
   title_flow.add{type = "label", style = "frame_title", caption = {"sla.sla-gui-main"},}
@@ -625,8 +656,6 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
     return
   end
 
-  local main_gui = player.gui.screen
-
   -- Give other mods a chance to clean themselves up
   if remote.interfaces["LtnManager"] and remote.call("LtnManager", "is_gui_open", pIndex) then
     remote.call("LtnManager", "toggle_gui", pIndex)
@@ -635,6 +664,7 @@ cgui.OpenSearchlightGUI = function(pIndex, cursor_pos)
   -- Make sure we clear any guis for other searchlights we might have open
   cgui.CloseSearchlightGUI(pIndex)
 
+  local main_gui = player.gui.screen
   local main_frame = create(main_gui, g)
 
   player.opened = main_frame
@@ -648,6 +678,7 @@ end
 
 
 cgui.CloseSearchlightGUI = function(pIndex)
+
   local pGUI = storage.pIndexToGUI[pIndex]
 
   local player = game.players[pIndex]
