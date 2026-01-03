@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.21
+Date: 2026-01-03
+  Changes:
+    - Introduce highly-requested searchlight parameter to always keep searching
+    - Various UI fixes
+---------------------------------------------------------------------------------------------------
 Version: 2.3.20
 Date: 2026-01-02
   Changes:
