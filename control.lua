@@ -335,8 +335,9 @@ script.on_event(defines.events.on_gui_closed, function(event)
   end
 
   if gAndGUI[2] == event.element then
-    cgui.CloseSearchlightGUI(event.player_index)
-    return
+    if game.players[event.player_index].controller_type ~= defines.controllers.editor then
+      cgui.CloseSearchlightGUI(event.player_index)
+    end
   end
 end)
 
