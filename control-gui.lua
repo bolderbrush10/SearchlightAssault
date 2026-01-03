@@ -145,8 +145,9 @@ local function addContentLeft(contentFlow, g)
                 style="sla_bold_label"}
 
   local t1 = addKeepAliveTable(leftFrame, "sla-gui-table-keepalive")
+  local kastate = g.light.priority_targets[1] and true or false
   t1.add{type="checkbox",
-         state=g.keepalive or false,
+         state=kastate,
          name="sla_gui_keepalive_checkbox"}
 
   t1.add{type="label",

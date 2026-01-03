@@ -37,7 +37,8 @@ local export = {}
   tOldCoord     = WANDER / {x, y} (Raw signal coords)
   tWanderParams = .radius (deg), .rotation (deg), .min, .max (raw values)
   tAdjParams    = .angleStart(rad), .len(rad), .min, .max (bounds-checked)
-  keepalive     = nil / true
+  
+  light.get_priority_target = has turtle == keepalive
 }
 ]]--
 

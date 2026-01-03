@@ -451,6 +451,7 @@ local SearchlightBeamPassive =
   flags = {"not-on-map"},
   width = 1,
   damage_interval = 1,
+  hidden_in_factoriopedia = true,
   graphics_set =
   {
     random_end_animation_rotation = false,
@@ -520,6 +521,7 @@ local SearchlightBeamSafe =
   flags = {"not-on-map"},
   width = 1,
   damage_interval = 1,
+  hidden_in_factoriopedia = true,
   graphics_set =
   {
     random_end_animation_rotation = false,

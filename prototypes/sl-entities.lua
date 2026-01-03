@@ -36,12 +36,16 @@ table.insert(hiddenEntityFlags, "not-selectable-in-game")
 
 local baseIcon = "__SearchlightAssault__/graphics/searchlight-icon.png"
 local controlIcon = "__SearchlightAssault__/graphics/control-icon.png"
+-- Will be seen when keepalive is true and alt mode is on,
+-- per light.get_priority_target
+local turtleIcon = "__SearchlightAssault__/graphics/signals/signal_nosleep.png"
 
 -- Searchlight Beam Ammo Category
 -- (So we can hide the searchlight beam from showing up in technology effects, etc)
 local sl_ammo = {}
 sl_ammo.name = "sla_beam_ammo"
 sl_ammo.type = "ammo-category"
+sl_ammo.hidden_in_factoriopedia = true
 
 -- Searchlight Base Entity
 local sl_b = {}
@@ -225,6 +229,7 @@ sl_r.time_before_removed = 60 * 60 * 15 -- 15 minutes, same as laser-turret remn
 sl_r.final_render_layer = "remnants"
 sl_r.remove_on_tile_placement = false
 sl_r.animation = g.searchlightRemnants
+sl_r.hidden_in_factoriopedia = true
 
 
 -- Searchlight Control Entity
@@ -333,6 +338,7 @@ t.corpse = "small-scorchmark"
 t.flags = hiddenEntityFlags
 t.hidden = true
 t.selectable_in_game = false
+t.icon = turtleIcon
 t.is_military_target  = true
 t.allow_run_time_change_of_is_military_target = false
 t.has_belt_immunity = true

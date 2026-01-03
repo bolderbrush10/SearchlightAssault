@@ -391,7 +391,8 @@ script.on_event(defines.events.on_gui_checked_state_changed, function(event)
 
   if event.element.name == "sla_gui_keepalive_checkbox" then
     local g = storage.gestalts[gAndGUI[1]]
-    g.keepalive = event.element.state
+    local newTarget = event.element.state and d.turtleName or nil
+    g.light.set_priority_target(1, newTarget)
     cg.FoeSuspected(g.spotter) -- wakey wakey
   elseif event.element.name == "sla_gui_kaglobal_checkbox" then
     storage.kaglobal = event.element.state
@@ -785,7 +786,7 @@ function(event)
     local destC = gDest.signal.get_control_behavior().sections[1]
     for _, slotNum in pairs(pastableSignals) do
       destC.set_slot(slotNum, sourceC.get_slot(slotNum))
-    end      
+    end
   end
 end)
 
