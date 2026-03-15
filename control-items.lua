@@ -17,6 +17,29 @@ local function lookupBaseName(name)
     return name
 end
 
+
+-- We can't figure out what's causing the crashes, but maybe we can at least reduce them
+-- by checking if we even need to call the line that's crashing
+-- ( SwapToBaseEntityType(itemStack)::itemStack.set_blueprint_entities(new) )
+local function needsBaseEntitySwappedIn(itemStack)
+  local old = itemStack.get_blueprint_entities()
+
+  if not old then
+    return false
+  end
+
+  local new = {}
+
+  for index, e in pairs(old) do
+    if e.name ~= lookupBaseName(e.name) then
+      return true
+    end
+  end
+
+  return false
+end
+
+
 local function SwapToBaseEntityType(itemStack)
   -- Step 1: Swap the items
   local old = itemStack.get_blueprint_entities()
@@ -29,10 +52,10 @@ local function SwapToBaseEntityType(itemStack)
   local tags = {}
 
   for index, e in pairs(old) do
+    -- TODO Is this indexing bad & what's causing the crashes?
     tags[index] = itemStack.get_blueprint_entity_tags(index)
 
     e.name = lookupBaseName(e.name)
-
 
     -- Resort the items so the signal interface ghost stops appearing on top
     if e.name == d.searchlightSignalInterfaceName then
@@ -100,10 +123,10 @@ local function SeekBlueprints(inventory)
 
   for index = 1, #inventory - inventory.count_empty_stacks() do
     local item = inventory[index]
-    if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() then
+    if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() and needsBaseEntitySwappedIn(item) then
       SwapToBaseEntityType(item)
       CheckForSignalSearchlightParity(item)
-    elseif item.valid_for_read and item.name == "blueprint-book" then
+    elseif item.valid_for_read and item.name == "blueprint-book" and needsBaseEntitySwappedIn(item) then
       -- Currently, the game prevents you from making a blueprint book that contains itself somewhere.
       SeekBlueprints(item.get_inventory(defines.inventory.item_main))
     end
@@ -111,6 +134,10 @@ local function SeekBlueprints(inventory)
 end
 
 
+-- TODO would it be be more efficient to just leave boosted turrets and stuff inside of player's blueprints,
+-- and only bother updating them when a blueprint/ghost is placed?
+-- We'd still want to use the uninstall feature to scan blueprints for boosted things and downgrade them there
+-- (maybe add a progress bar in that case)
 export.ScanBP_StacksAndSwapToBaseType = function(event)
   local player = game.players[event.player_index]
   local cstack = player.cursor_stack
