@@ -126,7 +126,7 @@ local function SeekBlueprints(inventory)
     if item.valid_for_read and item.name == "blueprint" and item.is_blueprint_setup() and needsBaseEntitySwappedIn(item) then
       SwapToBaseEntityType(item)
       CheckForSignalSearchlightParity(item)
-    elseif item.valid_for_read and item.name == "blueprint-book" and needsBaseEntitySwappedIn(item) then
+    elseif item.valid_for_read and item.name == "blueprint-book" then
       -- Currently, the game prevents you from making a blueprint book that contains itself somewhere.
       SeekBlueprints(item.get_inventory(defines.inventory.item_main))
     end
