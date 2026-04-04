@@ -480,6 +480,8 @@ local function turretOrInterfaceBuilt(event)
   local entity = nil
   if event.created_entity then
     entity = event.created_entity
+  elseif event.destination and not event.entity then -- on_clone
+    entity = event.destination
   else
     entity = event.entity
   end
@@ -528,6 +530,19 @@ for index, e in pairs
     {filter = "name", name = d.searchlightSignalInterfaceName}
   })
 end
+
+
+script.on_event(defines.events.on_entity_cloned, function(event)
+    turretOrInterfaceBuilt(event)
+end, {
+{filter = "turret"},
+{filter = "name", name = d.searchlightSignalInterfaceName},
+{filter = "ghost"},
+{filter = "ghost_type", type = "turret", mode="and"},
+{filter = "ghost_type", type = "ammo-turret", mode="or"},
+{filter = "ghost_type", type = "fluid-turret", mode="or"},
+{filter = "ghost_type", type = "electric-turret", mode="or"},
+})
 
 
 -- Doesn't support filters, so it's on its own here

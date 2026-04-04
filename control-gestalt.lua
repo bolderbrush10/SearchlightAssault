@@ -418,6 +418,11 @@ end
 export.SearchlightAdded = function(sl)
   -- Don't allow building searchlights while uninstallation desired
   if settings.global[d.uninstallMod].value then
+    local p = sl.last_user
+    if p then
+      p.create_local_flying_text{text={"sla.sla-flytext-uninstall"}, create_at_cursor=true}
+      p.play_sound({path="utility/cannot_build"})
+    end
     sl.destroy()
     return
   end

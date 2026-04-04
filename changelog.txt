@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.24
+Date: 2026-04-04
+  Changes:
+    - Compatability fix for Warptorio Space Age
+    - Show error message when trying to build a searchlight while mod setting for uninstall is true
+---------------------------------------------------------------------------------------------------
 Version: 2.3.23
 Date: 2026-03-19
   Changes:

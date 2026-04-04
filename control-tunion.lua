@@ -343,7 +343,12 @@ function export.TurretAdded(turret)
                                                         force=turret.force}
 
   for _, f in pairs(friends) do
-    export.CreateRelationship(storage.unum_to_g[f.unit_number], turret)
+    -- When an area is cloned, searchlights may be cloned before their gestalts get initalized,
+    -- and then any turrets may find such a nearby searchlight that is sans gesalt.
+    -- We'll just have to wait for the searchlight gesalt to be initialized to handle createRelationship.
+    if storage.unum_to_g[f.unit_number] then
+      export.CreateRelationship(storage.unum_to_g[f.unit_number], turret)
+    end
   end
 end
 
