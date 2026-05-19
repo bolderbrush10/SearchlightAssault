@@ -201,7 +201,11 @@ local function BoostFriends(gestalt, spottedFoe)
       cu.TurretRemoved(nil, tu)
     elseif not tu.boosted and tu.turret.shooting_target == nil then
        -- Make sure turret doesn't acquire a new target while we wait to boost it next tick
+       -- Arc-turrets like the flamethrower will assign themselves a target they can't reach, like worms...
+       -- This means they never clear their shooting target on their own, so we'll try to clear it here and 
+       -- in CheckAmmoElectricNeeds
       tu.turret.active = false
+      tu.turret.shooting_target = nil
       cu.Boost(tu, spottedFoe)
     end
   end

@@ -295,11 +295,16 @@ export.CheckAmmoElectricNeeds = function()
       if not ReassignTurret(turret, tuID) then
         export.UnBoost(tu)
       end
-    elseif tu.control.energy > 5000 and tu.turret.shooting_target == nil then
+    elseif tu.control.energy > 5000 and (tu.turret.shooting_target == nil or tu.turret.shooting_target == foe) then
       AmplifyRange(tu, foe) -- will invalidate reference to turret
       if overrideAmmoRange then
         ca.AuditBoostedAmmo(tu.turret)
       end
+    elseif tu.control.energy > 5000 then
+       -- Arc-turrets like the flamethrower will assign themselves a target they can't reach, like worms...
+       -- This means they never clear their shooting target on their own, so we'll try to clear it here and 
+       -- in BoostFriends
+      tu.turret.shooting_target = nil
     elseif tu.control.energy < 100 then
       DeamplifyRange(tu)
     end

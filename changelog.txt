@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 2.3.25
+Date: 2026-05-18
+  Changes:
+    - Fix for flamethrower turrets disabled by script/eating all the yummy oil (Space Age 2.0 API changed fluidbox handling, should be better now)
+---------------------------------------------------------------------------------------------------
 Version: 2.3.24
 Date: 2026-04-04
   Changes:

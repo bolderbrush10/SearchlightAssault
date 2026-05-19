@@ -349,17 +349,23 @@ end
 --  Therefore, the correct way to update a fluidbox of an entity is to read it first, modify the table, then write the modified table back.
 --  Directly accessing the returned table's attributes won't have the desired effect."
 -- https://lua-api.factorio.com/latest/LuaFluidBox.html
+--
+-- Space Age API 2.0 UPDATE NOTE!!
+-- "Removed ability of reading FluidWagon's fluid storage or FluidTurret's internal buffer fluid storage using LuaFluidBox.""
+-- https://forums.factorio.com/viewtopic.php?p=621179&hilit=LuaFluidBox+FluidTurret#p621179
+-- You now have to use entity.get_fluid() and entity.set_fluid() to access the internal buffer of flameturrets,
+-- in addition to accessing the fluid boxes using the above get/set_fluid() calls.
 local function CopyFluids(oldT, newT)
-
-  -- Must manually index this part, too.
-  for boxindex = 1, #oldT.fluidbox do
-    local oldFluid = oldT.fluidbox[boxindex]
-    local newFluid = newT.fluidbox[boxindex]
-
-    newFluid = oldFluid
-    newT.fluidbox[boxindex] = newFluid
+  for findex = 1, oldT.fluids_count do
+    -- Note that when we copy a turret in place, it'll hook itself up to the fluid network... 
+    -- ... and steal half the fluid. 
+    -- Make sure to give that fluid back.
+    local fluid = oldT.get_fluid(findex)
+    if fluid then
+      fluid.amount = fluid.amount + (newT.get_fluid(findex) and newT.get_fluid(findex).amount or 0)
+      newT.set_fluid(findex, fluid)
+    end
   end
-
 end
 
 
